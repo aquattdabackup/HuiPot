@@ -1,5 +1,9 @@
 # Arc Studio browser workflow
 
+## Current task — dark/lime UI redesign
+
+The user explicitly selected dark + lime and retained human-operated Studio in the browser. Use [STUDIO_REDESIGN.md](STUDIO_REDESIGN.md) and [REDESIGN.md](REDESIGN.md) for the current implementation task. Design assets are concepts, not runtime screenshots. The optional `arc-ui-craft` skill is absent; the explicit project checklist and new design spec are used. No redesign prompt has been executed by Codex. Earlier setup/phase gate descriptions below are history; do not repeat setup or request tokens.
+
 ## Approved route and current gate
 
 The user selected **HuiPot Goal Pool**, reviewed the Phase 2 scope/money rules, then explicitly requested pushing the prepared documents to GitHub and writing a prompt for Studio to proceed. **Phase 3 milestone A is authorized.** Start with [STUDIO_GITHUB_START.md](STUDIO_GITHUB_START.md). No prompt has been executed; B-D remain behind the separate contract-review gate.

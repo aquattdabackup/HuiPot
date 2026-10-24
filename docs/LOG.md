@@ -1,5 +1,22 @@
 # Project log
 
+## October 24, 2026 — dark/lime redesign handoff
+
+- User requested a comprehensive visual redesign: dedicated landing, striking motion/cinematic treatment and clearer information for users/judges. Explicitly chose dark + lime and retained human-operated Studio in the browser, then requested continuation with a stronger visual direction.
+- Inspected current source and GitHub main at `d2fecc8c1b412a4b9f7bbed42a93d8fe9a817dc4`; initial working tree clean. Read AGENTS, project memory, SPEC/DESIGN and relevant Home/header/card/routes/CSS and action screen sections. No application or contract source was edited by Codex.
+- Browser inventory returned no enabled apps/browsers; live UI/screenshots were not inspected. Assessment is based on source and visual design references. The missing optional arc-ui-craft skill is replaced by the explicit project checklist.
+- Created `docs/REDESIGN.md`: five routes, complete landing copy/section hierarchy, a wallet-free illustrative two-outcome walkthrough, app layout, judge evidence entry, typography/tokens, cinematic motion/fallback/performance budgets and UI01-UI10 acceptance checks.
+- Created `docs/STUDIO_REDESIGN.md`: exact full implementation prompt, input/content-access checks, reference image access requirements, validation/export checklist and no duplicate-job/token/setup requests. It requires preserving or completing the known Proof target binding and actual transaction-hook context isolation before claiming success. The prompt has not been submitted by Codex.
+- Generated a landing image with the built-in image tool, visually inspected it and copied it to `docs/design/landing-dark-lime-concept.png`; saved prompt/provenance. It is a design concept, not a Studio app screenshot, deployed page or video. The earlier interrupted generation returned no reusable result; no completion claim was made for it.
+- Companion product-interface image generation failed with a network error; no resulting image was received or included. The complete written product layouts remain the implementation reference.
+- Calculated seven design token contrast pairs; all meet their assigned thresholds. Saved `docs/design/contrast-check.json`. Read the official W3C contrast and pause/stop/hide guidance; final rendered accessibility remains untested.
+- Added v2 pointers in DESIGN and STUDIO_HANDOFF and amended only SPEC's screen scope/AC10 coverage. Contract and D2-D8 financial rules are unchanged. Mainnet, testnet wallet, public hosting, video upload and submission remain outside this task.
+- Prior independent validation of d2fecc8: 120 Forge tests and 17 Vitest parser tests pass; check/lint/typecheck pass. Four of the five previously failing Proof fixtures are repaired; the equal-but-wrong payout amount fixture still returns true. R6b now injects surplus via vm.deal and verifies exact refunds. These are validation history, not evidence for a redesigned app that has not yet been built.
+
+Delivery checks: relative Markdown targets in the new design/handoff/reference and memory documents resolve; UI01-UI10 are present; `git diff --check` passes; `src` and `contracts` have no changes. Remote main was rechecked at the same baseline before delivery. No application tests were rerun for this documentation/reference-only change; browser and testnet wallet checks were not run.
+
+Current handoff: user runs the short repo-linked instruction in the existing Studio browser project; Studio implements and returns actual source/revision, preview/screenshots and logs for independent review. Repository delivery of this design package is authorized; no application code generation or publication has been claimed by Codex.
+
 ## October 24, 2026 — independent recheck of Studio R1-R6 output
 
 - Read the user's pasted Studio response and inspected actual local source `307d8629adb508429ab2f7da27a5561a0441f9fd`; working tree was initially clean. `git ls-remote origin refs/heads/main` outside the network sandbox returned the same SHA. The pasted token/push request is obsolete; no credential, login, installation, or Studio generation was requested.

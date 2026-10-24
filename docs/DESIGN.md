@@ -1,5 +1,7 @@
 # HuiPot Goal Pool — Interface design
 
+> **Superseded visual/layout direction:** the user requested and selected the dark/lime redesign on October 24, 2026. Read [REDESIGN.md](REDESIGN.md) for the authoritative five-screen layout, cinematic landing, tokens, content and motion; use [STUDIO_REDESIGN.md](STUDIO_REDESIGN.md) for execution. This v1 document remains a reference for interaction/error/financial disclosures. Its old implementation-status statements are historical, not the current checkpoint.
+
 Date: October 24, 2026 (Asia/Ho_Chi_Minh). Phase 2 proposal v1.
 Status: design specification approved as context for milestone A through the GitHub handoff request. App implementation remains behind the Phase 3 review gate. No UI code, executed Studio prompt, rendered screenshot, or visual test exists yet. The optional `arc-ui-craft` skill is absent; this uses the Phase 2 checklist in [PROMPT.md](../PROMPT.md).
 

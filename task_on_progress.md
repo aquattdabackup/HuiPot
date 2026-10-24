@@ -1,29 +1,26 @@
 ﻿# Task On Progress
 
 ## Task
-- Title: independently recheck the Studio R1-R6 response and deliver remaining findings.
-- Status: reviewed; application gate remains open, awaiting Studio continuation.
-- Reviewed source: 307d8629adb508429ab2f7da27a5561a0441f9fd.
-- User preferences: browser-operated Studio; commit/push completed repository work; direct repository report links; no repeated token/setup request.
+- Title: HuiPot dark/lime visual redesign and Studio browser handoff.
+- Status: design package completed; repository delivery in progress. Studio app implementation awaits the user-operated browser handoff.
+- Baseline: d2fecc8c1b412a4b9f7bbed42a93d8fe9a817dc4.
+- User selected dark + lime, wants strong motion/cinematic polish, and explicitly retained human-operated Studio browser. No repeated token/setup or extra preference questions.
 
-## Evidence and Findings
-- Pasted response read; actual local source inspected. GitHub main independently matched 307d862, so Studio's token/push request is obsolete.
-- R1 malformed input and R4 reproduced render crashes repaired. Create rejects a no-event replacement receipt; contribution proof event now recognized. Pool queries poll every 12 seconds.
-- Five negative Proof fixtures still pass; R3 Pool action success and stale wallet state remain incomplete; numeric routes lack uint256 bound; R5 error/freshness checks remain open.
-- R6 adds useful multi-pool/retry tests but its forced-surplus test only rejects a normal transfer. Full event rollback evidence is missing. Claimed app parser test file is absent.
-- Corrected broad completion claims in AGENTS, README, and annotated the Studio report. Product source/test code was not changed by Codex.
+## Artifacts
+- docs/REDESIGN.md: authoritative v2 design, five screens, exact landing copy, interactive illustrative walkthrough, app information hierarchy, motion and accessibility.
+- docs/STUDIO_REDESIGN.md: full browser implementation prompt; user only needs one short repo link.
+- docs/design/: generated references, exact prompts, provenance and seven passing token contrast pairs.
+- DESIGN.md and STUDIO_HANDOFF.md point to v2; SPEC screen scope amended to five without changing money rules.
 
-## Validation
-- Archived exact commit under ignored .review/studio-307d862/snapshot; reused unchanged locked dependencies from previous snapshot.
-- Forge 1.7.1 / solc 0.8.28, seed 1: 120 passed, 0 failed, 0 skipped across 14 suites; ordinary EVM, not Arc runtime.
-- bun run build (tsc -b + Vite) and lint pass; bundle-size warning only, lint 0 warnings/errors.
-- Current-source local probes: 9 receipt scenarios, 6 amount cases, 4 render cases. Five of seven negative receipt cases remain false positives. Exit 0 means probe collection succeeded, not app acceptance.
-- Evidence and exact continuation prompt: docs/STUDIO_FIX_RECHECK.md, docs/evidence/recheck-307d862-*, docs/review-tools/*307d862*.
+## Evidence / Limits
+- Source and existing design reviewed; browser inventory has no enabled surfaces. No current UI screenshot inspection claimed.
+- Landing concept generated and visually inspected; mockup only. Product desktop/mobile concept generation failed with a network error; no product image is included. Written layouts cover all five screens.
+- No application/contract source was edited by Codex. No actual redesigned app, video, public hosting or wallet flow exists from this task.
+- d2fecc8 validation history: Forge 120 pass; Vitest parser 17 pass; lint/typecheck pass. Proof still accepts event/Transfer both 1 base unit against a 1-USDC target. Child div key does not reset parent-owned transaction hooks. Preserve/complete these in Studio before verification success claims.
 
-## Next Action
-1. Deliver the recheck/report and short repository link to the user for the existing Studio browser project. Prompt is prepared, not submitted by Codex.
-2. Studio completes existing R1-R6 obligations and returns source, app regressions, honest reports/logs, and remote revision; review independently again.
-3. AC10 layout and AC12 human-operated testnet flows remain open; no mainnet or public hosting action approved here.
-- Preserve existing work and historical evidence. Do not reinstall tooling, request tokens, start duplicate jobs, or write replacement product code outside Studio.
+## Remaining Steps
+1. Deliver this package to existing main and verify remote SHA; links, UI01-UI10 scope and diff checks passed; application/contract source unchanged.
+2. User executes docs/STUDIO_REDESIGN.md in the existing Studio browser project using the short linked instruction.
+3. Await Studio output for actual visual/functional review. Do not pretend the prompt has run or silently switch to CLI/product coding.
 
 Last updated: October 24, 2026 (Asia/Ho_Chi_Minh).

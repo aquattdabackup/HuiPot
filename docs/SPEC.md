@@ -1,5 +1,7 @@
 # HuiPot Goal Pool — Product specification
 
+> **UI redesign amendment, October 24, 2026:** the user authorized reorganizing the interface around a separate landing page. D1's screen scope is now five: Landing, Explore pools, Create, Pool, Proof. See [REDESIGN.md](REDESIGN.md). AC10 now applies to all five. The contract and D2–D8 financial rules remain unchanged. The implementation-status wording in the original Phase 2 text below is historical; current code/review status is recorded in LOG.md.
+
 Date: October 24, 2026 (Asia/Ho_Chi_Minh). Version: Phase 2 v1, approved for milestone A; Arc evidence clarification added during GitHub handoff.
 Status: the user selected HuiPot Goal Pool, reviewed the Phase 2 proposal, and requested a GitHub push and Studio prompt to proceed. Phase 3 contract/test generation is authorized through the documented handoff. Nothing is implemented, tested, or deployed yet.
 
