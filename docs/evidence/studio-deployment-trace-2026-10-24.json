@@ -1,0 +1,14 @@
+﻿{
+    "checkedAtUtc":  "2026-10-24T03:53:52.7893929Z",
+    "rpc":  "https://rpc.testnet.arc.io",
+    "requestedTransactionHash":  "0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486",
+    "requestedTracer":  "callTracer",
+    "response":  {
+                     "jsonrpc":  "2.0",
+                     "id":  1,
+                     "error":  {
+                                   "code":  -32601,
+                                   "message":  "method not supported: debug_traceTransaction"
+                               }
+                 }
+}

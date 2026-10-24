@@ -1,0 +1,12 @@
+{
+  "sourceRevision": "3f266fce3d0801a2c9df52cf535b371a33f27522",
+  "independentlyCompiled": true,
+  "compiler": "solc 0.8.28 via Forge 1.7.1",
+  "localVsExportFullRuntime": true,
+  "localVsChainFullRuntime": false,
+  "localVsChainPrefix": true,
+  "prefixBytes": 4081,
+  "localMetadataSuffix": "a26469706673582212202c35fd2ecc8063e7692107c2efd0016d127df776eec097cee328f1073870243964736f6c634300081c0033",
+  "chainMetadataSuffix": "a264697066735822122019e2bb0c4c54b26079921fa3147a7192b8d259deae6c0a3ff3b9f7af62d0f7cc64736f6c634300081c0033",
+  "localAbiMatchesExport": true
+}

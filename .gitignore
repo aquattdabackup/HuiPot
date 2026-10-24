@@ -16,3 +16,6 @@ out/
 cache/
 .DS_Store
 Thumbs.db
+
+# Local source snapshots and independent review tooling
+.review/

@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-24",
+  "status": "archive invalid; no extraction or source review performed",
+  "interpretation": "Identical copies contain widespread UTF-8 replacement sequences in ZIP headers and deflated payload. Evidence is consistent with lossy binary-to-text conversion. Original bytes cannot be reliably recovered from replacement characters.",
+  "files": [
+    {
+      "path": "C:\\Users\\luong\\HuiPot\\huipot-review-export.zip",
+      "bytes": 477529,
+      "sha256": "20cda3d54a39d5dea2a4e7787ccec0f2bd8855c6c06a65287d72cc9b896571f7",
+      "utf8_replacement_sequences": 107666,
+      "local_header_signatures": 63,
+      "central_header_signatures": 63,
+      "error": "BadZipFile: Bad magic number for central directory"
+    },
+    {
+      "path": "C:\\Users\\luong\\Downloads\\huipot_lw730q\\huipot-review-export.zip",
+      "bytes": 477529,
+      "sha256": "20cda3d54a39d5dea2a4e7787ccec0f2bd8855c6c06a65287d72cc9b896571f7",
+      "utf8_replacement_sequences": 107666,
+      "local_header_signatures": 63,
+      "central_header_signatures": 63,
+      "error": "BadZipFile: Bad magic number for central directory"
+    }
+  ]
+}

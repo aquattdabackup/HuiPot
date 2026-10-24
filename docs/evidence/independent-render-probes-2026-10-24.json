@@ -1,0 +1,25 @@
+{
+  "type": "Synthetic local component render probes; not browser/testnet execution",
+  "sourceRevision": "3f266fce3d0801a2c9df52cf535b371a33f27522",
+  "results": [
+    {
+      "case": "Create review panel with 7-decimal target",
+      "threw": true,
+      "error": "Too many decimal places (max 6)"
+    },
+    {
+      "case": "Pool invalid route /pools/abc",
+      "threw": true,
+      "error": "Cannot convert abc to a BigInt"
+    },
+    {
+      "case": "Proof invalid route /pools/abc",
+      "threw": true,
+      "error": "Cannot convert abc to a BigInt"
+    },
+    {
+      "case": "Create receives successful replacement/cancel receipt without PoolCreated",
+      "showsPoolCreated": true
+    }
+  ]
+}

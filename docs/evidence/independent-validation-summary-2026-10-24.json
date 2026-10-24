@@ -1,0 +1,30 @@
+{
+  "gitRevision": "3f266fce3d0801a2c9df52cf535b371a33f27522",
+  "tools": {
+    "bun": "1.3.14",
+    "forge": "1.7.1",
+    "solc": "0.8.28"
+  },
+  "forge": {
+    "exitCode": 0,
+    "suiteCount": 8,
+    "passed": 112,
+    "failed": 0,
+    "skipped": 0,
+    "fuzzSeed": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "runtime": "ordinary EVM, not Arc-specific integration"
+  },
+  "build": {
+    "exitCode": 0,
+    "command": "bun run build (tsc -b && vite build)",
+    "warning": "bundle chunks over 500 kB"
+  },
+  "lint": {
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0
+  },
+  "browserTests": "not run",
+  "testnetFlows": "not run",
+  "productSourceModifiedByCodex": false
+}

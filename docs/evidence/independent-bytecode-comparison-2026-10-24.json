@@ -1,0 +1,61 @@
+{
+  "fullRuntimeMatch": false,
+  "prefixMatch": true,
+  "compiledRuntimeBytes": 4134,
+  "chainRuntimeBytes": 4134,
+  "prefixBytes": 4081,
+  "compiledMetadataHex": "a26469706673582212202c35fd2ecc8063e7692107c2efd0016d127df776eec097cee328f1073870243964736f6c634300081c",
+  "onchainMetadataHex": "a264697066735822122019e2bb0c4c54b26079921fa3147a7192b8d259deae6c0a3ff3b9f7af62d0f7cc64736f6c634300081c",
+  "compiler": {
+    "version": "0.8.28+commit.7893614a"
+  },
+  "immutableReferences": null,
+  "linkReferences": {},
+  "eventSelectors": [
+    {
+      "name": "PoolCreated",
+      "eventSelector": "1cb9c210cbfbc41c7ab626549072feebbd9c73bc716c9c11ad113c5703cf1065"
+    },
+    {
+      "name": "Contributed",
+      "eventSelector": "dcfa71ee125a676f843733d9d39dce2c918ecf9e92f96db4f24bdb5244ed68a0"
+    },
+    {
+      "name": "GoalReached",
+      "eventSelector": "85b3ed4e45559c5f41fb220aa4ac86a440dfc741f219089de694242940aaa09c"
+    },
+    {
+      "name": "PaidOut",
+      "eventSelector": "648ae074e8c7e2b5c75fc82672c363a1b0fa293a1ce08cba5e9dbeec37eb8ae8"
+    },
+    {
+      "name": "Refunded",
+      "eventSelector": "7ca5472b7ea78c2c0141c5a12ee6d170cf4ce8ed06be3d22c8252ddfc7a6a2c4"
+    }
+  ],
+  "buildInfo": [
+    {
+      "file": "85cd82b019729764.json",
+      "keys": [
+        "id",
+        "source_id_to_path",
+        "language",
+        "_format",
+        "input",
+        "output",
+        "solcLongVersion",
+        "solcVersion"
+      ],
+      "bytes": 298624
+    },
+    {
+      "file": "9007c0ddd4fe3faf.json",
+      "keys": [
+        "id",
+        "source_id_to_path",
+        "language"
+      ],
+      "bytes": 1368
+    }
+  ]
+}

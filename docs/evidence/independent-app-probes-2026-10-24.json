@@ -1,0 +1,99 @@
+{
+  "type": "Codex independent review probes; synthetic local receipts, no chain execution",
+  "sourceRevision": "3f266fce3d0801a2c9df52cf535b371a33f27522",
+  "proofResults": [
+    {
+      "case": "valid payout control",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "payout without native movement evidence",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": false,
+      "movementDestinationMatches": null
+    },
+    {
+      "case": "payout with transfer to wrong recipient",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": false
+    },
+    {
+      "case": "payout with transfer from unrelated sender",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "payout with wrong native amount",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "payout event amount below expected 1 USDC target",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "refund with unrelated native movement",
+      "overallValid": true,
+      "eventFound": "Refunded",
+      "movementFound": true,
+      "movementDestinationMatches": null
+    },
+    {
+      "case": "valid contribution unsupported",
+      "overallValid": false,
+      "eventFound": null,
+      "movementFound": true,
+      "movementDestinationMatches": null
+    }
+  ],
+  "amountResults": [
+    {
+      "input": "-0.4",
+      "displayed": "0.4",
+      "parsedNative": "400000000000000000",
+      "exceedsUint256": false
+    },
+    {
+      "input": "1e3",
+      "displayed": "13",
+      "parsedNative": "13000000000000000000",
+      "exceedsUint256": false
+    },
+    {
+      "input": "0,4",
+      "displayed": "04",
+      "parsedNative": "4000000000000000000",
+      "exceedsUint256": false
+    },
+    {
+      "input": "0.000001",
+      "displayed": "0.000001",
+      "parsedNative": "1000000000000",
+      "exceedsUint256": false
+    },
+    {
+      "input": "0.0000001",
+      "displayed": "0.0000001",
+      "error": "Error: Too many decimal places (max 6)"
+    },
+    {
+      "input": "1000000000000000000000000000000000000000000000000000000000000",
+      "displayed": "1000000000000000000000000000000000000000000000000000000000000",
+      "parsedNative": "1000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "exceedsUint256": true
+    }
+  ]
+}

@@ -20,6 +20,8 @@ If sources cannot be reached, report the precise limitation and continue plannin
 
 ## Workspace and originality
 
+Repository delivery preference, explicitly authorized by the user on October 24, 2026: commit and push completed project work to the existing GitHub repository as part of finishing each task, unless the user asks otherwise. Preserve concurrent remote/local work and verify the remote commit after pushing. Exclude credentials, dependencies, caches, and temporary review snapshots. This authorization covers repository delivery; deployment, mainnet transactions, hosting, and submission retain their separate gates.
+
 Use the existing `/workspace/HuiPot` checkout. Each cloud task is already isolated; do not create a worktree unless requested. Inspect Git status before edits and preserve existing user work.
 
 HuiPot is a working name. The supplied rules do not require a new project, repository, or name. They permit first-round entrants that meet the requirements and exclude work already funded by a Circle or Arc program; each project can receive only one microgrant. Preserve the existing repository. Use only work the user owns or has the right to submit. Confirm relevant funding history before claiming eligibility. Originality and a fresh concept may remain product preferences, but do not present them as official new-project requirements.
