@@ -1,6 +1,23 @@
 # Arc tooling and authentication
 
+> Environment note: the commands and `/workspace` paths below record an earlier cloud setup. In the current Windows conversation, CLI 1.2.2 and `agent-guide` succeeded, and `arc-studio.cmd whoami` authenticated outside the sandbox. The user subsequently approved the browser route for this project. Do not rerun the historical setup/token steps. See `SETUP_STATUS.md` for the current checkpoint. No CLI generation was performed.
+
 Verified October 24, 2026 (Asia/Ho_Chi_Minh).
+
+## Latest verification — GitHub handoff, October 24, 2026
+
+The user requested pushing the prepared documents to the existing GitHub repo and a prompt to let Studio proceed with the presented milestone A. GitHub's public repository API reports aquattdabackup/HuiPot is public, default branch main. This does not verify Studio's account connection or import capability.
+
+Fresh HTTPS reads returned HTTP 200 for the [Studio overview](https://docs.arc.io/ai/arc-studio.md), [EVM differences](https://docs.arc.io/arc/references/evm-differences.md), [native model](https://docs.arc.io/arc/concepts/stablecoin-native-model.md), [USDC system events](https://docs.arc.io/arc/references/usdc-system-events.md), and Studio's llms.txt. No install or generation example was executed.
+
+- Studio overview explicitly supports **exporting code by pushing to GitHub**. It does not establish import/bidirectional sync of an existing repo. The user reports a GitHub connection option; verify actual full-file reads before generation. The repo prompt includes a file-content check and attachment/paste fallback.
+- Native USDC uses 18 decimals; the ERC-20 interface uses 6 for the same underlying balance. One USDC is 10^18 native base units. Dividing native base units by 10^12 converts to ERC-20 base units, not a whole-USDC display amount. Product targets/deposits remain 6-decimal-precision multiples of 10^12 native units.
+- Native explicit transfers emit an EIP-7708 Transfer log from the documented system emitter `0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE`, with 18-decimal values. The separate ERC-20 interface emitter `0x3600000000000000000000000000000000000000` uses 6 decimals. These are source-verified system references, not HuiPot deployment addresses. Match emitter/from/to/amount and receipt identity; do not double-count the streams. Gas charges do not emit Transfer logs.
+- Arc's runtime restrictions can reject native transfers even with sufficient balance, including blocklisted destinations. Correct failure rollback and honest unresolved-receipt handling remain required. Source text has a generic introductory claim about blocklist receipts that is less precise than the main runtime section; do not infer transaction outcome from a timeout or that introduction alone.
+- The EVM reference says ordinary anvil does not reproduce Arc-specific semantics and documents Arc Foundry simulation. Verify the supported Studio runtime and publisher/version before installing anything. Record ordinary-EVM versus Arc-specific coverage separately. No Arc Foundry package has been installed here.
+- The EVM reference documents a current 20 Gwei max-fee floor and non-decreasing timestamps, including equal timestamps across blocks. Recheck operational fee requirements before sending transactions; do not use this note as a transaction proposal.
+
+The source updates clarify validation without changing approved D1-D8 product behavior. Current chain RPC responses, wallet/faucet operation, existing-repo import, source/test export controls, and pre-deployment review still require the checks relevant to the actual Studio session. Mainnet and publication gates remain in place.
 
 ## Sources checked directly
 

@@ -50,3 +50,24 @@ The text mentions an Arc Studio CLI, including retrieving a project URL, but doe
 ## Product preferences, not competition rules
 
 The original kit's October 30 target, 12-idea shortlist process, three-contract/five-screen limits, distinctive concept, polished design, brand-new project/name/repository, and per-phase approvals are not requirements stated in the competition text. The revised kit retains the planning target, concise ideation, scope limits, and review gates as internal process choices; it removes mandatory renaming/restarting and category exclusions. It treats polish and differentiation as optional priorities after the required working product and proof.
+
+## Phase 1 source check — October 24, 2026
+
+- Re-read the preserved [supplied competition text](sources/competition-user-supplied.txt). The 30/25/25/20 weighting and required Studio/mainnet/public-app evidence above match it.
+- A fresh read of the [competition page](https://dorahacks.io/hackathon/arc-microgrants-2/detail) returned HTTP 405. Organizer identity beyond the supplied Arc/Circle framing, live eligibility terms, final application fields, and cutoff time/time zone remain unverified. Do not infer a specific legal organizer entity from the product branding.
+- Independently read the [Arc Studio homepage](https://studio.arc.io/): it describes testnet deployment and states that Studio does not deploy, sign, fund, or submit mainnet transactions on the user's behalf. This supports retaining a separate human-controlled mainnet plan; it does not verify the competition or current operational network parameters.
+- Phase 1 approval and browser preference are explicit user decisions. Comparison scores in [IDEA_COMPARISON.md](IDEA_COMPARISON.md) are internal forecasts, not earned or official scores. No build, mainnet proof, or public hosting exists for any candidate.
+- Earlier cloud access/token-binding comments above are historical. Current Windows authentication evidence is qualified in [SETUP_STATUS.md](SETUP_STATUS.md). Do not request setup or token entry again for ideation.
+
+## Phase 2 product decision — October 24, 2026
+
+- User decision: HuiPot Goal Pool selected; Phase 2 specification/design/browser-prompt preparation authorized. Code generation has not been authorized by that planning request.
+- Proposed product choices in [SPEC.md](SPEC.md): one contract/four screens, native USDC, fixed target/recipient/deadline, exact cap, immediate payout on goal, contributor-claimed refunds after failed expiry, no early withdrawal/cancellation, no platform fee. These are not additional organizer requirements and await the Phase 2 gate.
+- Network units/endpoints in the specification cite the earlier official-source/RPC snapshot in [ARC_TOOLING.md](ARC_TOOLING.md); they were not rechecked in Phase 2. Current native-unit documentation must be confirmed before generation, and operational chain/wallet/faucet configuration before its use.
+- Studio browser generation/export/review controls, testnet validation, public hosting, mainnet deployment, funding/ownership eligibility, live form, and exact official cutoff/time zone remain to be resolved at their relevant gates. No new live competition verification or eligibility claim is made.
+
+## GitHub handoff authorization — October 24, 2026
+
+After the Phase 2 review and the presented milestone A next step, the user requested pushing the prepared work to GitHub and writing a prompt for Studio to proceed. This authorizes the existing-repo documentation push and milestone A contract/test generation. It does not authorize B-D app work before contract review, mainnet transactions, public app/video publication, or submission.
+
+The repository is independently verified public at https://github.com/aquattdabackup/HuiPot. Fresh official documentation confirms Studio GitHub export and native-USDC units/events; see ARC_TOOLING.md. Repo import and actual generated source/test evidence remain unverified. No contest requirements or eligibility conclusion changed.

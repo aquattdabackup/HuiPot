@@ -1,5 +1,19 @@
 # Phase 0 — setup status
 
+## Current checkpoint — Phase 3 authorized; GitHub handoff
+
+On October 24, 2026, the user selected **HuiPot Goal Pool**, reviewed the Phase 2 proposal, then requested pushing the prepared work to GitHub and a prompt for Studio to proceed. This authorizes milestone A contract/test generation through the previously approved browser route. [STUDIO_GITHUB_START.md](STUDIO_GITHUB_START.md) is the entry point; actual repo import/read access must be checked. The next gate is review of actual generated contracts/tests before B-D app work. Setup is not being restarted.
+
+The approved scope uses one native-USDC contract and four screens. Contract/app generation, tests, and deployment have not occurred. The existing GitHub repo is verified public; the documentation push is authorized. The three optional skills remain absent; PROMPT.md fallbacks were used. New documentation-only checks for native units/system events and GitHub export are in ARC_TOOLING.md; no new authentication, RPC, or wallet check was performed.
+
+This checkout is now on Windows at `C:\Users\luong\HuiPot`. Earlier in the current conversation, CLI `1.2.2`, `agent-guide`, and `whoami` were checked; `whoami` succeeded outside the sandbox against `https://studio.arc.io`. The sandbox-only authentication check failed. This supersedes the old blanket statement that CLI authentication is unverified **for this Windows session**, without claiming the previous cloud transport problem was repaired. No installation, login, token entry, or authentication retry was performed during Phase 1.
+
+The browser-control inventory exposed no enabled browser/app surfaces during Phase 1. The approved human-operated browser handoff remains usable; no browser generation job, project, or source export was inspected or created. Product planning is not blocked by browser automation availability.
+
+The sections below retain the earlier **cloud Phase 0 history**. Their `/workspace` paths, proxy settings, and token-binding observations do not describe the current Windows runtime.
+
+## Historical cloud setup observations
+
 Checked: October 24, 2026 (Asia/Ho_Chi_Minh).
 
 Current status: local prerequisites and Arc Studio CLI 1.2.2 are installed; the token binding is saved and present in the running environment. Cloud access to Studio is now blocked by HTTP 403 HTML responses bearing a Cloudflare-related page title. The user reports successful browser login. The proposed development route is therefore human-operated Studio in the browser with Codex preparing prompts and reviewing exported artifacts. Cloud CLI authentication and generation remain unverified. No application has been built or deployed.
@@ -55,7 +69,7 @@ The tested `install_script`, CLI activation/authentication guidance in `start_sk
 
 The install script is also at `/workspace/.setup/HuiPot-install.sh`; it pins CLI 1.2.2 and installs outside the checkout. There is no application dependency manifest or application service yet. New-task restoration and authenticated generation have not been verified.
 
-## Next work
+## Historical next work at the Phase 0 gate
 
 1. Review the Phase 0 result and approve continuing with the browser route: the human operates Studio, Codex prepares milestone prompts and reviews actual exports. The browser login is user-reported; generation is not yet validated.
 2. Retest cloud CLI access only after a meaningful access change or new diagnosis. Do not loop requests, change credentials without evidence, or bypass the access challenge. Cloud CLI access is an unresolved limitation of this route, not a prerequisite for comparing ideas.
