@@ -27,7 +27,7 @@
 - Documentation checks and final results are recorded in docs/LOG.md.
 
 ## Remaining Steps / Handoff
-1. User runs the focused R1-R6 fix prompt in docs/STUDIO_TARGETED_FIXES.md in the existing Studio project. No app/contract code fixes are made outside Studio. Obtain the actual Studio URL/revision with the corrected diff/logs.
+1. Direct Studio to read docs/STUDIO_TARGETED_FIXES.md and its linked reports/evidence from the latest existing GitHub source, then execute R1-R6. No app/contract code fixes are made outside Studio. Studio should deliver corrected source/tests, docs/STUDIO_FIX_REPORT.md and actual logs through the supported GitHub integration, returning the actual project URL/revision and remote commit. The user need not paste the long review report.
 2. Review/retest monetary input, Proof verdict, transaction replacements/state, render validation, block/deadline refresh, and missing multi-pool/receiver-retry tests. The real refetch ref updates every render; do not repeat the earlier unverified mount-only allegation.
 3. After corrected source review, prepare the human-operated testnet funded-payout and failed-expiry/refund flows. Browser layout, Arc-specific runtime semantics, and real wallet outcomes remain open. No new wallet action or mainnet step was approved in this review.
 - Archive SHA-256 66fa4177a65e06d1a880ec4f28c3da7a1bec91dd05472ca59e1acd07f36c507f, 266114 bytes, 63 CRC-valid files. Git revision 3f266fce3d0801a2c9df52cf535b371a33f27522. Source/ABI/runtime/test evidence lives under docs/evidence and the ignored .review directory.

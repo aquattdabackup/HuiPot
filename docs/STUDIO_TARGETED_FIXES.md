@@ -2,12 +2,26 @@
 
 Prepared October 24, 2026 (Asia/Ho_Chi_Minh). Reviewed source: Git `3f266fce3d0801a2c9df52cf535b371a33f27522`; archive SHA-256 `66fa4177a65e06d1a880ec4f28c3da7a1bec91dd05472ca59e1acd07f36c507f`.
 
-Codex independently ran 112 passing contract tests (zero failures/skips), the production build/type check, and lint. The fixes below follow reproduced application findings and specific coverage gaps. The source transport is resolved. This prompt has not been submitted by Codex.
+Codex independently ran 112 passing contract tests (zero failures/skips), the production build/type check, and lint. The fixes below follow reproduced application findings and specific coverage gaps. The source transport is resolved. Read the reports directly from the existing GitHub repository; the user does not need to paste them into Studio. The user authorized committing and pushing completed repository work. This prompt has not been submitted by Codex.
 
 ```text
-Continue the existing HuiPot project from the source delivered as Git commit 3f266fce3d0801a2c9df52cf535b371a33f27522. Capture the current revision and inspect any changes since that baseline before editing.
+Continue the existing HuiPot Studio project connected to https://github.com/aquattdabackup/HuiPot. Read the latest main branch and record its actual commit. The reviewed implementation baseline is 3f266fce3d0801a2c9df52cf535b371a33f27522; the review/documentation was published in 7dcda652e20852996ddaa7ec498020cb6c7a49f2. Preserve later changes instead of resetting to either baseline. Check current jobs/revisions before starting another generation task.
 
-Independent review reproduced the findings below. Implement the fixes and regression tests inside Studio. Preserve D1-D8 and the current deployment. No new deployment, publication, GitHub push, wallet transaction, or credentials are authorized. If normal edits automatically deploy, report that limitation before dependent work.
+Read these complete files directly from GitHub or the connected repository before editing:
+1. AGENTS.md
+2. docs/SPEC.md and docs/DESIGN.md
+3. docs/INDEPENDENT_REVIEW.md
+4. docs/STUDIO_TARGETED_FIXES.md (this workflow)
+5. docs/ARC_TOOLING.md
+6. docs/evidence/independent-validation-summary-2026-10-24.json
+7. docs/evidence/independent-app-probes-2026-10-24.json and docs/evidence/independent-render-probes-2026-10-24.json
+8. The latest entries of docs/LOG.md
+
+GitHub page pattern: https://github.com/aquattdabackup/HuiPot/blob/main/<path>
+Raw-file pattern: https://raw.githubusercontent.com/aquattdabackup/HuiPot/main/<path>
+Use the supported repository/browser/raw route. Confirm real reads by stating the R1 example involving "0,4", why R2 can show "All checks passed", and SPEC AC12's actual flow requirement, then continue execution in the same turn. A connection or filename alone is not proof of content access. If an input is inaccessible, name the exact URL/error and continue independent work; do not invent its contents or ask the user to paste reports that you can read from the repository.
+
+Independent review reproduced the findings below. Implement fixes and regression tests inside Studio. Preserve D1-D8 and the current deployment. Committing and pushing completed fixes, tests, and evidence to the existing repository is authorized. New deployments, public app hosting, wallet transactions, and grant submission are outside this task. Never expose credentials. If normal edits automatically deploy, report that limitation before dependent work.
 
 R1 — Preserve monetary input meaning.
 Create.tsx around line 299 and Pool.tsx around line 352 strip non-digit characters. Pasting "0,4" becomes 4 USDC; "1e3" becomes 13; "-0.4" becomes positive 0.4. Keep raw input and show invalid-format errors. Enforce positive quantum-aligned native amounts with at most six product decimals and uint256 bounds, using integer arithmetic. Validate principal plus estimated fees with honest fee precision. Add input-to-request tests covering pasted malformed values, valid small amounts, excess precision, and over-range values. Never silently rewrite or round money input.
@@ -32,7 +46,11 @@ Also disable unavailable WalletConnect mobile support when its project ID is mis
 
 Run the final meaningful app regression tests, contract tests, production build, type checking, and lint. Return exact commands, exit codes, raw logs, actual counts, and checks not run. Keep ordinary EVM tests distinct from Arc runtime/browser/testnet execution.
 
-Return the actual Studio project URL, corrected revision, diff/file manifest, focused findings-to-tests mapping, and source/log export. Use the working Base64 transport if a downloadable binary is unreliable. State whether the contract source changed; any source change requires renewed artifact/deployment comparison. Correct the metadata explanation: a new build alone does not make identical compiler metadata hash nondeterministically.
+Write docs/STUDIO_FIX_REPORT.md with the reviewed input commit, actual Studio project URL/revision, R1-R6 findings-to-changes-to-tests mapping, exact validation commands/exit codes/counts, unresolved issues, and whether contract source changed. Store actual new raw logs under a distinct export-logs directory/name and append observed execution evidence to docs/LOG.md. A report is not a substitute for the corrected source and tests. Any contract source change requires renewed artifact/deployment comparison; do not redeploy to make it match. Correct the metadata explanation: a new build alone does not make identical compiler metadata hash nondeterministically.
+
+Before delivery, inspect the diff and reconcile current remote changes without discarding code, docs, or history. Commit and push the completed source, tests, report, and sanitized logs through Studio's supported GitHub integration to the existing repository. Prefer main when supported and safe; if the integration requires a separate branch, use a review branch and return its exact name/commit. Do not force-push, replace the repository, change visibility, include secrets, or publish dependencies/caches. Do not stop at saying the files are local when push is supported and authorized. Verify the remote commit before claiming delivery. If the integration cannot push these changes, report the exact limitation and provide the supported complete source/log export, using Base64 transport when binary download is unreliable.
+
+Return a concise result with: Studio project URL, actual input/output revision, GitHub branch/commit and report link, validation counts, unresolved findings, and contract-source change status. Return links to committed reports/logs so the user can hand the source back to Codex directly.
 
 Stop for independent review before human-operated testnet transactions. Keep mainnet/public-hosting/submission status unverified until those actions are separately performed with real evidence.
 ```
