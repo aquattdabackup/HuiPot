@@ -212,6 +212,40 @@ The user reviews SPEC.md D1-D8, DESIGN.md, and STUDIO_PROMPTS.md, especially imm
 - Re-ran the relocated review instruments against the same snapshot; results match the previously recorded findings. Documentation/JSON/link/conflict/whitespace checks and four high-confidence credential-pattern checks passed before staging. Independent build/contract tests were not repeated for documentation-only changes; source equivalence is checked before delivery.
 - The subsequent push succeeded: origin/main advanced from 3f266fc to 7dcda652e20852996ddaa7ec498020cb6c7a49f2. A separate git ls-remote read matched local HEAD, and git status was clean. This verifies delivery of the review, evidence, and Studio source integration.
 
+## October 24, 2026 (continued) — R1–R6 fixes implemented
+
+### What was done
+
+All six findings from STUDIO_TARGETED_FIXES.md were implemented by Arc Studio and verified:
+
+- **R1** (`src/config.ts`, `Create.tsx`, `Pool.tsx`): Amount input no longer strips characters. `parseProductAmount` tightened to reject commas, scientific notation, leading dots, and negative signs. uint256 max check added. Raw input preserved; invalid-format errors displayed before any wallet action.
+- **R2** (`src/pages/Proof.tsx`): `overallValid` now requires all eight applicable dimensions: receipt status, contract address, event presence, pool ID match, payout recipient match, amount presence, and movement destination match. Missing movement evidence returns `overallValid: false`. Added `Contributed` event support (was silently unrecognized).
+- **R3** (`src/pages/Create.tsx`, `Pool.tsx`): Create checks that the receipt contains a `PoolCreated` log from the correct contract address with matching creator and recipient before showing success. Replacement/cancel receipts render a dedicated warning screen. Pool clears local action state on account change.
+- **R4** (`Create.tsx`, `Pool.tsx`, `Proof.tsx`): `BigInt(poolId)` on non-numeric routes now returns `null` before the invalid-ID guard fires, not during a `useReadContract` call. Review panel `parseProductAmount` is guarded with try/catch. `validPoolId` bool gate controls all queries.
+- **R5** (`Pool.tsx`): All five `useReadContract` calls now include `refetchInterval: 12_000`. Pool state updates every 12 seconds without requiring a user transaction.
+- **R6** (`contracts/test/HuiPotGoalPool.R6.t.sol`, new file): 8 new tests — 3 multi-pool stateful invariants (balance covers liabilities, no cross-pool leak, payout monotone), forced-surplus unit test, toggle-receive retry for payout and refund, full-rollback accounting/event assertions for failed payout and failed refund.
+- **WalletConnect**: `?? 'demo'` → `|| ''` disables WalletConnect when no project ID is configured.
+- **No contract source changes.** D1–D8 money rules unchanged.
+
+### Validation results
+
+| Check | Result |
+|---|---|
+| `oxlint` | 0 warnings, 0 errors |
+| `tsc --noEmit` | Pass |
+| `forge test` (120 total) | **120/120 passed**, 0 failed, 0 skipped |
+| `bunx vite build` | Clean (exit 0, chunk-size warning informational) |
+
+Logs saved to `export-logs/forge-test-r6-fixes.log` and `export-logs/vite-build-r6-fixes.log`.
+Fix documentation in `docs/STUDIO_FIX_REPORT.md`.
+
+### Open items
+
+- AC12 human-operated testnet flows: not run (requires wallet signatures on Arc Testnet)
+- AC10 browser layout tests: not run (browser unavailable)
+- WalletConnect mobile wallet: untested (no project ID)
+- GitHub push: pending GitHub CLI authentication
+
 ## October 24, 2026 — repository-based Studio correction handoff
 
 - The user requested the next Arc task and specified that Studio should read any needed reports directly from the source repository. Recorded that handoff preference in AGENTS.md.

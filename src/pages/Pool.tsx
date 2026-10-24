@@ -19,47 +19,56 @@ export function Pool() {
   const [amountError, setAmountError] = useState('')
 
   const wrongChain = isConnected && chainId !== TARGET_CHAIN_ID
-  const poolIdBig = poolId ? BigInt(poolId) : 0n
 
-  // Pool data
+  // R4: guard BigInt conversion — poolId from the URL may be non-numeric (e.g. /pools/abc)
+  const poolIdBig = (() => {
+    if (!poolId) return 0n
+    if (!/^\d+$/.test(poolId)) return null  // signal: invalid route
+    try { return BigInt(poolId) } catch { return null }
+  })()
+
+  // Valid bigint pool ID (null = non-numeric route like /pools/abc)
+  const validPoolId = poolIdBig !== null && poolIdBig > 0n
+
+  // Pool data — R5: refetchInterval keeps state fresh on deadline expiry and external wallet actions
   const { data: pool, isLoading: poolLoading, refetch: refetchPool } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getPool',
-    args: [poolIdBig],
+    args: [poolIdBig ?? 0n],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED && poolIdBig > 0n },
+    query: { enabled: DEPLOYED && validPoolId, refetchInterval: 12_000 },
   })
   const { data: rawStatus, refetch: refetchStatus } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getStatus',
-    args: [poolIdBig],
+    args: [poolIdBig ?? 0n],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED && poolIdBig > 0n },
+    query: { enabled: DEPLOYED && validPoolId, refetchInterval: 12_000 },
   })
   const { data: myContribution, refetch: refetchContrib } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getContribution',
-    args: [poolIdBig, address ?? '0x0000000000000000000000000000000000000000'],
+    args: [poolIdBig ?? 0n, address ?? '0x0000000000000000000000000000000000000000'],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED && !!address && poolIdBig > 0n },
+    query: { enabled: DEPLOYED && !!address && validPoolId, refetchInterval: 12_000 },
   })
   const { data: myClaimable, refetch: refetchClaimable } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getClaimable',
-    args: [poolIdBig, address ?? '0x0000000000000000000000000000000000000000'],
+    args: [poolIdBig ?? 0n, address ?? '0x0000000000000000000000000000000000000000'],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED && !!address && poolIdBig > 0n },
+    query: { enabled: DEPLOYED && !!address && validPoolId, refetchInterval: 12_000 },
   })
   const { data: poolCount } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'poolCount',
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED },
+    query: { enabled: DEPLOYED, refetchInterval: 12_000 },
   })
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
@@ -107,10 +116,21 @@ export function Pool() {
     }
   }, [contribSuccess, payoutSuccess, refundSuccess])
 
-  if (!poolId || poolIdBig <= 0n) {
+  // R3: Reset local form state when the connected account changes so that
+  // a prior wallet's success/error state does not affect a newly connected wallet.
+  const prevAddressRef = useRef(address)
+  useEffect(() => {
+    if (prevAddressRef.current !== address) {
+      prevAddressRef.current = address
+      setAmountStr('')
+      setAmountError('')
+    }
+  }, [address])
+
+  if (!poolId || !validPoolId) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
-        <p style={{ color: 'var(--muted)' }}>Invalid pool ID.</p>
+        <p style={{ color: 'var(--muted)' }}>Invalid pool ID{poolId ? ` "${poolId}"` : ''}.</p>
         <Link to="/" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to home</Link>
       </div>
     )
@@ -137,7 +157,7 @@ export function Pool() {
   }
 
   // Check if pool exists: poolCount 0 or poolId > poolCount = not found
-  if (!pool || (poolCount !== undefined && poolIdBig > poolCount)) {
+  if (!pool || (poolCount !== undefined && poolIdBig !== null && poolIdBig > poolCount)) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h2 className="display text-xl font-semibold mb-2" style={{ color: 'var(--ink)' }}>Pool not found</h2>
@@ -149,6 +169,7 @@ export function Pool() {
     )
   }
 
+  const safePoolIdBig = poolIdBig as bigint  // guaranteed non-null after validPoolId guard
   const [, recipient, target, deadline, title, purpose, totalContributed] = pool
   const pct = target > 0n ? Number((totalContributed * 100n) / target) : 0
   const clampedPct = Math.min(100, pct)
@@ -174,7 +195,7 @@ export function Pool() {
         address: HUIPOT_ADDRESS,
         abi: HUIPOT_ABI,
         functionName: 'contribute',
-        args: [poolIdBig],
+        args: [safePoolIdBig],
         value: val,
         chainId: TARGET_CHAIN_ID,
       })
@@ -189,7 +210,7 @@ export function Pool() {
       address: HUIPOT_ADDRESS,
       abi: HUIPOT_ABI,
       functionName: 'payout',
-      args: [poolIdBig],
+      args: [safePoolIdBig],
       chainId: TARGET_CHAIN_ID,
     })
   }
@@ -200,7 +221,7 @@ export function Pool() {
       address: HUIPOT_ADDRESS,
       abi: HUIPOT_ABI,
       functionName: 'claimRefund',
-      args: [poolIdBig],
+      args: [safePoolIdBig],
       chainId: TARGET_CHAIN_ID,
     })
   }
@@ -348,10 +369,7 @@ export function Pool() {
                     type="text"
                     inputMode="decimal"
                     value={amountStr}
-                    onChange={(e) => {
-                      const v = e.target.value.replace(/[^0-9.]/g, '')
-                      if (v === '' || /^\d*\.?\d*$/.test(v)) setAmountStr(v)
-                    }}
+                    onChange={(e) => setAmountStr(e.target.value)}
                     placeholder="0.000000"
                     className="w-full rounded-xl px-4 py-3 pr-16 text-sm outline-none tabular-nums"
                     style={{

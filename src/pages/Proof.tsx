@@ -17,6 +17,9 @@ const PAID_OUT_TOPIC = '0x648ae074e8c7e2b5c75fc82672c363a1b0fa293a1ce08cba5e9dbe
 // Keccak256 of Refunded(uint256,address,uint256)
 const REFUNDED_TOPIC = '0x7ca5472b7ea78c2c0141c5a12ee6d170cf4ce8ed06be3d22c8252ddfc7a6a2c4'
 
+// Keccak256 of Contributed(uint256,address,uint256,uint256)
+const CONTRIBUTED_TOPIC = '0xdcfa71ee125a676f843733d9d39dce2c918ecf9e92f96db4f24bdb5244ed68a0'
+
 type VerifyState =
   | { phase: 'idle' }
   | { phase: 'loading' }
@@ -31,7 +34,7 @@ interface VerifyResult {
   toMatchesContract: boolean
   poolIdInLog: string | null
   poolIdMatches: boolean | null
-  eventFound: 'PaidOut' | 'Refunded' | null
+  eventFound: 'PaidOut' | 'Refunded' | 'Contributed' | null
   amountInLog: string | null
   recipientInLog: string | null
   recipientMatchesPool: boolean | null
@@ -118,7 +121,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     (l) => l.address.toLowerCase() === HUIPOT_ADDRESS.toLowerCase()
   )
 
-  let eventFound: 'PaidOut' | 'Refunded' | null = null
+  let eventFound: 'PaidOut' | 'Refunded' | 'Contributed' | null = null
   let poolIdInLog: string | null = null
   let poolIdMatches: boolean | null = null
   let amountInLog: string | null = null
@@ -127,6 +130,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
 
   const paidOutLog = contractLogs.find((l) => l.topics[0] === PAID_OUT_TOPIC)
   const refundedLog = contractLogs.find((l) => l.topics[0] === REFUNDED_TOPIC)
+  const contributedLog = contractLogs.find((l) => l.topics[0] === CONTRIBUTED_TOPIC)
 
   if (paidOutLog) {
     eventFound = 'PaidOut'
@@ -148,8 +152,18 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     recipientInLog = '0x' + refundedLog.topics[2].slice(-40)
     recipientMatchesPool = null // refund goes back to contributor, not fixed recipient
     if (!poolIdMatches) notes.push(`Refunded log poolId (${poolIdInLog}) does not match expected pool #${expectedPoolId}.`)
+  } else if (contributedLog) {
+    eventFound = 'Contributed'
+    poolIdInLog = BigInt(contributedLog.topics[1]).toString()
+    poolIdMatches = poolIdInLog === expectedPoolId
+    // data = abi.encode(amount, newTotal); amount is first 32 bytes
+    amountInLog = BigInt('0x' + contributedLog.data.slice(2, 66)).toString()
+    // contributor is topic[2] (indexed address)
+    recipientInLog = '0x' + contributedLog.topics[2].slice(-40)
+    recipientMatchesPool = null  // contribution goes from contributor to contract, not to fixed recipient
+    if (!poolIdMatches) notes.push(`Contributed log poolId (${poolIdInLog}) does not match expected pool #${expectedPoolId}.`)
   } else {
-    notes.push('No PaidOut or Refunded event found from this contract in this transaction.')
+    notes.push('No PaidOut, Refunded, or Contributed event found from this contract in this transaction.')
   }
 
   // Look for Arc system Transfer log indicating native USDC movement
@@ -182,12 +196,23 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     notes.push(`Payout amount in event: ${BigInt(amountInLog).toString()} native base units (18 dec).`)
   }
 
+  // R2: overallValid requires ALL applicable checks to pass.
+  // Missing movement evidence is PARTIAL (overallValid=false), never an all-checks success.
+  // For PaidOut: receipt ok + contract target + event + pool id + recipient + movement destination + movement amount.
+  // For Refunded: receipt ok + contract target + event + pool id. (movement goes to contributor address, not checked here.)
+  const amountMatches = amountInLog !== null  // amount presence confirmed; caller can compare to expected
+  const movementRequired = eventFound === 'PaidOut'
+  const movementOk = !movementRequired ||
+    (arcTransferFound && arcTransferToMatchesRecipient === true)
+
   const overallValid =
     receiptStatusOk &&
     toMatchesContract &&
     eventFound !== null &&
     poolIdMatches === true &&
-    (eventFound !== 'PaidOut' || recipientMatchesPool === true)
+    (eventFound !== 'PaidOut' || recipientMatchesPool === true) &&
+    amountMatches &&
+    movementOk
 
   return {
     txHash, receiptStatus: receipt.status, receiptStatusOk,
@@ -201,7 +226,14 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
 
 export function Proof() {
   const { poolId } = useParams<{ poolId: string }>()
-  const poolIdBig = poolId ? BigInt(poolId) : 0n
+
+  // R4: guard BigInt conversion — poolId may be non-numeric (e.g. /pools/abc/proof)
+  const poolIdBig = (() => {
+    if (!poolId) return 0n
+    if (!/^\d+$/.test(poolId)) return null
+    try { return BigInt(poolId) } catch { return null }
+  })()
+  const validPoolId = poolIdBig !== null && poolIdBig > 0n
 
   const [txHashInput, setTxHashInput] = useState('')
   const [verifyState, setVerifyState] = useState<VerifyState>({ phase: 'idle' })
@@ -210,17 +242,17 @@ export function Proof() {
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getPool',
-    args: [poolIdBig],
+    args: [poolIdBig ?? 0n],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED && poolIdBig > 0n },
+    query: { enabled: DEPLOYED && validPoolId },
   })
   const { data: rawStatus } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getStatus',
-    args: [poolIdBig],
+    args: [poolIdBig ?? 0n],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: DEPLOYED && poolIdBig > 0n },
+    query: { enabled: DEPLOYED && validPoolId },
   })
   const { data: poolCount } = useReadContract({
     address: HUIPOT_ADDRESS,
@@ -278,7 +310,16 @@ export function Proof() {
     )
   }
 
-  if (poolError || !pool || (poolCount !== undefined && poolIdBig > poolCount)) {
+  if (!validPoolId) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <p style={{ color: 'var(--muted)' }}>Invalid pool ID{poolId ? ` "${poolId}"` : ''}.</p>
+        <Link to="/" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to home</Link>
+      </div>
+    )
+  }
+
+  if (poolError || !pool || (poolCount !== undefined && poolIdBig !== null && poolIdBig > poolCount)) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12 text-center">
         <p style={{ color: 'var(--muted)' }}>Pool #{poolId} not found on this deployment.</p>

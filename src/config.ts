@@ -31,16 +31,34 @@ export const NATIVE_DECIMALS = 18
 export const PRODUCT_DECIMALS = 6
 export const QUANTUM = 10n ** 12n
 
+// Maximum uint256 value — amounts above this are rejected.
+const UINT256_MAX = (1n << 256n) - 1n
+
+/**
+ * Parse a user-supplied USDC amount string into 18-decimal native base units.
+ *
+ * STRICT: rejects any input that is not exactly the form /^\d+(\.\d{1,6})?$/.
+ * - Commas, "e", "-", "+" or any non-digit-dot character → throws "Invalid amount format"
+ * - More than 6 decimal places → throws "Too many decimal places (max 6)"
+ * - Result above uint256 max → throws "Amount exceeds maximum"
+ * - Empty / whitespace → returns 0n (caller decides if that is valid)
+ *
+ * Never strip or silently rewrite the input: the caller sees the raw value
+ * and must show an error before requesting a wallet signature.
+ */
 export function parseProductAmount(value: string): bigint {
   if (!value || value.trim() === '') return 0n
   const trimmed = value.trim()
-  if (!/^\d*\.?\d*$/.test(trimmed)) throw new Error('Invalid amount format')
+  // Strict format: only digits and at most one dot
+  if (!/^\d+(\.\d*)?$/.test(trimmed)) throw new Error('Invalid amount format')
   const [intPart, fracPart = ''] = trimmed.split('.')
   if (fracPart.length > PRODUCT_DECIMALS) throw new Error('Too many decimal places (max 6)')
   const padded = fracPart.padEnd(PRODUCT_DECIMALS, '0')
   const erc20Units = BigInt(intPart || '0') * 10n ** BigInt(PRODUCT_DECIMALS) + BigInt(padded)
   // Convert 6-decimal ERC-20 units to 18-decimal native units
-  return erc20Units * QUANTUM
+  const native = erc20Units * QUANTUM
+  if (native > UINT256_MAX) throw new Error('Amount exceeds maximum')
+  return native
 }
 
 export function formatNativeAmount(native: bigint): string {
@@ -66,7 +84,9 @@ export const wagmiConfig = createConfig(
     transports: {
       [arcTestnet.id]: http('https://rpc.testnet.arc.io'),
     },
-    walletConnectProjectId: (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string) ?? 'demo',
+    // WalletConnect mobile support requires a real project ID from https://cloud.walletconnect.com
+    // Without one, WalletConnect is intentionally disabled; injected wallets (MetaMask extension) still work.
+    walletConnectProjectId: (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string) || '',
     appName: 'HuiPot Goal Pool',
     appDescription: 'Pool USDC for one shared goal',
     appUrl: 'https://studio.arc.io',

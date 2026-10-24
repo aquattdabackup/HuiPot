@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { ConnectKitButton } from 'connectkit'
-import { ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert } from 'lucide-react'
 import { decodeEventLog } from 'viem'
 import { HUIPOT_ADDRESS, HUIPOT_ABI } from '../contract'
 import { TARGET_CHAIN_ID, parseProductAmount, formatNativeAmount, explorerTxUrl } from '../config'
@@ -21,7 +21,7 @@ function fieldError(errors: Record<string, string>, field: string) {
 }
 
 export function Create() {
-  const { chainId, isConnected } = useAccount()
+  const { address, chainId, isConnected } = useAccount()
   const { switchChain } = useSwitchChain()
 
   const [title, setTitle] = useState('')
@@ -35,6 +35,9 @@ export function Create() {
 
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash })
+
+  // Track the identity at the moment of submission so we can detect replacement/stale state
+  const submittedRef = useRef<{ account: string; chainId: number } | null>(null)
 
   const wrongChain = isConnected && chainId !== TARGET_CHAIN_ID
 
@@ -109,6 +112,7 @@ export function Create() {
 
     const targetNative = parseProductAmount(targetStr)
 
+    submittedRef.current = { account: address ?? '', chainId: chainId ?? TARGET_CHAIN_ID }
     writeContract({
       address: HUIPOT_ADDRESS,
       abi: HUIPOT_ABI,
@@ -124,10 +128,14 @@ export function Create() {
     })
   }
 
-  // Extract poolId from receipt logs on success
+  // R3: Extract poolId only from a PoolCreated log emitted by the HuiPot contract itself.
+  // A successful replacement/cancel transaction that emits no matching log must NOT be shown as success.
   let createdPoolId: string | undefined
+  let poolCreatedEventFound = false
   if (isSuccess && receipt) {
     for (const log of receipt.logs) {
+      // Must be emitted by our contract — reject logs from unrelated addresses
+      if (log.address.toLowerCase() !== HUIPOT_ADDRESS.toLowerCase()) continue
       try {
         const decoded = decodeEventLog({
           abi: HUIPOT_ABI,
@@ -135,7 +143,19 @@ export function Create() {
           data: log.data,
           topics: log.topics,
         })
-        createdPoolId = (decoded.args as { poolId?: bigint }).poolId?.toString()
+        const poolId = (decoded.args as { poolId?: bigint }).poolId?.toString()
+        const logRecipient = (decoded.args as { recipient?: string }).recipient ?? ''
+        const logCreator = (decoded.args as { creator?: string }).creator ?? ''
+        // Verify the creator matches the submitting account (R3: not a replacement from a different sender)
+        const submittedAccount = submittedRef.current?.account ?? ''
+        if (
+          poolId &&
+          (!submittedAccount || logCreator.toLowerCase() === submittedAccount.toLowerCase()) &&
+          logRecipient.toLowerCase() === recipient.trim().toLowerCase()
+        ) {
+          createdPoolId = poolId
+          poolCreatedEventFound = true
+        }
         break
       } catch {
         // not this event
@@ -144,6 +164,41 @@ export function Create() {
   }
 
   if (isSuccess && receipt) {
+    if (!poolCreatedEventFound) {
+      // Receipt succeeded but no matching PoolCreated event — replacement or unrelated tx
+      return (
+        <div className="mx-auto max-w-lg px-4 py-12 text-center">
+          <div
+            className="mb-4 flex h-16 w-16 items-center justify-center rounded-full mx-auto"
+            style={{ background: 'var(--warning-bg)' }}
+          >
+            <ShieldAlert className="h-8 w-8" style={{ color: 'var(--warning-text)' }} />
+          </div>
+          <h1 className="display text-xl font-bold mb-2" style={{ color: 'var(--ink)' }}>
+            Transaction succeeded — no pool created
+          </h1>
+          <p className="mb-6 text-sm" style={{ color: 'var(--muted)' }}>
+            The transaction was confirmed but contained no matching PoolCreated event from this
+            contract. It may have been replaced, cancelled, or is unrelated to this pool creation.
+            No pool was recorded.
+          </p>
+          <div className="flex flex-col gap-3">
+            <a
+              href={explorerTxUrl(hash!)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm underline"
+              style={{ color: 'var(--muted)' }}
+            >
+              View transaction on ArcScan
+            </a>
+            <Link to="/create" className="text-sm" style={{ color: 'var(--muted)' }} onClick={() => window.location.reload()}>
+              Try again
+            </Link>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="mx-auto max-w-lg px-4 py-12 text-center">
         <div
@@ -187,8 +242,12 @@ export function Create() {
     )
   }
 
+  // Safe parse for inline display hint — never throws into the render tree
   const targetNative = (() => {
-    try { return parseProductAmount(targetStr) } catch { return null }
+    try {
+      const n = parseProductAmount(targetStr)
+      return n > 0n ? n : null
+    } catch { return null }
   })()
 
   return (
@@ -295,10 +354,7 @@ export function Create() {
                   type="text"
                   inputMode="decimal"
                   value={targetStr}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9.]/g, '')
-                    if (v === '' || /^\d*\.?\d*$/.test(v)) setTargetStr(v)
-                  }}
+                  onChange={(e) => setTargetStr(e.target.value)}
                   placeholder="0.000000"
                   className="w-full rounded-xl px-4 py-2.5 pr-16 text-sm outline-none tabular-nums"
                   style={{
@@ -402,7 +458,7 @@ export function Create() {
             <dl className="grid gap-2 text-sm">
               {[
                 ['Title', title],
-                ['Goal', `${formatNativeAmount(parseProductAmount(targetStr) || 0n)} USDC`],
+                ['Goal', (() => { try { const n = parseProductAmount(targetStr); return n > 0n ? `${formatNativeAmount(n)} USDC` : '—' } catch { return targetStr } })()],
                 ['Recipient', recipient],
                 ['Deadline', deadlineUnix ? formatDeadline(deadlineUnix) : '–'],
                 ['Deposit bundled with creation', 'None'],

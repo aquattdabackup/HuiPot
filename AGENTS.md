@@ -16,7 +16,10 @@ Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62c
 - Foundry artifacts: `contracts/out/HuiPotGoalPool.sol/HuiPotGoalPool.json`.
 - Metadata: `contracts/contract-metadata/HuiPotGoalPool.json`.
 
-Current review checkpoint: the independently reviewed `3f266fc` source passes all 112 supplied contract tests, build/type checking, and lint, but application correctness and test-coverage findings keep the gate open. Use `docs/INDEPENDENT_REVIEW.md` and `docs/STUDIO_TARGETED_FIXES.md`. Existing testnet deployment does not establish app-flow/mainnet completion.
+Current review checkpoint: R1–R6 fixes implemented and verified by Arc Studio. **120/120 contract tests pass** (112 original + 8 new R6 tests). Lint 0 errors, tsc 0 errors, production build clean. All D1–D8 money rules unchanged. Contract source unchanged; existing deployment `0x81a1...` still valid.
+
+R1–R6 fix documentation: `docs/STUDIO_FIX_REPORT.md`.
+Open items: AC12 human-operated testnet flows (requires wallet), AC10 browser layout tests, WalletConnect mobile (no project ID), GitHub push pending authentication.
 ## Purpose and authority
 
 Help the user build one original, understandable USDC application and prepare a grant submission. Aim for a useful, demonstrable product; do not promise an award.
