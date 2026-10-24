@@ -1,0 +1,78 @@
+Arc Microgrants: Built with Arc Studio
+Arc mainnet is live, and Arc Studio is the onchain coding agent for building on it. Describe the onchain app you want. Arc Studio works out what it needs, writes and tests the smart contracts, and builds the app around them.
+
+This round of Arc Microgrants backs experiments built that way. Start in Arc Studio and finish with something live on Arc mainnet that moves real USDC.
+
+Eight microgrants of $500 USDC each, from a $4,000 USDC pool. Submissions close November 1, 2026 and are reviewed as they come in.
+
+What to build
+Use Arc Studio from first contract to working app. Experiments are welcome, and polish is optional. Good starting points:
+
+Escrow and conditional payouts, including scheduled payouts, payroll, and vesting
+Payment splitting and shared treasuries, including revenue splits and team or DAO payouts
+Software-to-software payments, where one service or AI agent pays another
+What you ship
+Smart contracts written and tested in Arc Studio and deployed to Arc mainnet
+A working app built in Arc Studio that calls those contracts, live at a public link
+At least one Arc mainnet transaction that moves USDC through your contract and app
+Test and review your contracts in Arc Studio before you deploy, and use small amounts. Submissions are not audited by Arc or Circle.
+
+What your submission needs
+Your Arc Studio project URL. It is in your browser's address bar, or you can ask the Arc Studio CLI for it. It looks like https://studio.arc.io/app/1a2b3c4d-e6f7g8h. This is how we confirm the project was built in Arc Studio.
+A link to the live app
+Your contract address(es) and one example transaction hash, with a link on explorer.arc.io
+A public repo. Arc Studio can connect to GitHub and push your code.
+A video walkthrough that shows the build in Arc Studio and the mainnet transaction
+A short description of what your project does and how you used Arc Studio to build it
+A public builder profile on GitHub, X, or Farcaster
+Not eligible: projects built outside Arc Studio, testnet-only builds, design mockups, slide decks, and work already funded by a Circle or Arc program.
+
+What we look for
+Real USDC moving on Arc mainnet, shown with contract addresses and transaction hashes (30%)
+Use of Arc Studio across the build: contracts, testing, and app (25%)
+A working product (25%)
+Potential to go further (20%)
+How it works
+Build your project in Arc Studio and deploy it to Arc mainnet.
+Submit through this page. It takes about ten minutes.
+Submissions are screened for completeness and verified on Arc mainnet.
+Eligible projects are scored and decided in batches.
+Selected builders complete a short verification step for payout.
+Your microgrant is paid in USDC on Arc.
+Earlier submissions get earlier answers.
+
+What you get
+$500 in USDC on Arc, non-dilutive
+Visibility in the Arc builder community
+Access to Arc ecosystem office hours
+A route into the Circle Grant Program and other ecosystem support
+Eligibility and rules
+Open to individuals and teams worldwide, subject to sanctions and restricted-jurisdiction screening.
+Pseudonymous builders can submit. Verification happens only after conditional selection, and only for whoever receives the microgrant.
+One submission per project. Teams can submit more than one distinct project.
+Your project must be built in Arc Studio and deployed to Arc mainnet at the time you submit.
+Projects submitted to the first Arc Microgrants round can enter if they were built in Arc Studio and meet these requirements. A project can receive only one microgrant.
+The work must be yours, or you must have the right to submit it.
+Microgrants are paid in USDC on Arc. You need a wallet that can receive USDC on Arc.
+You keep full ownership of your work. No equity, no IP assignment, no exclusivity.
+Program dates and microgrant counts may be adjusted.
+Questions
+Do I need to write Solidity? No. Arc Studio writes and tests the contracts from your description.
+
+Does my project have to be live on Arc mainnet? Yes. Submit once it is deployed and has moved USDC on mainnet.
+
+Can I submit a project from the first microgrants round? Yes, if it was built in Arc Studio and meets the requirements above. Each project can receive one microgrant.
+
+Can I submit pseudonymously? Yes. Verification is private and only for payout.
+
+Resources
+Arc Studio: https://studio.arc.io
+Arc docs: https://docs.arc.io
+Arc explorer: https://explorer.arc.io
+Circle developer docs: https://developers.circle.com
+Disclosures
+Arc is an open L1 blockchain launched by Arc Network Services LLC ("Arc LLC") and operated by a permissioned validator set. Arc LLC provides software services only and does not offer regulated financial or advisory services. Arc has not been reviewed or approved by the New York State Department of Financial Services or any other regulatory authority.
+
+The Arc network is provided "as is" and "as available." Use of Arc involves inherent risks associated with blockchain technology, including smart contract vulnerabilities, network disruptions, and the absence of recourse for transaction errors or losses. The ability to transact on Arc depends on the ability to obtain and use USDC to pay gas fees. Neither Arc LLC nor any permissioned validator is responsible for the content, accuracy, legality, or functionality of third-party applications, protocols, or services built on or integrated with Arc. You are solely responsible for features or services you provide to users, including obtaining any necessary licenses or approvals and otherwise complying with applicable laws.
+
+All Arc features may be modified, delayed, or cancelled at any time without notice. Nothing herein constitutes a commitment, warranty, guarantee or legal, regulatory, tax, or investment advice.
