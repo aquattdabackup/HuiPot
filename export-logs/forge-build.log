@@ -1,0 +1,14 @@
+[2m2026-10-24T03:31:05.311722Z[0m [31mERROR[0m [2mfoundry_compilers_artifacts_solc::sources[0m[2m:[0m [3merror[0m[2m=[0m"/home/user/app/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": No such file or directory (os error 2)
+Unable to resolve imports:
+      "@openzeppelin/contracts/utils/ReentrancyGuard.sol" in "/home/user/app/contracts/HuiPotGoalPool.sol"
+with remappings:
+      @openzeppelin/contracts/=/home/user/app/node_modules/@openzeppelin/contracts/
+Compiling 1 files with Solc 0.8.28
+Solc 0.8.28 finished in 442.11ms
+Error: Compiler run failed:
+Error (6275): Source "node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol" not found: File not found. Searched the following locations: "/home/user/app".
+ParserError: Source "node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol" not found: File not found. Searched the following locations: "/home/user/app".
+ --> contracts/HuiPotGoalPool.sol:4:1:
+  |
+4 | import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

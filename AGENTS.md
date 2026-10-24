@@ -1,5 +1,23 @@
 # HuiPot project guidance
 
+## Deployed contracts
+
+| Contract | Network | Address | Explorer |
+| --- | --- | --- | --- |
+| HuiPotGoalPool | Arc Testnet | `0x81a139599d252eb2dc2bbb6c267e911a21264288` | https://explorer.testnet.arc.io/address/0x81a139599d252eb2dc2bbb6c267e911a21264288 |
+
+Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
+
+## Arc Studio build — milestone A + B + C (Oct 24 2026)
+
+- Contract: `contracts/HuiPotGoalPool.sol` — multi-pool, native USDC (18-decimal), nonpayable createPool, payable contribute, payout, claimRefund, ReentrancyGuard, 5-state machine, events.
+- Frontend: Vite + React + wagmi + ConnectKit + react-router-dom. Four screens: Home, Create, Pool, Proof.
+- Contract address wired via `VITE_HUIPOT_ADDRESS` in `.env`.
+- Foundry artifacts: `contracts/out/HuiPotGoalPool.sol/HuiPotGoalPool.json`.
+- Metadata: `contracts/contract-metadata/HuiPotGoalPool.json`.
+
+
+
 ## Purpose and authority
 
 Help the user build one original, understandable USDC application and prepare a grant submission. Aim for a useful, demonstrable product; do not promise an award.

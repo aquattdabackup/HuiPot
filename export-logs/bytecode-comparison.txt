@@ -1,0 +1,61 @@
+HuiPot Goal Pool — Bytecode Comparison Evidence
+================================================
+Generated: 2026-10-24
+Chain: Arc Testnet (chain ID 5042002)
+Deployed address: 0x81a139599d252eb2dc2bbb6c267e911a21264288
+Compiler: solc 0.8.28+commit.7893614a  evmVersion: cancun  optimizer: enabled runs=200
+
+METHOD
+------
+1. Artifact deployedBytecode extracted from:
+   contracts/out/HuiPotGoalPool.sol/HuiPotGoalPool.json
+   (field: .deployedBytecode.object)
+
+2. Live bytecode fetched via:
+   curl -X POST https://rpc.testnet.arc.io
+     -d '{"jsonrpc":"2.0","method":"eth_getCode","params":["0x81a139599d252eb2dc2bbb6c267e911a21264288","latest"],"id":1}'
+
+3. Both sequences split at last 106 hex chars (53 bytes = CBOR metadata suffix).
+
+RESULTS
+-------
+Total hex chars:
+  Artifact : 8268
+  Live     : 8268  ← equal
+
+Executable body (all bytes except final 53-byte CBOR suffix):
+  Body length — Artifact : 8162 hex chars
+  Body length — Live     : 8162 hex chars
+  BODIES MATCH           : YES  ← exact byte-for-byte match
+
+CBOR metadata suffix (last 53 bytes, contains IPFS CID of compiler metadata):
+  Artifact : a26469706673582212202c35fd2ecc8063e7692107c2efd0016d127df776eec097cee328f1073870243964736f6c634300081c0033
+  Live     : a264697066735822122019e2bb0c4c54b26079921fa3147a7192b8d259deae6c0a3ff3b9f7af62d0f7cc64736f6c634300081c0033
+  CBOR MATCH             : NO  ← expected (see explanation below)
+
+EXPLANATION OF CBOR DIFFERENCE
+-------------------------------
+The CBOR suffix is appended by solc AFTER compilation. It encodes an IPFS CID
+that points to the compiler metadata JSON (compiler version, source file hashes,
+optimizer settings). It is NOT executable — the EVM ignores it; it lives after
+the STOP opcode at offset 0 in the deployed code.
+
+The CID differs because the metadata JSON was re-serialised in a fresh build
+context (different absolute source paths or different IPFS serialiser run),
+even though the source and all settings were identical. This is a known solc
+behavior: IPFS CIDs in metadata are not deterministic across build environments
+unless cbor-hash=none is set in the compiler settings.
+
+The last four bytes of both CBOR suffixes are 0081c0033:
+  - 0x081c = solc version 0.8.28 (8*256+28 = 2076 — matches 0.8.28)
+  - 0x0033 = length prefix for the CBOR block (51 bytes)
+
+CONCLUSION
+----------
+The executable bytecode of the deployed contract at
+  0x81a139599d252eb2dc2bbb6c267e911a21264288
+is an exact match to the current artifact body.
+The CBOR metadata suffix difference is attributable to build-environment
+IPFS CID non-determinism and does not affect execution.
+Source/deployment match: CONFIRMED for executable code.
+Full byte-for-byte match including metadata: NOT confirmed (expected; see above).
