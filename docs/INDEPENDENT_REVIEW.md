@@ -6,7 +6,7 @@ Result: the supplied contract suite and production build pass independently. App
 
 ## Provenance and preserved work
 
-Local `main` remains at `eb7e82b`, one commit behind the fetched `origin/main`; existing local documentation changes were preserved. The new revision was read from Git's existing object database and exported into `.review/studio-3f266fc/snapshot` without merging or creating a worktree. No new fetch, push, deployment, or wallet transaction was performed.
+At review time, local `main` was at `eb7e82b`, one commit behind the fetched `origin/main`; existing local documentation changes were preserved. The source revision was read from Git's existing object database and exported into `.review/studio-3f266fc/snapshot` without merging or creating a worktree. No deployment or wallet transaction was performed. The user's subsequent GitHub-delivery request integrates that source and this review into the existing branch; it does not change the reviewed baseline.
 
 The transport JSON in the fetched commit decoded to a valid ZIP: 266,114 bytes, SHA-256 `66fa4177a65e06d1a880ec4f28c3da7a1bec91dd05472ca59e1acd07f36c507f`, 63 files, 1,137,728 uncompressed bytes. Every entry passed CRC and extraction-path checks. The separate binary ZIP committed alongside the JSON is still the malformed representation; use the validated transport data. The source export and Git snapshot have identical shared-file content after normalizing LF/CRLF. Compiler artifacts exist in the transport archive; vendored forge-std exists in the Git snapshot.
 

@@ -9,7 +9,7 @@
 ## Findings and Files
 - Read AGENTS.md, PROMPT.md, comparison, requirements, tooling, setup/handoff, log, and project memory. User selected HuiPot Goal Pool and authorized Phase 2.
 - All three optional local skills are absent, including arc-ui-craft; used the Phase 2 fallback in PROMPT.md.
-- Preserved all existing local documentation work. Local main remains eb7e82b, behind fetched origin/main 3f266fc by one commit. Exported the fetched revision under .review/studio-3f266fc/snapshot without a merge, reset, or worktree.
+- Preserved existing local documentation work and committed it as b2885e6. Integrated the Studio source commit 3f266fc for GitHub delivery; resolved README by preserving setup instructions and correcting completion claims. The earlier independent review ran against an unchanged snapshot of 3f266fc.
 - Browser inventory returned no enabled browsers or apps. Preserve the approved human-operated browser route; this does not block local ideation.
 - Earlier in this conversation, Windows CLI 1.2.2 and authenticated `whoami` succeeded outside the sandbox. Do not repeat installation, login, or token entry. Historical cloud 403 reports describe a different environment.
 
@@ -33,5 +33,6 @@
 - Archive SHA-256 66fa4177a65e06d1a880ec4f28c3da7a1bec91dd05472ca59e1acd07f36c507f, 266114 bytes, 63 CRC-valid files. Git revision 3f266fce3d0801a2c9df52cf535b371a33f27522. Source/ABI/runtime/test evidence lives under docs/evidence and the ignored .review directory.
 - Codex inspected actual source and logs, independently compiled/tested the contract, built/linted the app, and executed local synthetic review probes. No browser preview, testnet wallet transaction, public hosting, or Studio prompt execution by Codex is claimed.
 - Do not repeat setup or ask for tokens. Mainnet spending and public app/video publication remain separately authorized actions.
+- Persistent user preference: commit and push completed repository work at the end of each task. Repository delivery is authorized; do not ask again unless scope or circumstances require it. Keep temporary review snapshots/dependencies/credentials excluded.
 
 Last updated: October 24, 2026 (Asia/Ho_Chi_Minh).

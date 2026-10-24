@@ -1,0 +1,314 @@
+No files changed, compilation skipped
+
+Ran 27 tests for contracts/test/HuiPotGoalPool.AC01.t.sol:HuiPotGoalPool_AC01
+[PASS] test_AC01_CreatorEqualsRecipient_Allowed() (gas: 231733)
+[PASS] test_AC01_ImmutableTerms_CannotBeChangedExternally() (gas: 450329)
+[PASS] test_AC01_IndependentIds_Increment() (gas: 390809)
+[PASS] test_AC01_Revert_Deadline30DaysPlusOne() (gas: 39099)
+[PASS] test_AC01_Revert_DeadlineExactlyNow() (gas: 38897)
+[PASS] test_AC01_Revert_DeadlinePast() (gas: 38901)
+[PASS] test_AC01_Revert_GetPool_IdTooLarge() (gas: 13366)
+[PASS] test_AC01_Revert_GetPool_IdZero() (gas: 11286)
+[PASS] test_AC01_Revert_GetStatus_IdZero() (gas: 8599)
+[PASS] test_AC01_Revert_NonQuantumTarget_OneWei() (gas: 38798)
+[PASS] test_AC01_Revert_NonQuantumTarget_QuantumMinusOne() (gas: 38896)
+[PASS] test_AC01_Revert_NonpayableCreatePool() (gas: 44334)
+[PASS] test_AC01_Revert_PurposeEmpty() (gas: 40849)
+[PASS] test_AC01_Revert_PurposeExactly281() (gas: 67683)
+[PASS] test_AC01_Revert_SelfAsRecipient() (gas: 38706)
+[PASS] test_AC01_Revert_TargetQuantumPlusOne() (gas: 38896)
+[PASS] test_AC01_Revert_TitleEmpty() (gas: 40935)
+[PASS] test_AC01_Revert_TitleExactly81() (gas: 51327)
+[PASS] test_AC01_Revert_ZeroRecipient() (gas: 38504)
+[PASS] test_AC01_Revert_ZeroTarget() (gas: 38652)
+[PASS] test_AC01_ValidCreate_EmitsPoolCreated() (gas: 206365)
+[PASS] test_AC01_ValidCreate_StatusIsActive() (gas: 220291)
+[PASS] test_AC01_ValidCreate_StoresFields() (gas: 246998)
+[PASS] test_AC01_Valid_DeadlineExactly30Days() (gas: 201912)
+[PASS] test_AC01_Valid_PurposeExactly280() (gas: 432115)
+[PASS] test_AC01_Valid_QuantumTarget() (gas: 201785)
+[PASS] test_AC01_Valid_TitleExactly80() (gas: 281087)
+Suite result: ok. 27 passed; 0 failed; 0 skipped; finished in 3.31ms (1.61ms CPU time)
+
+Ran 5 tests for contracts/test/HuiPotGoalPool.AC07.t.sol:HuiPotGoalPool_AC07
+[PASS] test_AC07_CrossPoolReentrant_Contribute_DuringPayout() (gas: 879471)
+[PASS] test_AC07_ReentrantClaimRefund_BlockedByReentrancyGuard() (gas: 783756)
+[PASS] test_AC07_ReentrantPayout_BlockedByReentrancyGuard() (gas: 677373)
+[PASS] test_AC07_RejectingContributor_ClaimRefundReverts() (gas: 670593)
+[PASS] test_AC07_RejectingRecipient_PayoutReverts() (gas: 506127)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 4.46ms (1.06ms CPU time)
+
+Ran 18 tests for contracts/test/HuiPotGoalPool.AC0809.t.sol:HuiPotGoalPool_AC0809
+[PASS] test_AC08_Contributed_AccumulatingNewTotal() (gas: 169337)
+[PASS] test_AC08_Contributed_CorrectAmountAndNewTotal() (gas: 99313)
+[PASS] test_AC08_GoalReached_EmittedExactlyOnce_WhenGoalMet() (gas: 172041)
+[PASS] test_AC08_GoalReached_NOT_EmittedOnNonFillingContribution() (gas: 108048)
+[PASS] test_AC08_PaidOut_CorrectFields() (gas: 228938)
+[PASS] test_AC08_PoolCreated_CorrectFields() (gas: 185725)
+[PASS] test_AC08_Refunded_CorrectFields() (gas: 225023)
+[PASS] test_AC08_Revert_NoEventOnRevertedContribution() (gas: 54030)
+[PASS] test_AC09_ContributionAmounts_DisplayInFullUnits() (gas: 102032)
+[PASS] test_AC09_Contribution_BelowQuantum_Reverts() (gas: 48423)
+[PASS] test_AC09_Contribution_ExactQuantum_Succeeds() (gas: 285592)
+[PASS] test_AC09_Contribution_NotDivisibleByQuantum_Reverts() (gas: 48424)
+[PASS] test_AC09_GetPool_ReturnsNative18DecAmounts() (gas: 32061)
+[PASS] test_AC09_NoERC20Calls_ContractBalanceIsNative() (gas: 166826)
+[PASS] test_AC09_OneUSDC_Is_1e18_NativeUnits() (gas: 290)
+[PASS] test_AC09_SmallestValidContribution_IsOneMillionthUSDC() (gas: 285614)
+[PASS] test_AC09_Target_MustBeMultipleOf1e12() (gas: 38849)
+[PASS] test_AC09_Target_QuantumExactly_Succeeds() (gas: 184640)
+Suite result: ok. 18 passed; 0 failed; 0 skipped; finished in 4.58ms (1.69ms CPU time)
+
+Ran 14 tests for contracts/test/HuiPotGoalPool.AC02.t.sol:HuiPotGoalPool_AC02
+[PASS] test_AC02_Contributes_EmitsContributed() (gas: 99129)
+[PASS] test_AC02_Contributes_EmitsContributedWithCumulative() (gas: 169165)
+[PASS] test_AC02_ExactRemaining_Succeeds() (gas: 211412)
+[PASS] test_AC02_MultiWallet_AccumulatesTotal() (gas: 304166)
+[PASS] test_AC02_RepeatedContributions_Accumulate() (gas: 235515)
+[PASS] test_AC02_Revert_AfterDeadline() (gas: 91538)
+[PASS] test_AC02_Revert_ExceedsRemaining_AfterPartial() (gas: 144471)
+[PASS] test_AC02_Revert_ExceedsRemaining_Full() (gas: 59543)
+[PASS] test_AC02_Revert_NonQuantum_OneUSDCPlusOne() (gas: 48486)
+[PASS] test_AC02_Revert_NonQuantum_OneWei() (gas: 48462)
+[PASS] test_AC02_Revert_NonQuantum_QuantumMinusOne() (gas: 48530)
+[PASS] test_AC02_Revert_PastDeadline() (gas: 91561)
+[PASS] test_AC02_Revert_PostGoal_PoolFunded() (gas: 193968)
+[PASS] test_AC02_Revert_ZeroDeposit() (gas: 41648)
+Suite result: ok. 14 passed; 0 failed; 0 skipped; finished in 2.42ms (1.04ms CPU time)
+
+Ran 20 tests for contracts/test/HuiPotGoalPool.AC0304.t.sol:HuiPotGoalPool_AC0304
+[PASS] test_AC03_ContributeAfterDeadline_Fails() (gas: 91561)
+[PASS] test_AC03_ContributeAtDeadline_Fails() (gas: 91457)
+[PASS] test_AC03_ContributeJustBeforeDeadline_Succeeds() (gas: 134183)
+[PASS] test_AC03_FundedPool_StaysFunded_AfterDeadline() (gas: 174182)
+[PASS] test_AC03_UnderfundedRefundsOpen_AfterDeadline() (gas: 145146)
+[PASS] test_AC03_UnderfundedRefundsOpen_AtDeadline() (gas: 145058)
+[PASS] test_AC03_ZeroDepositPool_ClosedAfterDeadline_NoTx() (gas: 55617)
+[PASS] test_AC03_ZeroDepositPool_ClosedAtDeadline_NoTx() (gas: 55634)
+[PASS] test_AC04_BalanceDelta_GasAccounted() (gas: 229519)
+[PASS] test_AC04_Payout_AnyCaller_SendsTargetToRecipient() (gas: 228840)
+[PASS] test_AC04_Payout_EmitsPaidOut() (gas: 228931)
+[PASS] test_AC04_Payout_PaidOutFieldIsTrue() (gas: 246982)
+[PASS] test_AC04_Payout_StatusIsPaid() (gas: 227127)
+[PASS] test_AC04_RecipientEqualsCaller() (gas: 381557)
+[PASS] test_AC04_Revert_ClaimRefundAfterPayout() (gas: 251804)
+[PASS] test_AC04_Revert_ContributeAfterPayout() (gas: 260522)
+[PASS] test_AC04_Revert_PayoutAlreadyPaid() (gas: 256309)
+[PASS] test_AC04_Revert_PayoutEarly_Active() (gas: 50258)
+[PASS] test_AC04_Revert_PayoutOnInvalidPool() (gas: 37024)
+[PASS] test_AC04_Revert_SecondPayoutAfterPayout() (gas: 251300)
+Suite result: ok. 20 passed; 0 failed; 0 skipped; finished in 3.13ms (1.74ms CPU time)
+
+Ran 19 tests for contracts/test/HuiPotGoalPool.AC0506.t.sol:HuiPotGoalPool_AC0506
+[PASS] test_AC05_ClaimRefund_EmitsRefunded() (gas: 318018)
+[PASS] test_AC05_ClaimRefund_FullPrincipal() (gas: 324110)
+[PASS] test_AC05_FinalRefund_MovesToClosed() (gas: 236293)
+[PASS] test_AC05_GetClaimable_ReturnsCorrectAmount() (gas: 151976)
+[PASS] test_AC05_GetClaimable_ZeroAfterClaim() (gas: 236395)
+[PASS] test_AC05_MultiContributor_EachClaimsIndependently() (gas: 386482)
+[PASS] test_AC05_Revert_ClaimOnInvalidPool() (gas: 39421)
+[PASS] test_AC05_Revert_NoClaimAfterGoalMet() (gas: 166422)
+[PASS] test_AC05_Revert_NoClaimBeforeExpiry() (gas: 135183)
+[PASS] test_AC05_Revert_OtherWalletCannotClaim() (gas: 271958)
+[PASS] test_AC05_Revert_RepeatedClaim() (gas: 361099)
+[PASS] test_AC05_ZeroDepositPool_AlreadyClosed_NoTx() (gas: 55673)
+[PASS] test_AC06_AccountingInvariants_AcrossMultiplePools() (gas: 754775)
+[PASS] test_AC06_ContractBalanceMatchesDeposits() (gas: 166670)
+[PASS] test_AC06_DirectETHFallback_Reverts() (gas: 36092)
+[PASS] test_AC06_DirectETHTransfer_Reverts() (gas: 14993)
+[PASS] test_AC06_Invariant_LiabilityNeverNegative() (gas: 317577)
+[PASS] test_AC06_PoolsAreIsolated_ContributionsNotShared() (gas: 414144)
+[PASS] test_AC06_PoolsIsolated_FillingOneDoesNotAffectOther() (gas: 342256)
+Suite result: ok. 19 passed; 0 failed; 0 skipped; finished in 3.20ms (2.06ms CPU time)
+
+Ran 5 tests for contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol:HuiPotGoalPool_Fuzz
+[PASS] testFuzz_Contribute_NonQuantumReverts(uint256) (runs: 256, μ: 246349, ~: 246349)
+[PASS] testFuzz_Contribute_ValidQuantumAmount(uint256) (runs: 256, μ: 300250, ~: 300325)
+[PASS] testFuzz_CreatePool_ValidParams(uint256,uint256) (runs: 256, μ: 201123, ~: 201260)
+[PASS] testFuzz_FillPool_ExactTarget(uint256) (runs: 256, μ: 335238, ~: 335504)
+[PASS] testFuzz_RefundRecoversFull(uint256) (runs: 256, μ: 384410, ~: 384667)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 12.93s (165.80ms CPU time)
+
+Ran 4 tests for contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol:HuiPotGoalPool_Invariant
+[PASS] invariant_ContractBalance_EqualsLiability() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25668 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25681 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25553 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25784 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25314 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_PaidIsZeroOrTarget() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25668 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25681 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25553 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25784 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25314 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_PayoutAtMostOnce() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25668 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25681 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25553 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25784 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25314 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_RefundedNeverExceedsContributed() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25668 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25681 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25553 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25784 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25314 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 12.93s (40.26s CPU time)
+
+╭------------------------------------------------------+-----------------+--------+--------+--------+---------╮
+| contracts/HuiPotGoalPool.sol:HuiPotGoalPool Contract |                 |        |        |        |         |
++=============================================================================================================+
+| Deployment Cost                                      | Deployment Size |        |        |        |         |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+|                                               969840 |            4198 |        |        |        |         |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+|                                                      |                 |        |        |        |         |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| Function Name                                        | Min             | Avg    | Median | Max    | # Calls |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| claimRefund                                          |           28850 |  84824 |  90791 |  90791 |    1622 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| contribute                                           |           28898 |  58811 |  45754 |  81504 |    5036 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| createPool                                           |           22789 | 182497 | 184141 | 390298 |    1397 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| fallback                                             |           21309 |  21309 |  21309 |  21309 |       1 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| getClaimable                                         |           13469 |  18021 |  18024 |  18024 |    2176 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| getContribution                                      |            4940 |   4940 |   4940 |   4940 |     271 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| getPool                                              |             365 |  23556 |  23562 |  23562 |    8167 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| getRefunded                                          |            4899 |   4899 |   4899 |   4899 |       3 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| getStatus                                            |             413 |  12577 |  13428 |  13428 |  412625 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| payout                                               |           28849 |  89304 |  91787 | 101314 |     112 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| poolCount                                            |             367 |   2361 |   2367 |   2367 |    1384 |
+|------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| receive                                              |               0 |      0 |      0 |      0 |       1 |
+╰------------------------------------------------------+-----------------+--------+--------+--------+---------╯
+
+╭---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------╮
+| contracts/test/HuiPotGoalPool.AC07.t.sol:ReentrantClaimRecipient Contract |                 |        |        |        |         |
++==================================================================================================================================+
+| Deployment Cost                                                           | Deployment Size |        |        |        |         |
+|---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------|
+|                                                                    233419 |             886 |        |        |        |         |
+|---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------|
+|                                                                           |                 |        |        |        |         |
+|---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| Function Name                                                             | Min             | Avg    | Median | Max    | # Calls |
+|---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| claimRefund                                                               |          122359 | 122359 | 122359 | 122359 |       1 |
+|---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| contribute                                                                |           94089 |  94089 |  94089 |  94089 |       1 |
+|---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------|
+| setPoolId                                                                 |           43558 |  43558 |  43558 |  43558 |       1 |
+╰---------------------------------------------------------------------------+-----------------+--------+--------+--------+---------╯
+
+╭----------------------------------------------------------------------------+-----------------+-------+--------+-------+---------╮
+| contracts/test/HuiPotGoalPool.AC07.t.sol:ReentrantPayoutRecipient Contract |                 |       |        |       |         |
++=================================================================================================================================+
+| Deployment Cost                                                            | Deployment Size |       |        |       |         |
+|----------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+|                                                                     177638 |             628 |       |        |       |         |
+|----------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+|                                                                            |                 |       |        |       |         |
+|----------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+| Function Name                                                              | Min             | Avg   | Median | Max   | # Calls |
+|----------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+| setPoolId                                                                  |           43558 | 43558 |  43558 | 43558 |       1 |
+╰----------------------------------------------------------------------------+-----------------+-------+--------+-------+---------╯
+
+╭------------------------------------------------------------------------+-----------------+-------+--------+-------+---------╮
+| contracts/test/HuiPotGoalPool.AC07.t.sol:RejectingContributor Contract |                 |       |        |       |         |
++=============================================================================================================================+
+| Deployment Cost                                                        | Deployment Size |       |        |       |         |
+|------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+|                                                                 191682 |             693 |       |        |       |         |
+|------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+|                                                                        |                 |       |        |       |         |
+|------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+| Function Name                                                          | Min             | Avg   | Median | Max   | # Calls |
+|------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+| claimRefund                                                            |           97106 | 97106 |  97106 | 97106 |       1 |
+|------------------------------------------------------------------------+-----------------+-------+--------+-------+---------|
+| contribute                                                             |           92081 | 92081 |  92081 | 92081 |       1 |
+╰------------------------------------------------------------------------+-----------------+-------+--------+-------+---------╯
+
+╭------------------------------------------------------------------------+-----------------+-------+--------+--------+---------╮
+| contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol:PoolHandler Contract |                 |       |        |        |         |
++==============================================================================================================================+
+| Deployment Cost                                                        | Deployment Size |       |        |        |         |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+|                                                                1905277 |            8754 |       |        |        |         |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+|                                                                        |                 |       |        |        |         |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| Function Name                                                          | Min             | Avg   | Median | Max    | # Calls |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| claimRefundAlice                                                       |           12139 | 20948 |  20744 | 175972 |  103072 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| claimRefundBob                                                         |            9682 | 20929 |  20787 | 176015 |  103068 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| contribute                                                             |           12397 | 25861 |  21002 | 206064 |  102612 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| ghostTotalDeposited                                                    |            2383 |  2383 |   2383 |   2383 |       1 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| ghostTotalPaid                                                         |            2317 |  2317 |   2317 |   2317 |       3 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| ghostTotalRefunded                                                     |            2360 |  2360 |   2360 |   2360 |       1 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| payout                                                                 |           12226 | 20098 |  20831 | 142583 |  103596 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| pid                                                                    |            2404 |  2404 |   2404 |   2404 |       2 |
+|------------------------------------------------------------------------+-----------------+-------+--------+--------+---------|
+| warpForward                                                            |            3433 |  3831 |   4118 |   4118 |  101652 |
+╰------------------------------------------------------------------------+-----------------+-------+--------+--------+---------╯
+
+
+Ran 8 test suites in 14.23s (25.88s CPU time): 112 tests passed, 0 failed, 0 skipped (112 total tests)

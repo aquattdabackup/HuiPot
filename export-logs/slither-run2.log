@@ -1,0 +1,20 @@
+
+Detector: timestamp
+HuiPotGoalPool.createPool(address,uint256,uint256,string,string) (contracts/HuiPotGoalPool.sol#62-99) uses timestamp for comparisons
+	Dangerous comparisons:
+	- deadline <= block.timestamp || deadline > block.timestamp + MAX_DEADLINE_WINDOW (contracts/HuiPotGoalPool.sol#75)
+HuiPotGoalPool._status(HuiPotGoalPool.Pool) (contracts/HuiPotGoalPool.sol#247-261) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < pool.deadline (contracts/HuiPotGoalPool.sol#254)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+
+Detector: low-level-calls
+Low level call in HuiPotGoalPool.payout(uint256) (contracts/HuiPotGoalPool.sol#128-144):
+	- (ok,None) = pool.recipient.call{value: amount}() (contracts/HuiPotGoalPool.sol#138)
+Low level call in HuiPotGoalPool.claimRefund(uint256) (contracts/HuiPotGoalPool.sol#146-170):
+	- (ok,None) = msg.sender.call{value: claimable}() (contracts/HuiPotGoalPool.sol#164)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+. analyzed (3 contracts with 102 detectors), 4 result(s) found
+'forge clean' running (wd: /home/user/app)
+'forge config --json' running
+'forge build --build-info --deny never --skip ./contracts/test/** ./contracts/script/** --force' running (wd: /home/user/app)
