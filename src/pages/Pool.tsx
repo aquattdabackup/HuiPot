@@ -21,13 +21,19 @@ export function Pool() {
   const wrongChain = isConnected && chainId !== TARGET_CHAIN_ID
 
   // R4: guard BigInt conversion — poolId from the URL may be non-numeric (e.g. /pools/abc)
+  // Also reject values above uint256 max to avoid ABI encoding errors.
+  const UINT256_MAX = (1n << 256n) - 1n
   const poolIdBig = (() => {
     if (!poolId) return 0n
     if (!/^\d+$/.test(poolId)) return null  // signal: invalid route
-    try { return BigInt(poolId) } catch { return null }
+    try {
+      const v = BigInt(poolId)
+      if (v > UINT256_MAX) return null  // out of uint256 range
+      return v
+    } catch { return null }
   })()
 
-  // Valid bigint pool ID (null = non-numeric route like /pools/abc)
+  // Valid bigint pool ID (null = non-numeric or out-of-range route)
   const validPoolId = poolIdBig !== null && poolIdBig > 0n
 
   // Pool data — R5: refetchInterval keeps state fresh on deadline expiry and external wallet actions
@@ -116,14 +122,17 @@ export function Pool() {
     }
   }, [contribSuccess, payoutSuccess, refundSuccess])
 
-  // R3: Reset local form state when the connected account changes so that
-  // a prior wallet's success/error state does not affect a newly connected wallet.
+  // R3: Track wallet address for keying action panels. When the address changes,
+  // the action panel subtree remounts — this resets useWriteContract + useWaitForTransactionReceipt
+  // state (including isSuccess/hash) so that wallet A's success state does not persist for wallet B.
+  const [actionKey, setActionKey] = useState(() => address ?? 'disconnected')
   const prevAddressRef = useRef(address)
   useEffect(() => {
     if (prevAddressRef.current !== address) {
       prevAddressRef.current = address
       setAmountStr('')
       setAmountError('')
+      setActionKey(address ?? 'disconnected')
     }
   }, [address])
 
@@ -331,8 +340,8 @@ export function Pool() {
           <CommitmentNotice />
         </div>
 
-        {/* Right: action panel */}
-        <div className="space-y-4">
+        {/* Right: action panel — keyed by wallet address so wagmi write/receipt state resets on wallet change */}
+        <div key={actionKey} className="space-y-4">
           {!isConnected && (
             <div
               className="rounded-2xl p-5"

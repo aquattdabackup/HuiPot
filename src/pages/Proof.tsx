@@ -42,6 +42,7 @@ interface VerifyResult {
   arcTransferAmount: string | null
   arcTransferTo: string | null
   arcTransferToMatchesRecipient: boolean | null
+  arcTransferAmountMatchesEvent: boolean | null
   overallValid: boolean
   notes: string[]
 }
@@ -104,7 +105,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
       eventFound: null, amountInLog: null, recipientInLog: null,
       recipientMatchesPool: null,
       arcTransferFound: false, arcTransferAmount: null, arcTransferTo: null,
-      arcTransferToMatchesRecipient: null,
+      arcTransferToMatchesRecipient: null, arcTransferAmountMatchesEvent: null,
       overallValid: false, notes,
     }
   }
@@ -166,44 +167,84 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     notes.push('No PaidOut, Refunded, or Contributed event found from this contract in this transaction.')
   }
 
-  // Look for Arc system Transfer log indicating native USDC movement
-  const arcLogs = receipt.logs.filter(
-    (l) => l.address.toLowerCase() === ARC_SYSTEM_EMITTER.toLowerCase()
-  )
-  // Arc Transfer(address indexed from, address indexed to, uint256 value) — topic[0] = Transfer sig
+  // Look for Arc system Transfer log indicating native USDC movement.
+  // The Transfer MUST be FROM the contract (topics[1] = from address) so that an unrelated
+  // Transfer in the same tx (e.g. a fee paid by the user) does not satisfy the check.
+  // Arc Transfer(address indexed from, address indexed to, uint256 value)
   // keccak256("Transfer(address,address,uint256)") = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
   const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-  const arcTransferLog = arcLogs.find((l) => l.topics[0] === TRANSFER_TOPIC)
+  const arcLogs = receipt.logs.filter(
+    (l) =>
+      l.address.toLowerCase() === ARC_SYSTEM_EMITTER.toLowerCase() &&
+      l.topics[0] === TRANSFER_TOPIC &&
+      // topics[1] = from (indexed address) — must be the HuiPot contract
+      ('0x' + l.topics[1].slice(-40)).toLowerCase() === HUIPOT_ADDRESS.toLowerCase()
+  )
 
   let arcTransferFound = false
   let arcTransferAmount: string | null = null
   let arcTransferTo: string | null = null
   let arcTransferToMatchesRecipient: boolean | null = null
+  let arcTransferAmountMatchesEvent: boolean | null = null
 
-  if (arcTransferLog) {
+  if (arcLogs.length > 0) {
+    // For PaidOut: find the Transfer whose destination matches the event recipient.
+    // For Refunded/Contributed: find the Transfer whose destination matches the log contributor.
+    const targetAddr = recipientInLog ?? null
+    const matchedLog = targetAddr
+      ? arcLogs.find((l) => ('0x' + l.topics[2].slice(-40)).toLowerCase() === targetAddr.toLowerCase())
+        ?? arcLogs[0]
+      : arcLogs[0]
+
     arcTransferFound = true
-    arcTransferTo = '0x' + arcTransferLog.topics[2].slice(-40)
-    arcTransferAmount = BigInt(arcTransferLog.data).toString()
+    arcTransferTo = '0x' + matchedLog.topics[2].slice(-40)
+    arcTransferAmount = BigInt(matchedLog.data).toString()
+
     if (eventFound === 'PaidOut' && recipientInLog) {
       arcTransferToMatchesRecipient = arcTransferTo.toLowerCase() === recipientInLog.toLowerCase()
       if (!arcTransferToMatchesRecipient) notes.push(`Arc Transfer destination (${arcTransferTo}) does not match PaidOut recipient (${recipientInLog}).`)
+    } else if (eventFound === 'Refunded' && recipientInLog) {
+      // For refunds, the Transfer destination should match the contributor address
+      arcTransferToMatchesRecipient = arcTransferTo.toLowerCase() === recipientInLog.toLowerCase()
+      if (!arcTransferToMatchesRecipient) notes.push(`Arc Transfer destination (${arcTransferTo}) does not match refund contributor (${recipientInLog}).`)
+    }
+
+    // Check amount in Arc Transfer matches amount in event log
+    if (amountInLog !== null) {
+      arcTransferAmountMatchesEvent = arcTransferAmount === amountInLog
+      if (!arcTransferAmountMatchesEvent) {
+        notes.push(`Arc Transfer amount (${arcTransferAmount}) does not match event amount (${amountInLog}).`)
+      }
     }
   } else {
-    notes.push('No Arc system Transfer event found. This is expected if this is a refund tx (transfer goes to contributor) or if the Arc Transfer emitter address differs. Verify independently on ArcScan.')
+    if (eventFound === 'PaidOut') {
+      notes.push('No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.')
+    } else if (eventFound === 'Refunded') {
+      notes.push('No Arc system Transfer from this contract found. A refund should produce a Transfer from the contract to the contributor. Verify independently on ArcScan.')
+    } else {
+      notes.push('No Arc system Transfer from this contract found. This is expected for a contribution (value moves into the contract, not out). Verify independently on ArcScan.')
+    }
   }
 
   if (amountInLog && eventFound === 'PaidOut') {
     notes.push(`Payout amount in event: ${BigInt(amountInLog).toString()} native base units (18 dec).`)
   }
 
-  // R2: overallValid requires ALL applicable checks to pass.
-  // Missing movement evidence is PARTIAL (overallValid=false), never an all-checks success.
-  // For PaidOut: receipt ok + contract target + event + pool id + recipient + movement destination + movement amount.
-  // For Refunded: receipt ok + contract target + event + pool id. (movement goes to contributor address, not checked here.)
-  const amountMatches = amountInLog !== null  // amount presence confirmed; caller can compare to expected
-  const movementRequired = eventFound === 'PaidOut'
+  // R2: overallValid requires ALL applicable dimensions bound.
+  // Missing movement evidence is PARTIAL (overallValid=false), never all-checks success.
+  //
+  // PaidOut: receipt ok + contract target + event + pool id + recipient + amount present +
+  //          movement FROM contract + movement destination matches recipient + movement amount matches event
+  // Refunded: receipt ok + contract target + event + pool id + amount present +
+  //           movement FROM contract + movement destination matches contributor + movement amount matches event
+  // Contributed: receipt ok + contract target + event + pool id + amount present
+  //              (movement is INTO the contract, no outbound Transfer from contract expected)
+  const amountPresent = amountInLog !== null
+  const movementRequired = eventFound === 'PaidOut' || eventFound === 'Refunded'
   const movementOk = !movementRequired ||
-    (arcTransferFound && arcTransferToMatchesRecipient === true)
+    (arcTransferFound &&
+      arcTransferToMatchesRecipient === true &&
+      arcTransferAmountMatchesEvent === true)
 
   const overallValid =
     receiptStatusOk &&
@@ -211,7 +252,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     eventFound !== null &&
     poolIdMatches === true &&
     (eventFound !== 'PaidOut' || recipientMatchesPool === true) &&
-    amountMatches &&
+    amountPresent &&
     movementOk
 
   return {
@@ -220,6 +261,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     poolIdInLog, poolIdMatches,
     eventFound, amountInLog, recipientInLog, recipientMatchesPool,
     arcTransferFound, arcTransferAmount, arcTransferTo, arcTransferToMatchesRecipient,
+    arcTransferAmountMatchesEvent,
     overallValid, notes,
   }
 }
@@ -228,10 +270,16 @@ export function Proof() {
   const { poolId } = useParams<{ poolId: string }>()
 
   // R4: guard BigInt conversion — poolId may be non-numeric (e.g. /pools/abc/proof)
+  // Also reject values above uint256 max to avoid ABI encoding errors.
+  const UINT256_MAX = (1n << 256n) - 1n
   const poolIdBig = (() => {
     if (!poolId) return 0n
     if (!/^\d+$/.test(poolId)) return null
-    try { return BigInt(poolId) } catch { return null }
+    try {
+      const v = BigInt(poolId)
+      if (v > UINT256_MAX) return null
+      return v
+    } catch { return null }
   })()
   const validPoolId = poolIdBig !== null && poolIdBig > 0n
 
@@ -520,6 +568,7 @@ export function Proof() {
                     <EvidenceRow
                       label="Transfer amount"
                       value={r.arcTransferAmount ? `${formatNativeAmount(BigInt(r.arcTransferAmount))} USDC (native)` : '–'}
+                      verified={r.arcTransferAmountMatchesEvent ?? null}
                     />
                   </>
                 )}

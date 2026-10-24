@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, Vm} from "forge-std/Test.sol";
 import {HuiPotGoalPool} from "../HuiPotGoalPool.sol";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -325,23 +325,61 @@ contract HuiPotGoalPool_R6b is Test {
         vm.prank(bob);
         pool.contribute{value: bobContrib}(pid);
 
-        // Attempt forced ETH send — must revert with DirectNativeTransferNotAllowed
+        // ── Ordinary direct transfer is rejected ────────────────────────────
         address attacker = makeAddr("r6b_attacker");
         vm.deal(attacker, 1 ether);
         vm.prank(attacker);
         vm.expectRevert(HuiPotGoalPool.DirectNativeTransferNotAllowed.selector);
         (bool sent,) = address(pool).call{value: 1 ether}("");
-        // expectRevert consumed the revert; sent is irrelevant here
-        // Suppress unused warning:
-        sent;
+        sent; // suppressed — expectRevert consumed the revert
 
-        // Balance must equal the tracked liabilities exactly
-        uint256 expectedBalance = aliceContrib + bobContrib;
-        assertEq(address(pool).balance, expectedBalance,
-            "balance should equal sum of unrefunded contributions");
+        // ── Forced surplus via vm.deal (simulates SELFDESTRUCT injection) ──
+        // vm.deal sets the raw EVM balance directly, bypassing receive()/fallback().
+        // This is the standard Foundry mechanism to test contracts under a surplus
+        // balance (equivalent to what SELFDESTRUCT can do on ordinary EVM).
+        // The injected amount creates a true surplus: balance > tracked liabilities.
+        uint256 surplus = 1 * ONE_USDC;
+        uint256 normalBalance = aliceContrib + bobContrib;
+        vm.deal(address(pool), normalBalance + surplus);
 
-        // No extra ETH entered the contract
-        assertEq(address(pool).balance, aliceContrib + bobContrib);
+        // Invariant: balance >= liabilities must hold even with surplus
+        uint256 liabilities = aliceContrib + bobContrib; // nothing refunded or paid out yet
+        assertGe(address(pool).balance, liabilities,
+            "balance must be >= liabilities even with forced surplus");
+
+        // Payout and refunds must still function correctly under surplus:
+        // The contract tracks accounting via storage, not raw balance,
+        // so the surplus neither blocks payouts nor inflates them.
+
+        // Warp past deadline → REFUNDING
+        vm.warp(block.timestamp + 7 days + 1);
+
+        uint256 aliceClaimable = pool.getClaimable(pid, alice);
+        uint256 bobClaimable   = pool.getClaimable(pid, bob);
+
+        // Claimables must match original contributions (not inflated by surplus)
+        assertEq(aliceClaimable, aliceContrib,
+            "alice claimable must equal her contribution, not inflated by surplus");
+        assertEq(bobClaimable, bobContrib,
+            "bob claimable must equal his contribution, not inflated by surplus");
+
+        // Claim both refunds — must succeed and transfer exact contribution amounts
+        uint256 aliceBefore = alice.balance;
+        vm.prank(alice);
+        pool.claimRefund(pid);
+        assertEq(alice.balance - aliceBefore, aliceContrib,
+            "alice must receive exactly her contribution, not surplus");
+
+        uint256 bobBefore = bob.balance;
+        vm.prank(bob);
+        pool.claimRefund(pid);
+        assertEq(bob.balance - bobBefore, bobContrib,
+            "bob must receive exactly his contribution, not surplus");
+
+        // After both refunds, remaining balance is exactly the surplus
+        // (the contract has no obligation to return untracked ETH)
+        assertEq(address(pool).balance, surplus,
+            "remaining balance after all refunds should equal the surplus");
     }
 }
 
@@ -523,9 +561,20 @@ contract HuiPotGoalPool_R6e is Test {
 
         uint256 balBefore = address(pool).balance;
 
-        // First payout attempt — must revert with NativeTransferFailed
+        // First payout attempt — record logs, must revert with NativeTransferFailed
+        vm.recordLogs();
         vm.expectRevert(HuiPotGoalPool.NativeTransferFailed.selector);
         pool.payout(pid);
+
+        // No PaidOut event must have been emitted
+        Vm.Log[] memory logs1 = vm.getRecordedLogs();
+        bytes32 paidOutTopic = keccak256("PaidOut(uint256,address,address,uint256)");
+        for (uint256 i = 0; i < logs1.length; i++) {
+            if (logs1[i].topics.length > 0) {
+                assertNotEq(logs1[i].topics[0], paidOutTopic,
+                    "PaidOut event must NOT be emitted on failed payout");
+            }
+        }
 
         // Full rollback: paidOut must be false, status FUNDED, balance unchanged
         (,,,,,,,, bool paidOut1) = pool.getPool(pid);
@@ -533,9 +582,18 @@ contract HuiPotGoalPool_R6e is Test {
         assertEq(pool.getStatus(pid), STATUS_FUNDED, "status must be FUNDED after failed payout");
         assertEq(address(pool).balance, balBefore, "balance must be unchanged after failed payout");
 
-        // Second payout attempt — same idempotent result
+        // Second payout attempt — same idempotent result, still no PaidOut log
+        vm.recordLogs();
         vm.expectRevert(HuiPotGoalPool.NativeTransferFailed.selector);
         pool.payout(pid);
+
+        Vm.Log[] memory logs2 = vm.getRecordedLogs();
+        for (uint256 i = 0; i < logs2.length; i++) {
+            if (logs2[i].topics.length > 0) {
+                assertNotEq(logs2[i].topics[0], paidOutTopic,
+                    "PaidOut event must NOT be emitted on second failed payout");
+            }
+        }
 
         (,,,,,,,, bool paidOut2) = pool.getPool(pid);
         assertFalse(paidOut2, "paidOut must still be false after second failed payout");
@@ -588,9 +646,20 @@ contract HuiPotGoalPool_R6f is Test {
 
         (,,,,,, uint256 tcBefore, uint256 trBefore,) = pool.getPool(pid);
 
-        // Attempt claimRefund — must revert (receiver always rejects)
+        // Attempt claimRefund — record logs, must revert (receiver always rejects)
+        vm.recordLogs();
         vm.expectRevert(HuiPotGoalPool.NativeTransferFailed.selector);
         rejectCtrib.claimRefund(pid);
+
+        // No Refunded event must have been emitted
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        bytes32 refundedTopic = keccak256("Refunded(uint256,address,uint256)");
+        for (uint256 i = 0; i < logs.length; i++) {
+            if (logs[i].topics.length > 0) {
+                assertNotEq(logs[i].topics[0], refundedTopic,
+                    "Refunded event must NOT be emitted on failed claimRefund");
+            }
+        }
 
         // Full rollback assertions
         (,,,,,, uint256 tcAfter, uint256 trAfter,) = pool.getPool(pid);

@@ -1,0 +1,27 @@
+$ vitest run --reporter=verbose
+
+ RUN  v2.1.9 /home/user/app
+
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "0,4" — comma must not be silently stripped to produce 4 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "1e3" — scientific notation must not be silently stripped to produce 13 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "-0.4" — minus sign must not be silently stripped to produce 0.4 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "+1.5" — plus sign
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "  " (whitespace-only) returns 0n — caller rejects zero
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "" (empty string) returns 0n — caller rejects zero
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "1.2.3" — multiple dots
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects ".5" — leading dot (no integer part)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "0.0000001" — 7 decimal places (max is 6)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.000001" — exactly 6 decimal places → 1 quantum (10^12 native)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.000000" — 6 trailing zeros → 0n
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "1" — 1 USDC → 10^18 native
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.4" → 0.4 USDC in native units
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "1.5" → 1.5 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "100" → 100 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects uint256-overflowing value
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "  1.5  " — trims whitespace
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  08:03:32
+   Duration  1.26s (transform 49ms, setup 0ms, collect 1.01s, tests 6ms, environment 0ms, prepare 81ms)
+

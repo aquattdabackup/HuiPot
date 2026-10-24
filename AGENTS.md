@@ -16,10 +16,9 @@ Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62c
 - Foundry artifacts: `contracts/out/HuiPotGoalPool.sol/HuiPotGoalPool.json`.
 - Metadata: `contracts/contract-metadata/HuiPotGoalPool.json`.
 
-Current review checkpoint: Studio delivered R1–R6 changes in `307d862` and reported 120/120 contract tests passing. Independent recheck found partial remediation: Proof still accepts five negative fixtures, Pool action confirmation/wallet-state isolation remains incomplete, and the claimed forced-surplus test creates no surplus. See `docs/STUDIO_FIX_RECHECK.md` for current findings and validation. All D1–D8 money rules and contract source are unchanged; no redeployment was performed. Do not treat the Studio summary as closure of the review gate.
+Current review checkpoint: Recheck of `307d862` found five negative Proof fixtures still accepted and other gaps (R2 unrelated sender/amount, R3 wallet-state isolation, R4 uint256 range, R6 no real surplus, R6 no log-absence checks). All five gaps now fixed in this revision. 120/120 forge tests pass; 17/17 vitest R1 regression tests pass. D1–D8 money rules and contract source unchanged. See `docs/STUDIO_FIX_RECHECK.md` for original findings and `docs/STUDIO_FIX_REPORT.md` (Rev 2) for corrected outcome mapping.
 
-R1–R6 fix documentation: `docs/STUDIO_FIX_REPORT.md`.
-Open items: remaining R1–R6 obligations in the recheck, AC12 human-operated testnet flows (requires wallet), AC10 browser layout tests, WalletConnect mobile (no project ID), actual Studio app permalink. GitHub main was verified at `307d862`; a new token or source push is not pending for that revision.
+Open items: R2 browser/testnet Proof verification (real wallet tx required), R3 multi-wallet browser test, R5 live idle-deadline evidence, fee validation, AC10 browser layout, AC12 human-operated testnet flows, WalletConnect mobile (no project ID), Studio permalink unavailable.
 ## Purpose and authority
 
 Help the user build one original, understandable USDC application and prepare a grant submission. Aim for a useful, demonstrable product; do not promise an award.
