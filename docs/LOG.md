@@ -1,5 +1,15 @@
 # Project log
 
+## October 24, 2026 — independent recheck of Studio R1-R6 output
+
+- Read the user's pasted Studio response and inspected actual local source `307d8629adb508429ab2f7da27a5561a0441f9fd`; working tree was initially clean. `git ls-remote origin refs/heads/main` outside the network sandbox returned the same SHA. The pasted token/push request is obsolete; no credential, login, installation, or Studio generation was requested.
+- Preserved the older evidence and created updated Codex-only review instruments for the current source. Nine synthetic receipt cases include five negative fixtures still receiving a positive Proof verdict. Six amount cases and four render probes confirm the addressed original parsing/crash examples. No browser, RPC, or wallet transaction occurs in these instruments.
+- Archived the exact source commit into an ignored review snapshot and reused unchanged locked dependencies. Independently ran Forge 1.7.1 / solc 0.8.28 with seed 1: 120 passed, zero failed/skipped across 14 suites. Build (`tsc -b && vite build`) and lint passed; bundle warning remains. Raw logs are under `docs/evidence/recheck-307d862-*`.
+- Found incomplete R2 action/amount/sender/movement verification, incomplete R3 action success and wallet-state reset, remaining route range/error/freshness gaps, and R6 forced-surplus/full-rollback coverage overclaims. Studio cites an application parser regression file that is absent. The Studio report also mislabels SPEC AC11.
+- Contract source has no diff against the previous baseline; no source or contract-test fixes were written by Codex, no new deployment was made, and no fresh deployed-bytecode equality claim is made.
+- Added `docs/STUDIO_FIX_RECHECK.md` with exact findings, evidence, validation commands, and a prepared repository-based continuation prompt. Annotated Studio's report and corrected current status in AGENTS/README/project memory. Actual Studio app permalink, AC10 browser layout, and AC12 human-operated testnet flows remain open.
+- The continuation prompt has not been submitted by Codex. Keep the application review gate open; passing 120 contract tests does not prove Proof UI correctness or missing test coverage. Repository delivery of this review is authorized; no mainnet, hosting, or submission action is authorized by this review.
+
 ## October 24, 2026 — document review and Phase 0
 
 ### User direction and scope

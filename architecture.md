@@ -3,8 +3,8 @@
 ## Project Overview
 - Purpose: deliver HuiPot Goal Pool, a focused Studio-built USDC application for the provisionally documented Arc microgrant program. The user selected the concept on October 24, 2026.
 - Current checkout: `C:\Users\luong\HuiPot`; older `/workspace/HuiPot` references describe a previous cloud environment.
-- Approved specification for milestone A: one non-upgradeable multi-pool native-USDC contract and four planned screens (Home, Create, Pool, Proof). Actual implementation remains pending Studio.
-- Product framework, actual contracts/ABI, application entry points, and build commands: not generated or validated. Studio chooses supported tooling within the approved specification.
+- Approved specification: one non-upgradeable multi-pool native-USDC contract and four screens (Home, Create, Pool, Proof). Studio source is delivered; independent review remains open.
+- Implementation: `contracts/HuiPotGoalPool.sol`; Vite/React/wagmi/ConnectKit frontend in `src/`; Foundry configuration at repository root. Build: `bun run build`; lint: `bun run lint`; contract tests: `forge test --summary --fuzz-seed 1`.
 
 ## Components and Evidence
 | File | Responsibility |
@@ -28,7 +28,7 @@
 - No credential values in files. Mainnet actions require separate human approval and signatures.
 
 ## External Integrations and Unknowns
-- Arc Studio browser route and repo handoff are approved. Official docs confirm GitHub export; existing-repo import/full-file reads still require actual verification. No Studio generation job/project/export/test evidence exists yet.
+- Arc Studio browser route and repo handoff are approved. Delivered source and logs are in GitHub; source/exports were independently reviewed. The real app-specific Studio permalink remains missing. See `docs/STUDIO_FIX_RECHECK.md` for current findings and evidence; do not treat test passes as app acceptance.
 - Competition live page is unverified; supplied text is the provisional planning source.
 - Public hosting and mainnet deployment of reviewed artifacts still need later validation.
 

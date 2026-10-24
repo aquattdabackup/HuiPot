@@ -1,38 +1,29 @@
-# Task On Progress
+﻿# Task On Progress
 
 ## Task
-- Title: Review the user-reported Studio preview and testnet deployment.
-- Status: transport recovered; source at Git 3f266fc independently reviewed. 112 contract tests pass, build/type check and lint pass. Six focused correctness/coverage findings keep the app gate open. See docs/INDEPENDENT_REVIEW.md and docs/STUDIO_TARGETED_FIXES.md.
-- Goal: obtain and inspect actual Studio artifacts, reconcile them with the approved specification, and identify gaps before further deployment or use.
-- Acceptance: recorded provenance, reviewed source, actual test evidence, source/deployment matching, and a clear list of remaining flow checks.
+- Title: independently recheck the Studio R1-R6 response and deliver remaining findings.
+- Status: reviewed; application gate remains open, awaiting Studio continuation.
+- Reviewed source: 307d8629adb508429ab2f7da27a5561a0441f9fd.
+- User preferences: browser-operated Studio; commit/push completed repository work; direct repository report links; no repeated token/setup request.
 
-## Findings and Files
-- Read AGENTS.md, PROMPT.md, comparison, requirements, tooling, setup/handoff, log, and project memory. User selected HuiPot Goal Pool and authorized Phase 2.
-- All three optional local skills are absent, including arc-ui-craft; used the Phase 2 fallback in PROMPT.md.
-- Preserved existing local documentation work and committed it as b2885e6. Integrated the Studio source commit 3f266fc for GitHub delivery; resolved README by preserving setup instructions and correcting completion claims. The earlier independent review ran against an unchanged snapshot of 3f266fc.
-- Browser inventory returned no enabled browsers or apps. Preserve the approved human-operated browser route; this does not block local ideation.
-- Earlier in this conversation, Windows CLI 1.2.2 and authenticated `whoami` succeeded outside the sandbox. Do not repeat installation, login, or token entry. Historical cloud 403 reports describe a different environment.
+## Evidence and Findings
+- Pasted response read; actual local source inspected. GitHub main independently matched 307d862, so Studio's token/push request is obsolete.
+- R1 malformed input and R4 reproduced render crashes repaired. Create rejects a no-event replacement receipt; contribution proof event now recognized. Pool queries poll every 12 seconds.
+- Five negative Proof fixtures still pass; R3 Pool action success and stale wallet state remain incomplete; numeric routes lack uint256 bound; R5 error/freshness checks remain open.
+- R6 adds useful multi-pool/retry tests but its forced-surplus test only rejects a normal transfer. Full event rollback evidence is missing. Claimed app parser test file is absent.
+- Corrected broad completion claims in AGENTS, README, and annotated the Studio report. Product source/test code was not changed by Codex.
 
-## Changes
-- Added SPEC.md with D1-D8 decisions, state machine, units/accounting, permissions, security review criteria, and AC01-AC13 validation matrix.
-- Added DESIGN.md for four screens and complete interaction/evidence states.
-- Added STUDIO_PROMPTS.md with exact A-D prompts, inputs/exports/evidence, and phase gates.
-- Updated selection, requirements, setup/handoff, README, architecture memory, and log without erasing prior environment history.
+## Validation
+- Archived exact commit under ignored .review/studio-307d862/snapshot; reused unchanged locked dependencies from previous snapshot.
+- Forge 1.7.1 / solc 0.8.28, seed 1: 120 passed, 0 failed, 0 skipped across 14 suites; ordinary EVM, not Arc runtime.
+- bun run build (tsc -b + Vite) and lint pass; bundle-size warning only, lint 0 warnings/errors.
+- Current-source local probes: 9 receipt scenarios, 6 amount cases, 4 render cases. Five of seven negative receipt cases remain false positives. Exit 0 means probe collection succeeded, not app acceptance.
+- Evidence and exact continuation prompt: docs/STUDIO_FIX_RECHECK.md, docs/evidence/recheck-307d862-*, docs/review-tools/*307d862*.
 
-## Verification
-- Existing GitHub repo is public with default branch main; local and remote started at the same commit, 0216732.
-- Fresh official document reads verified GitHub export, native units, system movement events, and runtime/simulation differences. Existing-repo import is not established by those sources; the start prompt checks real file access.
-- Latest validation: frozen Bun 1.3.14 dependency restore; Forge 1.7.1/solc 0.8.28 compiled the source and ran 112 tests (112 passed, zero failed/skipped) with fuzz seed 1. Production build (tsc -b and Vite) and lint passed. Browser/testnet integration is not run.
-- Local compilation exactly matches the exported full runtime and ABI; the saved onchain code matches the 4,081-byte prefix, while metadata differs. Shared Git/export files differ only in LF/CRLF. Current source is available; do not request another export to repeat the same review.
-- Documentation checks and final results are recorded in docs/LOG.md.
-
-## Remaining Steps / Handoff
-1. Direct Studio to read docs/STUDIO_TARGETED_FIXES.md and its linked reports/evidence from the latest existing GitHub source, then execute R1-R6. No app/contract code fixes are made outside Studio. Studio should deliver corrected source/tests, docs/STUDIO_FIX_REPORT.md and actual logs through the supported GitHub integration, returning the actual project URL/revision and remote commit. The user need not paste the long review report.
-2. Review/retest monetary input, Proof verdict, transaction replacements/state, render validation, block/deadline refresh, and missing multi-pool/receiver-retry tests. The real refetch ref updates every render; do not repeat the earlier unverified mount-only allegation.
-3. After corrected source review, prepare the human-operated testnet funded-payout and failed-expiry/refund flows. Browser layout, Arc-specific runtime semantics, and real wallet outcomes remain open. No new wallet action or mainnet step was approved in this review.
-- Archive SHA-256 66fa4177a65e06d1a880ec4f28c3da7a1bec91dd05472ca59e1acd07f36c507f, 266114 bytes, 63 CRC-valid files. Git revision 3f266fce3d0801a2c9df52cf535b371a33f27522. Source/ABI/runtime/test evidence lives under docs/evidence and the ignored .review directory.
-- Codex inspected actual source and logs, independently compiled/tested the contract, built/linted the app, and executed local synthetic review probes. No browser preview, testnet wallet transaction, public hosting, or Studio prompt execution by Codex is claimed.
-- Do not repeat setup or ask for tokens. Mainnet spending and public app/video publication remain separately authorized actions.
-- Persistent user preference: commit and push completed repository work at the end of each task. Repository delivery is authorized; do not ask again unless scope or circumstances require it. Keep temporary review snapshots/dependencies/credentials excluded.
+## Next Action
+1. Deliver the recheck/report and short repository link to the user for the existing Studio browser project. Prompt is prepared, not submitted by Codex.
+2. Studio completes existing R1-R6 obligations and returns source, app regressions, honest reports/logs, and remote revision; review independently again.
+3. AC10 layout and AC12 human-operated testnet flows remain open; no mainnet or public hosting action approved here.
+- Preserve existing work and historical evidence. Do not reinstall tooling, request tokens, start duplicate jobs, or write replacement product code outside Studio.
 
 Last updated: October 24, 2026 (Asia/Ho_Chi_Minh).

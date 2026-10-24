@@ -1,0 +1,9 @@
+bun.exe : $ oxlint src --deny-warnings
+At line:2 char:194
++ ... STEXITCODE; & 'C:\Users\luong\HuiPot\.review\tools\node_modules\@oven ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ oxlint src --deny-warnings:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Finished in 15ms on 15 files with 96 rules using 8 threads.
+Found 0 warnings and 0 errors.

@@ -4,7 +4,7 @@ A small group pools USDC for one shared expense. The fixed recipient can receive
 
 Built with [Arc Studio](https://studio.arc.io)
 
-**Status:** Milestones A–C complete. Contract deployed to Arc Testnet. Four-screen app running. Contracts are unaudited; this is a testnet deployment only.
+**Status:** Studio delivered the contract and four-screen application; an unaudited Arc Testnet deployment is recorded below. Independent recheck of `307d862` passed 120 contract tests, build/typecheck, and lint, but application proof/transaction-state findings remain open. Browser and testnet user flows are not independently validated. See [the fix recheck](docs/STUDIO_FIX_RECHECK.md); this is not mainnet submission proof.
 
 ## Deployed contract
 
@@ -45,7 +45,7 @@ Copy `env.example` to `.env` and fill in:
 
 | Variable | Purpose |
 | --- | --- |
-| `VITE_WALLETCONNECT_PROJECT_ID` | Required for the WalletConnect/mobile integration. The current `demo` fallback is an unresolved issue, not working mobile configuration. |
+| `VITE_WALLETCONNECT_PROJECT_ID` | Required for WalletConnect/mobile. Missing/empty values now omit that connector; mobile operation is untested. Whitespace-only configuration still needs validation. |
 | `VITE_HUIPOT_ADDRESS` | Deployed HuiPotGoalPool contract address |
 
 ### Run

@@ -16,10 +16,10 @@ Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62c
 - Foundry artifacts: `contracts/out/HuiPotGoalPool.sol/HuiPotGoalPool.json`.
 - Metadata: `contracts/contract-metadata/HuiPotGoalPool.json`.
 
-Current review checkpoint: R1–R6 fixes implemented and verified by Arc Studio. **120/120 contract tests pass** (112 original + 8 new R6 tests). Lint 0 errors, tsc 0 errors, production build clean. All D1–D8 money rules unchanged. Contract source unchanged; existing deployment `0x81a1...` still valid.
+Current review checkpoint: Studio delivered R1–R6 changes in `307d862` and reported 120/120 contract tests passing. Independent recheck found partial remediation: Proof still accepts five negative fixtures, Pool action confirmation/wallet-state isolation remains incomplete, and the claimed forced-surplus test creates no surplus. See `docs/STUDIO_FIX_RECHECK.md` for current findings and validation. All D1–D8 money rules and contract source are unchanged; no redeployment was performed. Do not treat the Studio summary as closure of the review gate.
 
 R1–R6 fix documentation: `docs/STUDIO_FIX_REPORT.md`.
-Open items: AC12 human-operated testnet flows (requires wallet), AC10 browser layout tests, WalletConnect mobile (no project ID), GitHub push pending authentication.
+Open items: remaining R1–R6 obligations in the recheck, AC12 human-operated testnet flows (requires wallet), AC10 browser layout tests, WalletConnect mobile (no project ID), actual Studio app permalink. GitHub main was verified at `307d862`; a new token or source push is not pending for that revision.
 ## Purpose and authority
 
 Help the user build one original, understandable USDC application and prepare a grant submission. Aim for a useful, demonstrable product; do not promise an award.

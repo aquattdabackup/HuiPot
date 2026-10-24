@@ -1,0 +1,102 @@
+{
+  "type": "Codex independent review probes; synthetic local receipts, no chain execution",
+  "sourceRevision": "307d8629adb508429ab2f7da27a5561a0441f9fd",
+  "proofResults": [
+    {
+      "case": "valid payout control",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "payout without native movement evidence",
+      "overallValid": false,
+      "eventFound": "PaidOut",
+      "movementFound": false,
+      "movementDestinationMatches": null
+    },
+    {
+      "case": "payout with transfer to wrong recipient",
+      "overallValid": false,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": false
+    },
+    {
+      "case": "payout with transfer from unrelated sender",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "payout with wrong native amount",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "payout event amount below expected 1 USDC target",
+      "overallValid": true,
+      "eventFound": "PaidOut",
+      "movementFound": true,
+      "movementDestinationMatches": true
+    },
+    {
+      "case": "refund without movement evidence",
+      "overallValid": true,
+      "eventFound": "Refunded",
+      "movementFound": false,
+      "movementDestinationMatches": null
+    },
+    {
+      "case": "refund with unrelated native movement",
+      "overallValid": true,
+      "eventFound": "Refunded",
+      "movementFound": true,
+      "movementDestinationMatches": null
+    },
+    {
+      "case": "valid contribution control",
+      "overallValid": true,
+      "eventFound": "Contributed",
+      "movementFound": true,
+      "movementDestinationMatches": null
+    }
+  ],
+  "amountResults": [
+    {
+      "input": "-0.4",
+      "displayed": "-0.4",
+      "error": "Error: Invalid amount format"
+    },
+    {
+      "input": "1e3",
+      "displayed": "1e3",
+      "error": "Error: Invalid amount format"
+    },
+    {
+      "input": "0,4",
+      "displayed": "0,4",
+      "error": "Error: Invalid amount format"
+    },
+    {
+      "input": "0.000001",
+      "displayed": "0.000001",
+      "parsedNative": "1000000000000",
+      "exceedsUint256": false
+    },
+    {
+      "input": "0.0000001",
+      "displayed": "0.0000001",
+      "error": "Error: Too many decimal places (max 6)"
+    },
+    {
+      "input": "1000000000000000000000000000000000000000000000000000000000000",
+      "displayed": "1000000000000000000000000000000000000000000000000000000000000",
+      "error": "Error: Amount exceeds maximum"
+    }
+  ]
+}

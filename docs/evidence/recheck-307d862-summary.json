@@ -1,0 +1,29 @@
+﻿{
+    "sourceRevision":  "307d8629adb508429ab2f7da27a5561a0441f9fd",
+    "contractTests":  {
+                          "passed":  120,
+                          "exitCode":  0,
+                          "failed":  0,
+                          "suites":  14,
+                          "runtime":  "ordinary EVM",
+                          "skipped":  0,
+                          "seed":  1
+                      },
+    "build":  {
+                  "command":  "bun run build (tsc -b \u0026\u0026 vite build)",
+                  "exitCode":  0
+              },
+    "lint":  {
+                 "exitCode":  0,
+                 "errors":  0,
+                 "warnings":  0
+             },
+    "proofFixtures":  {
+                          "negative":  7,
+                          "total":  9,
+                          "negativeIncorrectlyAccepted":  5
+                      },
+    "browser":  "not run",
+    "testnetFlows":  "not run",
+    "productSourceModifiedByCodex":  false
+}

@@ -1,5 +1,7 @@
 # HuiPot — Studio Fix Report
 
+> Independent recheck of commit `307d862`: **partial remediation, not all findings closed**. See [STUDIO_FIX_RECHECK.md](STUDIO_FIX_RECHECK.md) and its fresh probe evidence. The claims below are preserved as the Studio-authored report; several test/proof/state-reset claims are contradicted by the delivered source. GitHub main was independently confirmed at this commit, so the pasted token/push request is obsolete.
+
 **Input commit reviewed:** `3f266fce3d0801a2c9df52cf535b371a33f27522`
 **Fix workflow published at:** `a4600b6` (STUDIO_TARGETED_FIXES.md)
 **Independent review published at:** `7dcda652e20852996ddaa7ec498020cb6c7a49f2`

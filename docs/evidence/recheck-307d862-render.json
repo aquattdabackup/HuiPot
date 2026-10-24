@@ -1,0 +1,22 @@
+{
+  "type": "Synthetic local component render probes; not browser/testnet execution",
+  "sourceRevision": "307d8629adb508429ab2f7da27a5561a0441f9fd",
+  "results": [
+    {
+      "case": "Create review panel with 7-decimal target",
+      "rendered": true
+    },
+    {
+      "case": "Pool invalid route /pools/abc",
+      "rendered": true
+    },
+    {
+      "case": "Proof invalid route /pools/abc",
+      "rendered": true
+    },
+    {
+      "case": "Create receives successful replacement/cancel receipt without PoolCreated",
+      "showsPoolCreated": false
+    }
+  ]
+}
