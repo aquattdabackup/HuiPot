@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 import { Menu, X } from 'lucide-react'
 import { arcTestnet } from '../config'
+import { RingMark } from '../pages/Landing'
 
 export function AppHeader() {
   const { chainId } = useAccount()
@@ -52,12 +53,7 @@ export function AppHeader() {
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-2 no-underline">
-            <div
-              className="display flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold"
-              style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
-            >
-              HP
-            </div>
+            <RingMark size={30} />
             <span className="display text-lg font-semibold" style={{ color: 'var(--ink)' }}>
               HuiPot
             </span>
@@ -81,16 +77,19 @@ export function AppHeader() {
             </Link>
           </div>
 
-          {/* Mobile menu toggle */}
-          <button
-            className="md:hidden rounded-lg p-2"
-            style={{ color: 'var(--muted)' }}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {/* Mobile: Arc badge always visible + menu toggle */}
+          <div className="md:hidden flex items-center gap-2">
+            {networkBadge}
+            <button
+              className="rounded-lg p-2"
+              style={{ color: 'var(--muted)' }}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu */}
@@ -103,8 +102,7 @@ export function AppHeader() {
             <a href="#how-it-works" className="block py-2 text-sm" style={{ color: 'var(--ink)' }} onClick={() => setMenuOpen(false)}>How it works</a>
             <Link to="/pools" className="block py-2 text-sm" style={{ color: 'var(--ink)' }}>Explore pools</Link>
             <a href="#for-judges" className="block py-2 text-sm" style={{ color: 'var(--ink)' }} onClick={() => setMenuOpen(false)}>For judges</a>
-            <div className="flex items-center gap-3 pt-2">
-              {networkBadge}
+            <div className="pt-2">
               <ConnectKitButton />
             </div>
           </div>
@@ -125,12 +123,7 @@ export function AppHeader() {
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2 no-underline">
-          <div
-            className="display flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold"
-            style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
-          >
-            HP
-          </div>
+          <RingMark size={26} />
           <span className="display text-base font-semibold" style={{ color: 'var(--ink)' }}>
             HuiPot
           </span>

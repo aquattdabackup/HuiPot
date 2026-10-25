@@ -37,6 +37,10 @@
   --error-bg:        #351C22;
   --error-text:      #FFB4B4;
 
+  /* Font family vars for inline style usage */
+  --font-display:    'Space Grotesk', system-ui, sans-serif;
+  --font-mono:       'JetBrains Mono', Menlo, 'Courier New', monospace;
+
   /* Legacy aliases used in existing components */
   --bg:              #0B100E;
   --bg-gradient:     #0B100E;
