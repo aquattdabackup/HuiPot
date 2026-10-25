@@ -1,5 +1,7 @@
 # UI Redesign Report
 
+> Current review note, October 25, 2026: this report records Studio's earlier redesign claims. Subsequent source and independent execution at `37ee96c` are assessed in [FUNCTIONAL_READINESS.md](FUNCTIONAL_READINESS.md). In particular, UI05/UI06 and a green unit suite do not establish real review steps or complete receipt/proof behavior. Preserve the original report below as history, not current acceptance.
+
 ## Input / output revision
 
 - **Input commit (actual HEAD at start):** `24c436f` (`docs: design dark lime landing and five-screen Studio redesign`)

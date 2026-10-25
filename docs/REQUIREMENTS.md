@@ -4,6 +4,8 @@ Recorded October 24, 2026 (Asia/Ho_Chi_Minh).
 
 ## Provenance
 
+**October 25, 2026 update:** a fresh competition-page request still returned HTTP 405. Continue to attribute the rubric, deadline and eligibility terms to the supplied text. Direct official Arc documentation and read-only RPC checks reconfirmed mainnet chain ID 5042, testnet 5042002, the native 18-decimal/system-event model and Studio's testnet deployment boundary. These operational checks do not authenticate competition eligibility or prove a mainnet app transaction. Current product/submission gaps are mapped to the 30/25/25/20 rubric in [FUNCTIONAL_READINESS.md](FUNCTIONAL_READINESS.md), with exact evidence and no invented score.
+
 User-provided competition URL: https://dorahacks.io/hackathon/arc-microgrants-2/detail
 
 Source actually read: the user's uploaded `Pasted text.txt`, headed "Arc Microgrants: Built with Arc Studio". The user identified it as competition information. An HTTPS request to the DoraHacks URL failed with proxy `403 Forbidden`; no live page content was obtained. The requirements below faithfully summarize the supplied text, but its current equivalence to the live page has not been independently checked. Use it for planning and confirm operational details before installation, spending, or submission.

@@ -1,0 +1,21 @@
+bun : $ bun run lint && bun run typecheck
+
+At line:3 char:1
+
++ bun run check *> 'C:\Users\luong\HuiPot\.review\functionality-37ee96c ...
+
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : NotSpecified: ($ bun run lint && bun run typecheck:String) [], RemoteException
+
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+
+$ oxlint src --deny-warnings
+
+Finished in 23ms on 19 files with 96 rules using 8 threads.
+
+Found 0 warnings and 0 errors.
+
+$ tsc --noEmit

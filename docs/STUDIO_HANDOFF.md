@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Current priority — October 25, 2026 functional completion:** user redirected work to competition fit and reliable functionality after the artwork integration at `37ee96c`. Follow [STUDIO_FUNCTIONAL_FIX.md](STUDIO_FUNCTIONAL_FIX.md) and [FUNCTIONAL_READINESS.md](FUNCTIONAL_READINESS.md). Fix public configuration/direct routes, real review steps, receipt/proof correctness and data recovery. Preserve the existing art; do not restart the visual work or setup. Mainnet and hosting-account actions retain their separate gates.
+
 **Latest visual task — October 25, 2026:** after the SVG revision `ffc04fb`, the user requested actual backgrounds matching the original concept. Read [STUDIO_ASSET_INTEGRATION.md](STUDIO_ASSET_INTEGRATION.md) and [production art inputs](design/assets/README.md) for the supplied assets and exact next execution prompt. Codex prepared artwork/documents only; Studio source integration is pending. Earlier task descriptions are history. Do not repeat setup or token requests.
 
 ## Current task — dark/lime UI redesign

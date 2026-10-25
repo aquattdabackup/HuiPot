@@ -1,0 +1,50 @@
+[
+  {
+    "network": "testnet",
+    "rpc": "https://rpc.testnet.arc.io",
+    "chain_response": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": "0x4cef52"
+    },
+    "contract_code_bytes": 4134,
+    "contract_code_sha256": "e8c03720f077cae25c1f562c16660d3a4c00d1a63b085b99b03d09100983c657",
+    "pool_count_response": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  {
+    "network": "mainnet",
+    "rpc": "https://rpc.mainnet.arc.io",
+    "chain_response": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": "0x13b2"
+    }
+  },
+  {
+    "route": "/pools",
+    "repeat_error": "HTTP Error 404: Not Found"
+  },
+  {
+    "route": "/create",
+    "repeat_error": "HTTP Error 404: Not Found"
+  },
+  {
+    "route": "/pools/1",
+    "repeat_error": "Remote end closed connection without response"
+  },
+  {
+    "route": "/pools/1/proof",
+    "repeat_error": "HTTP Error 404: Not Found"
+  },
+  {
+    "bundle_path": "/assets/index-CJWlboYm.js",
+    "bytes": 1550207,
+    "sha256": "01bfb8fbbb21749b9ed6360aaf79d19f5a3ae19b2549d050fe60b1b0f0a7ae18",
+    "known_testnet_address_present": true,
+    "testnet_chain_literal_present": true
+  }
+]

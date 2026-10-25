@@ -1,0 +1,9 @@
+{
+  "bundle": "https://hui-pot.vercel.app/assets/index-CJWlboYm.js",
+  "bundle_sha256": "01bfb8fbbb21749b9ed6360aaf79d19f5a3ae19b2549d050fe60b1b0f0a7ae18",
+  "contract_binding": "In",
+  "contract_address": "0x0000000000000000000000000000000000000000",
+  "create_write_uses_same_binding": true,
+  "excerpt": "const In=\"0x0000000000000000000000000000000000000000\",qr=[{name:\"createPool\"",
+  "status": "Public deployed bundle built with zero contract address; landing fallback address does not configure writes"
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "competition",
+    "url": "https://dorahacks.io/hackathon/arc-microgrants-2/detail",
+    "error": "HTTP Error 405: Not Allowed"
+  },
+  {
+    "name": "network",
+    "url": "https://docs.arc.io/arc/references/connect-to-arc.md",
+    "status": 200,
+    "final_url": "https://docs.arc.io/arc/references/connect-to-arc.md",
+    "bytes": 14774,
+    "sha256": "c63e2fb672eb7e1161aafac1d928d87588bc2c6e94db7976b5ec3210e42ccbab"
+  },
+  {
+    "name": "native_events",
+    "url": "https://docs.arc.io/arc/references/usdc-system-events.md",
+    "status": 200,
+    "final_url": "https://docs.arc.io/arc/references/usdc-system-events.md",
+    "bytes": 10031,
+    "sha256": "b1a4aa49f6389f798f60fc09ee29d8377d9a29db1128ad3edb314632932bf996"
+  },
+  {
+    "name": "studio",
+    "url": "https://docs.arc.io/ai/arc-studio.md",
+    "status": 200,
+    "final_url": "https://docs.arc.io/ai/arc-studio.md",
+    "bytes": 5450,
+    "sha256": "59fe35906fc25183839be1c3eee1325496b3870465e0ba32d3d088465702ceab"
+  },
+  {
+    "name": "live_root",
+    "url": "https://hui-pot.vercel.app/",
+    "status": 200,
+    "final_url": "https://hui-pot.vercel.app/",
+    "bytes": 817,
+    "sha256": "b7dd44e487175e1bf59f044458c193507927ca9e135011826cf2c26bb368904e"
+  },
+  {
+    "name": "live_create",
+    "url": "https://hui-pot.vercel.app/create",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "live_pool",
+    "url": "https://hui-pot.vercel.app/pools/1",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "live_proof",
+    "url": "https://hui-pot.vercel.app/pools/1/proof",
+    "error": "HTTP Error 404: Not Found"
+  }
+]

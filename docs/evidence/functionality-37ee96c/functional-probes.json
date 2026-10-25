@@ -1,0 +1,195 @@
+{
+  "kind": "Independent synthetic production-source probes, not browser or chain execution",
+  "sourceRevision": "37ee96c268ed68ac9b951d189aaf03cca978b462",
+  "method": "Unchanged verifier extracted and transpiled; unchanged component handlers rendered/invoked with controlled hooks. All network/wallet functions mocked.",
+  "sourceHashes": {
+    "src/pages/Proof.tsx": "dfc73f5307bfe2d7b672d0fe4f7b119d22b24c4a6a3a5101956ee567f73d7064",
+    "src/pages/Pool.tsx": "4c9618fba35b0b08b1d339da45bc9c82eafe5342943d984acc264759878557a6",
+    "src/pages/Create.tsx": "d8a21183b84cbfdfac2cdd08e81cfe2381f2abe0451ff982eb89d7157344232b",
+    "src/config.ts": "b2c9f0c6c26e8adcfa85179e48febf14137d1581292233b53b78a298d6420d8e",
+    "src/contract.ts": "37da433242f3e50fb432d97cedd535abbfc22e5241b063d1139b1190f25225a3"
+  },
+  "cases": 23,
+  "passed": 9,
+  "failed": 14,
+  "syntheticFetchCalls": 12,
+  "results": [
+    {
+      "name": "valid payout",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "notes": [
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout missing movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout wrong transfer destination",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "Arc Transfer destination (0x3333333333333333333333333333333333333333) does not match PaidOut recipient (0x1111111111111111111111111111111111111111).",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout unrelated transfer sender",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout transfer amount 1 base unit",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "Arc Transfer amount (1) does not match event amount (1000000000000000000).",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout event and transfer 1 base unit versus 1 USDC target",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "PaidOut event amount (1) does not match pool target (1000000000000000000).",
+        "Payout amount in event: 1 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "valid refund",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "notes": []
+    },
+    {
+      "name": "refund unrelated movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. A refund should produce a Transfer from the contract to the contributor. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "valid contribution with matching inbound movement",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. This is expected for a contribution (value moves into the contract, not out). Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution without inbound evidence",
+      "expected": false,
+      "actual": true,
+      "pass": false,
+      "notes": [
+        "No Arc system Transfer from this contract found. This is expected for a contribution (value moves into the contract, not out). Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution with wrong inbound amount",
+      "expected": false,
+      "actual": true,
+      "pass": false,
+      "notes": [
+        "No Arc system Transfer from this contract found. This is expected for a contribution (value moves into the contract, not out). Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution with zero event amount",
+      "expected": false,
+      "actual": true,
+      "pass": false,
+      "notes": [
+        "No Arc system Transfer from this contract found. This is expected for a contribution (value moves into the contract, not out). Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "review contribute should not write before separate confirmation",
+      "expected": 0,
+      "actual": 1,
+      "pass": false
+    },
+    {
+      "name": "contribute cancellation receipt without expected event must not confirm",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    },
+    {
+      "name": "review payout should not write before separate confirmation",
+      "expected": 0,
+      "actual": 1,
+      "pass": false
+    },
+    {
+      "name": "payout cancellation receipt without expected event must not confirm",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    },
+    {
+      "name": "review claimRefund should not write before separate confirmation",
+      "expected": 0,
+      "actual": 1,
+      "pass": false
+    },
+    {
+      "name": "claimRefund cancellation receipt without expected event must not confirm",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    },
+    {
+      "name": "unloaded refund claim must not say wallet has no contribution",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    },
+    {
+      "name": "Pool RPC failure must not be reported as pool not found",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    },
+    {
+      "name": "Proof RPC failure must not be reported as pool not found",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    },
+    {
+      "name": "zero recipient should be rejected before wallet request",
+      "expected": 0,
+      "actual": 1,
+      "pass": false
+    },
+    {
+      "name": "creation event with 2-USDC target must not confirm a 1-USDC request",
+      "expected": false,
+      "actual": true,
+      "pass": false
+    }
+  ]
+}

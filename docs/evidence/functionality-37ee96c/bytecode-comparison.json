@@ -1,0 +1,13 @@
+{
+  "chain_id": 5042002,
+  "contract": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+  "full_runtime_equal": false,
+  "executable_region_equal_after_solidity_metadata_removed": true,
+  "chain_bytes": 4134,
+  "local_bytes": 4134,
+  "chain_metadata_bytes": 51,
+  "local_metadata_bytes": 51,
+  "chain_sha256": "e8c03720f077cae25c1f562c16660d3a4c00d1a63b085b99b03d09100983c657",
+  "local_sha256": "4116be91ccd677b3ff7c8e5a027adbb33731f65f54279954ab0b8fa0214f8ae3",
+  "scope": "Runtime bytes only; not an audit or transaction-flow validation"
+}

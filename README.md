@@ -4,7 +4,7 @@ A small group pools USDC for one shared expense. The fixed recipient can receive
 
 Built with [Arc Studio](https://studio.arc.io)
 
-**Status:** Studio delivered the contract and four-screen application; an unaudited Arc Testnet deployment is recorded below. Independent recheck of `307d862` passed 120 contract tests, build/typecheck, and lint, but application proof/transaction-state findings remain open. Browser and testnet user flows are not independently validated. See [the fix recheck](docs/STUDIO_FIX_RECHECK.md); this is not mainnet submission proof.
+**Status (October 25, 2026):** Studio delivered the contract and five-screen application. Independent validation of `37ee96c` passes 120 contract tests, 32 frontend tests on an unchanged warm retry, lint/typecheck and build. However, the observed public build uses a zero contract address, direct routes fail, and 14 of 23 independent functional probes expose missing behavior. Browser and human-operated testnet flows remain unvalidated; this is not mainnet submission proof. See [functional and competition readiness](docs/FUNCTIONAL_READINESS.md) and the [Studio fix handoff](docs/STUDIO_FUNCTIONAL_FIX.md). Contracts are unaudited.
 
 ## Deployed contract
 

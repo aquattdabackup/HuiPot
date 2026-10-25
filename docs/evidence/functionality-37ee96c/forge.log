@@ -1,0 +1,61 @@
+forge.exe : [31mThe application panicked (crashed).[0m
+
+At line:2 char:1
+
++ & 'C:\Users\luong\HuiPot\.review\tools\node_modules\@foundry-rs\forge ...
+
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : NotSpecified: ([31mThe applic... (crashed).[0m:String) [], RemoteException
+
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+
+Message:  [36mcould not detect user home directory[0m
+
+Location: [35mC:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\svm-rs-0.5.25\src\paths.rs[
+
+0m:[35m59[0m
+
+
+
+This is a bug. Consider reporting it at https://github.com/foundry-rs/foundry
+
+
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ BACKTRACE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   1: [91maws_lc_0_40_0_jent_entropy_switch_notime_impl[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+   2: [91maws_lc_0_40_0_jent_entropy_switch_notime_impl[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+   3: [91maws_lc_0_40_0_jent_entropy_switch_notime_impl[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+   4: [91maws_lc_0_40_0_jent_entropy_switch_notime_impl[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+   5: [91maws_lc_0_40_0_jent_entropy_switch_notime_impl[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+   6: [32mBaseThreadInitThunk[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+   7: [91mRtlUserThreadStart[0m[90m<unknown>[0m
+
+      at [35m<unknown source file>[0m:[35m<unknown line>[0m
+
+
+
+Run with COLORBT_SHOW_HIDDEN=1 environment variable to disable frame filtering.
+
+Run with RUST_BACKTRACE=full to include source snippets.

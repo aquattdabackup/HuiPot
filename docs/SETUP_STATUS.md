@@ -1,5 +1,9 @@
 # Phase 0 — setup status
 
+## Current checkpoint — October 25, 2026 functional review
+
+The Phase 0/3 descriptions below are historical. Studio source now includes one contract and five screens with supplied artwork, and a testnet contract exists. Setup/authentication should not be restarted. [FUNCTIONAL_READINESS.md](FUNCTIONAL_READINESS.md) records the current source, passing suites, failing functional probes, zero-address public build and direct-route errors. [STUDIO_FUNCTIONAL_FIX.md](STUDIO_FUNCTIONAL_FIX.md) is the next browser handoff. Existing local Bun/Forge and matching cached dependencies were reused for validation; no new token or tool installation was needed. Testnet wallet flows and mainnet evidence are still outstanding.
+
 ## Current checkpoint — Phase 3 authorized; GitHub handoff
 
 On October 24, 2026, the user selected **HuiPot Goal Pool**, reviewed the Phase 2 proposal, then requested pushing the prepared work to GitHub and a prompt for Studio to proceed. This authorizes milestone A contract/test generation through the previously approved browser route. [STUDIO_GITHUB_START.md](STUDIO_GITHUB_START.md) is the entry point; actual repo import/read access must be checked. The next gate is review of actual generated contracts/tests before B-D app work. Setup is not being restarted.

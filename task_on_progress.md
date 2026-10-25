@@ -1,26 +1,29 @@
 # Task On Progress
 
 ## Current task
-- Supply actual background/object artwork and precise Studio integration instructions so the interface can match the chosen concept.
-- Inspected input: ffc04fb5156a7f3dc68ae34ccea4e765c818f23f, verified through GitHub and clean local checkout.
-- Artwork and handoff complete; repository delivery in progress. Studio source integration and rendered acceptance remain pending.
+- User priority: reliable HuiPot functionality and competition fit; visual expansion is paused in favor of the golden flow.
+- Reviewed source: 37ee96c268ed68ac9b951d189aaf03cca978b462, verified against GitHub; checkout initially clean.
+- Independent review/testing complete; evidence and exact Studio fix prompt prepared. Studio fixes and rendered/wallet acceptance remain pending.
 
-## Completed
-- Generated three original text-free assets using the concept as a style reference: hero atmosphere, transparent torus and outcomes atmosphere.
-- Files saved in docs/design/assets; manifest includes dimensions, bytes, alpha samples and SHA-256. All three visually inspected. Exact prompts saved in docs/design/PRODUCTION_ASSET_PROMPTS.md.
-- docs/STUDIO_ASSET_INTEGRATION.md is the authoritative next prompt with specific layers, responsive placement, dynamic text, motion, performance and screenshot checks.
-- Updated handoff, design index, architecture and LOG. No application/contract source changed.
+## Artifacts
+- docs/FUNCTIONAL_READINESS.md: product/rubric mapping, public release blockers, findings F01-F07, exact validation outcomes and completion gates.
+- docs/STUDIO_FUNCTIONAL_FIX.md: current exact browser execution prompt; preserve existing artwork and D2-D8.
+- docs/evidence/functionality-37ee96c/: full attempts, validation summary, synthetic results, source hashes, public config/HTTP/RPC and bytecode comparison.
+- docs/review-tools/functionality-probes.cjs: Codex review instrument, not Studio product tests; unchanged production code under mocked hooks/network.
 
-## Evidence and limits
-- ffc04fb already improves the previous SVG; do not repeat old flat-320px findings as current. It still lacks actual background/object raster art and uses a fixed 480px hero box.
-- Assets: 1672x940 hero, 1254x1254 torus (real outside/center alpha 0), 1672x941 outcomes. Combined source PNGs 5,523,028 bytes. Runtime WebP optimization not performed; assigned to Studio.
-- Dimensions, SHA-256, all PNG chunk CRCs and relative documentation links verified. git diff --check passed; src/contracts unchanged.
-- No new test/check/build/Forge run; no rendered Vercel review or wallet test. No application code, video or deployment produced by Codex.
+## Verified results
+- Forge 120/0/0 across 14 suites, exit 0; initial sandbox tool crash documented.
+- Vitest 32/0 on unchanged warm retry, exit 0; prior run 31/1 timeout and sandbox startup failure retained.
+- bun run check and build exit 0; chunk-size warning. Dependencies/toolchain reused, no setup/token/install.
+- Independent probes 23 total: 9 pass/14 fail. Missing review steps, event-bound success, inbound Proof and truthful read-error states.
+- Public app root 200, direct routes 404; public JS uses zero address for actual reads/writes despite nonzero landing fallback.
+- Testnet chain 5042002, contract code present and poolCount=0; mainnet chain 5042 responds read-only. Executable runtime matches without Solidity metadata, full hashes differ.
+- No source/contract edits, wallet actions, browser-rendered QA, hosting setting changes or submission. Competition live page 405; supplied rules remain planning source.
 
-## Next steps
-1. Commit/push art and handoff to existing main; verify remote SHA.
-2. User runs the short linked instruction for docs/STUDIO_ASSET_INTEGRATION.md in the existing Studio browser project.
-3. Studio integrates supplied art into actual source, optimizes local assets and returns screenshots/preview and validation evidence.
-4. Independently compare actual rendered result to the concept; do not equate generated assets or a passing build with completed visual acceptance.
+## Next
+1. Commit/push completed review artifacts to existing main and verify remote SHA.
+2. User runs docs/STUDIO_FUNCTIONAL_FIX.md in the existing Studio browser project; no repeated setup/token requests.
+3. Independently review fixes and real browser evidence; verify public address configuration and direct-route rebuild through authorized hosting workflow.
+4. Human-operated testnet success and refund flows, then separately approved mainnet budget/transaction plan and final submission evidence.
 
 Last updated: October 25, 2026 (Asia/Ho_Chi_Minh).

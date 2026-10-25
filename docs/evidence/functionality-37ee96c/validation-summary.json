@@ -1,0 +1,93 @@
+{
+  "sourceRevision": "37ee96c268ed68ac9b951d189aaf03cca978b462",
+  "review_date": "2026-10-25",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "tool_versions": {
+    "bun": "1.3.14",
+    "forge": "1.7.1",
+    "solc": "0.8.28"
+  },
+  "runs": [
+    {
+      "command": "bun run test",
+      "mode": "sandbox initial",
+      "exit": 1,
+      "passed": null,
+      "failed": null,
+      "reason": "esbuild config/directory access denied before suite ran",
+      "log": "vitest.log"
+    },
+    {
+      "command": "bun run test",
+      "mode": "outside sandbox cold run",
+      "exit": 1,
+      "passed": 31,
+      "failed": 1,
+      "files_passed": 1,
+      "files_failed": 1,
+      "reason": "Pool module import structural test timed out after 5000ms",
+      "log": "vitest-unsandboxed.log"
+    },
+    {
+      "command": "bun run test",
+      "mode": "outside sandbox unchanged warm retry",
+      "exit": 0,
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "files_passed": 2,
+      "log": "vitest-warm.log"
+    },
+    {
+      "command": "bun run check",
+      "mode": "sandbox",
+      "exit": 0,
+      "lint_errors": 0,
+      "lint_warnings": 0,
+      "typecheck": "pass",
+      "log": "check.log"
+    },
+    {
+      "command": "bun run build",
+      "mode": "outside sandbox",
+      "exit": 0,
+      "result": "pass; chunk-size warning",
+      "log": "build.log"
+    },
+    {
+      "command": "forge test --summary --fuzz-seed 1",
+      "mode": "sandbox initial",
+      "exit": -1073740791,
+      "passed": null,
+      "failed": null,
+      "reason": "tool crash: could not detect user home directory",
+      "log": "forge.log"
+    },
+    {
+      "command": "forge test --summary --fuzz-seed 1",
+      "mode": "outside sandbox retry",
+      "exit": 0,
+      "passed": 120,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 14,
+      "log": "forge-unsandboxed.log"
+    },
+    {
+      "command": "node docs/review-tools/functionality-probes.cjs .review/functionality-37ee96c/snapshot .review/functionality-37ee96c/functional-probes.json",
+      "mode": "synthetic unchanged production source, no browser/network/wallet",
+      "exit": 1,
+      "passed": 9,
+      "failed": 14,
+      "cases": 23,
+      "log": "functional-probes.json"
+    }
+  ],
+  "not_run": [
+    "Browser-rendered golden flows and accessibility/mobile checks",
+    "Human-operated testnet wallet transactions",
+    "Mainnet deployment/funding/transaction proof",
+    "Performance metrics on actual devices"
+  ],
+  "runtime_comparison": "Performed: executable bytes match after stripping Solidity metadata; full runtime bytes differ. See bytecode-comparison.json."
+}
