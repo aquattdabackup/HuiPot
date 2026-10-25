@@ -1,26 +1,25 @@
-﻿# Task On Progress
+# Task On Progress
 
-## Task
-- Title: HuiPot dark/lime visual redesign and Studio browser handoff.
-- Status: design package completed; repository delivery in progress. Studio app implementation awaits the user-operated browser handoff.
-- Baseline: d2fecc8c1b412a4b9f7bbed42a93d8fe9a817dc4.
-- User selected dark + lime, wants strong motion/cinematic polish, and explicitly retained human-operated Studio browser. No repeated token/setup or extra preference questions.
+## Current task
+- Review the first Studio dark/lime implementation against the user's preferred concept; prepare a precise Studio visual correction.
+- Input main/local HEAD: 74576a333c26230ed287c9f871a5e68b83525fd1; initially clean. First implementation: 3a06e17.
+- Source-based review complete. Corrected application implementation and rendered review remain pending in the existing human-operated Studio browser workflow.
 
-## Artifacts
-- docs/REDESIGN.md: authoritative v2 design, five screens, exact landing copy, interactive illustrative walkthrough, app information hierarchy, motion and accessibility.
-- docs/STUDIO_REDESIGN.md: full browser implementation prompt; user only needs one short repo link.
-- docs/design/: generated references, exact prompts, provenance and seven passing token contrast pairs.
-- DESIGN.md and STUDIO_HANDOFF.md point to v2; SPEC screen scope amended to five without changing money rules.
+## Findings and artifacts
+- docs/STUDIO_VISUAL_RECHECK.md contains evidence, visual priorities, interaction issues, limits and exact implementation prompt.
+- Flat fixed 320px SVG ring, 80px heading cap and missing material/atmosphere explain a substantial mismatch with the reference. Walkthrough composition and Create layout also need work.
+- Pause does not reach the walkthrough ring; hero capped +0.40 action can add only 0.20; closed mobile landing header hides network badge.
+- Inspected Landing, AppHeader, App, CSS, Create diff, relevant Pool/Proof sections, regression-test source, report and Studio log tails. Reference PNG visually inspected.
+- Updated architecture and LOG; no application/contract code changed.
 
-## Evidence / Limits
-- Source and existing design reviewed; browser inventory has no enabled surfaces. No current UI screenshot inspection claimed.
-- Landing concept generated and visually inspected; mockup only. Product desktop/mobile concept generation failed with a network error; no product image is included. Written layouts cover all five screens.
-- No application/contract source was edited by Codex. No actual redesigned app, video, public hosting or wallet flow exists from this task.
-- d2fecc8 validation history: Forge 120 pass; Vitest parser 17 pass; lint/typecheck pass. Proof still accepts event/Transfer both 1 base unit against a 1-USDC target. Child div key does not reset parent-owned transaction hooks. Preserve/complete these in Studio before verification success claims.
+## Validation and limits
+- GitHub connector verified input SHA. Browser inventory empty; homepage metadata points to https://hui-pot.vercel.app but web-reader access failed. No live rendered review or deployed revision verification.
+- Studio log reports 32 Vitest passes and build success; not independently rerun. New tests are weaker than their behavioral claims.
+- Bun absent from PATH and node_modules absent. No new test/check/build/Forge runs, no browser or testnet-wallet tests.
 
-## Remaining Steps
-1. Deliver this package to existing main and verify remote SHA; links, UI01-UI10 scope and diff checks passed; application/contract source unchanged.
-2. User executes docs/STUDIO_REDESIGN.md in the existing Studio browser project using the short linked instruction.
-3. Await Studio output for actual visual/functional review. Do not pretend the prompt has run or silently switch to CLI/product coding.
+## Remaining
+1. Deliver review documents to existing main and verify remote SHA.
+2. User runs the short repo-linked correction prompt in the same Studio browser project; no repeated setup/token requests.
+3. Review Studio's returned source and actual rendered screenshots/preview. Do not claim visual quality accepted without observing it.
 
-Last updated: October 24, 2026 (Asia/Ho_Chi_Minh).
+Last updated: October 25, 2026 (Asia/Ho_Chi_Minh).

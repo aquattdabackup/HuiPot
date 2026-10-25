@@ -1,5 +1,14 @@
 # Project log
 
+## October 25, 2026 — first redesign visual fidelity review
+
+- User reported the pushed UI does not match the selected concept and requested inspection. GitHub connector confirmed main at `74576a333c26230ed287c9f871a5e68b83525fd1`, matching the initially clean local checkout. Implementation commit is `3a06e17`.
+- Re-inspected the reference pixels and relevant Landing, header, CSS, routes, Create diff, report and test source. Five routes and real implementation exist. The hero is a fixed 320px flat SVG progress ring; headline caps at 80px; dimensional material/lighting and the concept's branching composition are missing from source. Create's layout was retained rather than redesigned.
+- Found the walkthrough ring bypasses the visible Pause control, a capped demo increment can disagree with its label, and mobile landing hides the network badge when its menu is closed. Recorded focused corrections in `docs/STUDIO_VISUAL_RECHECK.md` with an exact Studio prompt.
+- Browser inventory had no enabled surfaces. GitHub homepage metadata identifies `https://hui-pot.vercel.app`; web-reader access failed. No live screenshot, deployed SHA or mobile rendering was verified. This is a source-based review, not completed visual QA.
+- Read Studio logs showing 32 passing Vitest cases and successful build with chunk-size warning. The tests duplicate verifier logic or inspect module exports/importability; they do not prove the full interaction behavior claimed. No new test/check/build/Forge run: documentation-only task, Bun absent from PATH and node_modules absent. No dependencies installed, source edited, wallet used or hosting settings changed.
+- Prepared visual correction prompt only; not submitted to Studio. Repository delivery of these review documents follows the standing user authorization.
+
 ## October 24, 2026 — dark/lime redesign handoff
 
 - User requested a comprehensive visual redesign: dedicated landing, striking motion/cinematic treatment and clearer information for users/judges. Explicitly chose dark + lime and retained human-operated Studio in the browser, then requested continuation with a stronger visual direction.
