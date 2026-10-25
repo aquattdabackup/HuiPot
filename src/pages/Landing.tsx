@@ -1,320 +1,283 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useId } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   ArrowRight, Pause, Play, ChevronDown, Copy, Check, ExternalLink,
-  ShieldCheck, AlertCircle,
+  CirclePlay, ShieldCheck, AlertCircle,
 } from 'lucide-react'
 
 const HUIPOT_ADDRESS = import.meta.env.VITE_HUIPOT_ADDRESS as string | undefined
-const CONTRACT_ADDRESS = HUIPOT_ADDRESS && HUIPOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
-  ? HUIPOT_ADDRESS
-  : '0x81a139599d252eb2dc2bbb6c267e911a21264288'
+const CONTRACT_ADDRESS =
+  HUIPOT_ADDRESS && HUIPOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
+    ? HUIPOT_ADDRESS
+    : '0x81a139599d252eb2dc2bbb6c267e911a21264288'
 
-// ─── Dimensional Torus ────────────────────────────────────────────────────────
-// Layered SVG: graphite body, bevel highlights, dark inner cavity, lime segment
-function RingTorus({
-  progress,
+// ─── RingMark (exported for AppHeader) ───────────────────────────────────────
+export function RingMark({ size = 28 }: { size?: number }) {
+  const r = size * 0.42
+  const cx = size / 2
+  const circ = 2 * Math.PI * r
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke="#2B3B30" strokeWidth={size * 0.1} />
+      <circle
+        cx={cx} cy={cx} r={r} fill="none"
+        stroke="#D2FA69" strokeWidth={size * 0.1}
+        strokeDasharray={circ} strokeDashoffset={circ * 0.6}
+        strokeLinecap="round"
+        style={{ transform: `rotate(-90deg)`, transformOrigin: `${cx}px ${cx}px` }}
+      />
+    </svg>
+  )
+}
+
+// ─── Orbit SVG overlay (behind torus) ────────────────────────────────────────
+function OrbitLines({ paused, uid }: { paused: boolean; uid: string }) {
+  if (paused) return null
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 560 560"
+      aria-hidden="true"
+      style={{ zIndex: 2 }}
+    >
+      <ellipse
+        cx="280" cy="280" rx="230" ry="55" fill="none"
+        stroke="rgba(210,250,105,0.08)" strokeWidth="1"
+        style={{
+          transformOrigin: '280px 280px',
+          animation: paused ? 'none' : `orbit-${uid}-a 18s linear infinite`,
+        }}
+      />
+      <ellipse
+        cx="280" cy="280" rx="200" ry="45" fill="none"
+        stroke="rgba(210,250,105,0.05)" strokeWidth="1"
+        style={{
+          transformOrigin: '280px 280px',
+          transform: 'rotateX(65deg) rotateZ(45deg)',
+          animation: paused ? 'none' : `orbit-${uid}-b 24s linear infinite reverse`,
+        }}
+      />
+      <style>{`
+        @keyframes orbit-${uid}-a { from { transform: rotateX(72deg) rotateZ(0deg); } to { transform: rotateX(72deg) rotateZ(360deg); } }
+        @keyframes orbit-${uid}-b { from { transform: rotateX(65deg) rotateZ(45deg); } to { transform: rotateX(65deg) rotateZ(405deg); } }
+      `}</style>
+    </svg>
+  )
+}
+
+// ─── Torus scene (raster image + HTML labels in hole) ────────────────────────
+function TorusScene({
+  size,
   motionPaused,
-  size = 480,
+  showChips = true,
 }: {
-  progress: number
+  size: number
   motionPaused: boolean
-  size?: number
+  showChips?: boolean
 }) {
   const reduced = useReducedMotion()
-  const paused = reduced || motionPaused
+  const pause = reduced || motionPaused
+  const uid = useId().replace(/:/g, '')
 
-  const cx = 240; const cy = 240
-  const outerR = 170; const innerR = 100
-  // Torus progress arc uses middle radius
-  const midR = (outerR + innerR) / 2   // 135
-  const strokeW = outerR - innerR       // 70
-  const circ = 2 * Math.PI * midR
-  const filled = circ * progress
+  // Float animation: 6px vertical over 8s
+  const floatStyle: React.CSSProperties = pause ? {} : {
+    animation: `float-${uid} 8s ease-in-out infinite`,
+  }
 
   return (
     <div
-      className="relative flex items-center justify-center select-none"
+      className="relative flex-shrink-0"
       style={{ width: size, height: size }}
-      aria-hidden="true"
+      aria-label="Illustrative torus showing 40% of goal reached"
     >
-      <svg
-        width={size} height={size}
-        viewBox="0 0 480 480"
-        style={{ position: 'absolute', inset: 0 }}
+      <style>{`
+        @keyframes float-${uid} {
+          0%,100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
+
+      {/* Orbit lines behind torus */}
+      <OrbitLines paused={pause} uid={uid + 'o'} />
+
+      {/* Torus image */}
+      <div
+        className="absolute inset-0"
+        style={{ zIndex: 3, ...floatStyle }}
       >
-        <defs>
-          {/* Graphite torus body gradient: lighter top-left, darker bottom-right */}
-          <radialGradient id="torusBody" cx="38%" cy="30%" r="65%">
-            <stop offset="0%"  stopColor="#3A4A3D" />
-            <stop offset="40%" stopColor="#1E2B20" />
-            <stop offset="100%" stopColor="#0D1410" />
-          </radialGradient>
-
-          {/* Lime segment glow */}
-          <radialGradient id="limeGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"  stopColor="#D2FA69" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#D2FA69" stopOpacity="0" />
-          </radialGradient>
-
-          {/* Top bevel highlight */}
-          <linearGradient id="bevelTop" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"  stopColor="#6A8A6E" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#3A5040" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#1A2A1E" stopOpacity="0" />
-          </linearGradient>
-
-          {/* Inner rim shadow */}
-          <radialGradient id="innerRim" cx="50%" cy="50%" r="50%">
-            <stop offset="60%" stopColor="transparent" />
-            <stop offset="85%" stopColor="#000000" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#000000" stopOpacity="0.8" />
-          </radialGradient>
-
-          {/* Contact shadow under torus */}
-          <radialGradient id="contactShadow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"  stopColor="#000000" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
-          </radialGradient>
-
-          {/* Atmospheric radial light behind torus */}
-          <radialGradient id="atmosphereBg" cx="50%" cy="45%" r="55%">
-            <stop offset="0%"  stopColor="#1C3022" stopOpacity="0.7" />
-            <stop offset="60%" stopColor="#0B100E" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#0B100E" stopOpacity="0" />
-          </radialGradient>
-
-          {/* Clip for torus donut shape */}
-          <mask id="torusMask">
-            <circle cx={cx} cy={cy} r={outerR} fill="white" />
-            <circle cx={cx} cy={cy} r={innerR} fill="black" />
-          </mask>
-
-          {/* Filter: subtle glow on lime segment */}
-          <filter id="limeFilter" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-
-          {/* Soft outer glow */}
-          <filter id="outerGlow" x="-15%" y="-15%" width="130%" height="130%">
-            <feGaussianBlur stdDeviation="12" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* Atmospheric background circle */}
-        <circle cx={cx} cy={cy} r={220} fill="url(#atmosphereBg)" />
-
-        {/* Contact shadow ellipse */}
-        <ellipse cx={cx} cy={cy + outerR - 10} rx={outerR * 0.85} ry={18}
-          fill="url(#contactShadow)" />
-
-        {/* Orbit lines — quiet, only when not paused */}
-        {!paused && (
-          <>
-            <ellipse
-              cx={cx} cy={cy} rx={outerR + 28} ry={22}
-              fill="none" stroke="rgba(210,250,105,0.08)" strokeWidth="1"
-              style={{
-                transformOrigin: `${cx}px ${cy}px`,
-                animation: 'hp-orbit1 16s linear infinite',
-              }}
-            />
-            <ellipse
-              cx={cx} cy={cy} rx={outerR + 40} ry={16}
-              fill="none" stroke="rgba(210,250,105,0.05)" strokeWidth="1"
-              style={{
-                transformOrigin: `${cx}px ${cy}px`,
-                animation: 'hp-orbit2 22s linear infinite reverse',
-              }}
-            />
-          </>
-        )}
-
-        {/* ── TORUS BODY ── */}
-        <g mask="url(#torusMask)">
-          {/* Base graphite fill */}
-          <circle cx={cx} cy={cy} r={outerR} fill="url(#torusBody)" />
-          {/* Top-left bevel highlight */}
-          <circle cx={cx} cy={cy} r={outerR} fill="url(#bevelTop)" />
-          {/* Inner rim darkening */}
-          <circle cx={cx} cy={cy} r={outerR} fill="url(#innerRim)" />
-        </g>
-
-        {/* ── LIME PROGRESS SEGMENT ── */}
-        {/* Glow halo behind lime segment */}
-        {progress > 0 && (
-          <circle
-            cx={cx} cy={cy} r={midR}
-            fill="none"
-            stroke="#D2FA69"
-            strokeWidth={strokeW + 14}
-            strokeLinecap="butt"
-            strokeDasharray={circ}
-            strokeDashoffset={circ - filled}
-            style={{
-              transform: `rotate(-90deg)`,
-              transformOrigin: `${cx}px ${cy}px`,
-              opacity: 0.18,
-              filter: 'blur(8px)',
-            }}
-          />
-        )}
-        {/* Lime arc — core */}
-        <motion.circle
-          cx={cx} cy={cy} r={midR}
-          fill="none"
-          stroke="#D2FA69"
-          strokeWidth={strokeW - 4}
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={circ - filled}
+        <img
+          src="/art/huipot/torus.png"
+          alt=""
+          width={size}
+          height={size}
           style={{
-            transform: `rotate(-90deg)`,
-            transformOrigin: `${cx}px ${cy}px`,
-            filter: 'drop-shadow(0 0 6px rgba(210,250,105,0.5))',
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block',
+            // Drop shadow for environmental grounding
+            filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.7)) drop-shadow(0 0 32px rgba(210,250,105,0.08))',
           }}
-          transition={paused ? { duration: 0 } : { duration: 0.65, ease: [0.25, 0.1, 0.25, 1] }}
-        />
-        {/* Lime top surface bevel (lighter stripe along top edge) */}
-        {progress > 0 && (
-          <motion.circle
-            cx={cx} cy={cy} r={outerR - 6}
-            fill="none"
-            stroke="rgba(240,255,180,0.5)"
-            strokeWidth={4}
-            strokeLinecap="round"
-            strokeDasharray={circ * (outerR - 6) / midR}
-            strokeDashoffset={(circ * (outerR - 6) / midR) - (filled * (outerR - 6) / midR)}
-            style={{
-              transform: `rotate(-90deg)`,
-              transformOrigin: `${cx}px ${cy}px`,
-            }}
-            transition={paused ? { duration: 0 } : { duration: 0.65, ease: [0.25, 0.1, 0.25, 1] }}
-          />
-        )}
-
-        {/* Dark cavity circle (inner hole) */}
-        <circle cx={cx} cy={cy} r={innerR - 2}
-          fill="#080E0A"
-          style={{ filter: 'drop-shadow(inset 0 4px 12px rgba(0,0,0,0.8))' }}
-        />
-        {/* Inner rim dark ring to emphasise depth */}
-        <circle cx={cx} cy={cy} r={innerR + 2}
-          fill="none"
-          stroke="rgba(0,0,0,0.7)"
-          strokeWidth={6}
-        />
-        {/* Inner cavity highlight arc — upper portion reflects a little light */}
-        <path
-          d={`M ${cx - innerR * 0.7} ${cy - innerR * 0.6} A ${innerR * 0.9} ${innerR * 0.5} 0 0 1 ${cx + innerR * 0.7} ${cy - innerR * 0.6}`}
-          fill="none"
-          stroke="rgba(100,140,110,0.15)"
-          strokeWidth={3}
-          strokeLinecap="round"
+          draggable={false}
         />
 
-        {/* Particles along lime arc */}
-        {!paused && progress > 0 && (
-          <>
-            <circle r="3.5" fill="rgba(210,250,105,0.7)">
-              <animateMotion dur="2.8s" repeatCount="indefinite"
-                path={`M ${cx + midR * Math.cos(-Math.PI/2)} ${cy + midR * Math.sin(-Math.PI/2)} A ${midR} ${midR} 0 ${progress > 0.5 ? 1 : 0} 1 ${cx + midR * Math.cos(-Math.PI/2 + progress * 2 * Math.PI)} ${cy + midR * Math.sin(-Math.PI/2 + progress * 2 * Math.PI)}`}
-              />
-            </circle>
-            <circle r="2" fill="rgba(210,250,105,0.45)">
-              <animateMotion dur="4.2s" repeatCount="indefinite" begin="-1.4s"
-                path={`M ${cx + midR * Math.cos(-Math.PI/2)} ${cy + midR * Math.sin(-Math.PI/2)} A ${midR} ${midR} 0 ${progress > 0.5 ? 1 : 0} 1 ${cx + midR * Math.cos(-Math.PI/2 + progress * 2 * Math.PI)} ${cy + midR * Math.sin(-Math.PI/2 + progress * 2 * Math.PI)}`}
-              />
-            </circle>
-          </>
-        )}
-      </svg>
-
-      {/* Center text — real DOM on top of SVG */}
-      <div className="relative z-10 text-center" style={{ marginTop: -8 }}>
-        <p className="text-xs mb-1 font-medium tracking-widest uppercase" style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}>
-          Contributed
-        </p>
-        <p
-          className="font-bold tabular-nums leading-none"
-          style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 38px)' }}
-        >
-          {(progress * 1).toFixed(2)}
-          <span style={{ fontSize: '0.55em', color: 'var(--muted)', marginLeft: 2 }}>/ 1.00</span>
-        </p>
-        <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>USDC</p>
+        {/* Center hole label — positioned inside the hole (~middle third) */}
         <div
-          className="mt-2 mx-auto rounded-full px-2.5 py-0.5 text-xs font-semibold"
+          className="absolute flex flex-col items-center justify-center"
           style={{
-            background: 'rgba(210,250,105,0.10)',
-            color: 'var(--accent)',
-            border: '1px solid rgba(210,250,105,0.18)',
-            width: 'fit-content',
-            fontSize: 10,
+            // hole is approx 35-65% of the image square
+            top: '36%', left: '36%', right: '36%', bottom: '36%',
+            zIndex: 10,
+            pointerEvents: 'none',
           }}
         >
-          Interactive demo · No funds moved
+          <p
+            className="tabular-nums font-bold leading-none"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: size > 400 ? '1.5rem' : '1rem',
+              color: '#F2F5EA',
+              textShadow: '0 1px 8px rgba(0,0,0,0.8)',
+            }}
+          >
+            0.40<span style={{ color: '#A1B1A5', fontWeight: 400 }}> / 1.00</span>
+          </p>
+          <p
+            className="mt-0.5"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: size > 400 ? '0.75rem' : '0.6rem',
+              color: '#A1B1A5',
+              letterSpacing: '0.06em',
+            }}
+          >
+            USDC
+          </p>
+          {size > 300 && (
+            <div
+              className="mt-2 rounded-full"
+              style={{
+                width: '60%', height: 3,
+                background: '#2B3B30',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                className="h-full rounded-full"
+                style={{ width: '40%', background: '#D2FA69' }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      <style>{`
-        @keyframes hp-orbit1 {
-          from { transform: rotateX(78deg) rotateZ(0deg); }
-          to   { transform: rotateX(78deg) rotateZ(360deg); }
-        }
-        @keyframes hp-orbit2 {
-          from { transform: rotateX(65deg) rotateZ(20deg); }
-          to   { transform: rotateX(65deg) rotateZ(380deg); }
-        }
-      `}</style>
+      {/* Chips — only in hero */}
+      {showChips && (
+        <>
+          {/* +0.40 USDC chip — upper left of scene */}
+          <div
+            className="absolute flex items-center gap-1.5 rounded-xl px-2.5 py-1.5"
+            style={{
+              top: '8%', left: '-4%',
+              background: 'rgba(20,29,23,0.88)',
+              border: '1px solid rgba(210,250,105,0.25)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 20,
+              pointerEvents: 'none',
+            }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D2FA69', display: 'inline-block' }} />
+            <span className="tabular-nums text-xs font-semibold" style={{ color: '#D2FA69' }}>+0.40 USDC</span>
+          </div>
+          {/* 0.60 to go chip — upper right */}
+          <div
+            className="absolute flex items-center gap-1.5 rounded-xl px-2.5 py-1.5"
+            style={{
+              top: '16%', right: '-4%',
+              background: 'rgba(20,29,23,0.88)',
+              border: '1px solid rgba(43,59,48,0.8)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 20,
+              pointerEvents: 'none',
+            }}
+          >
+            <span className="text-xs" style={{ color: '#A1B1A5' }}>0.60 to go</span>
+          </div>
+        </>
+      )}
+
+      {/* Illustrative notice below scene */}
+      {showChips && (
+        <p
+          className="absolute text-center"
+          style={{
+            bottom: '-24px', left: 0, right: 0,
+            fontSize: '0.65rem',
+            color: 'rgba(115,135,122,0.8)',
+            pointerEvents: 'none',
+          }}
+        >
+          Illustrative demo · No funds moved
+        </p>
+      )}
     </div>
   )
 }
 
-// ─── Walkthrough branching diagram ────────────────────────────────────────────
+// ─── Outcome Diagram ──────────────────────────────────────────────────────────
 function OutcomeDiagram({ activeTab }: { activeTab: 'success' | 'failure' }) {
   return (
-    <svg width="220" height="200" viewBox="0 0 220 200" aria-hidden="true">
-      {/* Shared goal circle */}
-      <circle cx="110" cy="28" r="22" fill="none" stroke="#D2FA69" strokeWidth="2" />
-      <text x="110" y="24" textAnchor="middle" fill="#D2FA69" fontSize="9" fontFamily="var(--font-display)">Shared</text>
-      <text x="110" y="36" textAnchor="middle" fill="#D2FA69" fontSize="9" fontFamily="var(--font-display)">goal</text>
+    <svg
+      viewBox="0 0 260 200"
+      className="w-full max-w-xs mx-auto"
+      aria-hidden="true"
+      style={{ overflow: 'visible' }}
+    >
+      {/* Top ring node */}
+      <circle cx="130" cy="24" r="18" fill="none" stroke="#2B3B30" strokeWidth="2" />
+      <circle cx="130" cy="24" r="18" fill="none" stroke="#D2FA69" strokeWidth="2"
+        strokeDasharray={`${2 * Math.PI * 18 * 0.4} ${2 * Math.PI * 18 * 0.6}`}
+        strokeLinecap="round"
+        style={{ transform: 'rotate(-90deg)', transformOrigin: '130px 24px' }}
+      />
+      <text x="130" y="29" textAnchor="middle" fontSize="9" fill="#A1B1A5" fontFamily="sans-serif">pool</text>
 
-      {/* Vertical stem */}
-      <line x1="110" y1="50" x2="110" y2="85" stroke="rgba(210,250,105,0.4)" strokeWidth="1.5" />
+      {/* Stem */}
+      <line x1="130" y1="42" x2="130" y2="70" stroke="#2B3B30" strokeWidth="1.5" />
 
-      {/* Fork left to success */}
-      <path d="M 110 85 Q 110 110 60 130" fill="none"
-        stroke={activeTab === 'success' ? '#D2FA69' : 'rgba(210,250,105,0.25)'}
-        strokeWidth={activeTab === 'success' ? 2 : 1.5} />
-      {/* Fork right to failure */}
-      <path d="M 110 85 Q 110 110 160 130" fill="none"
-        stroke={activeTab === 'failure' ? '#FFD38B' : 'rgba(161,177,165,0.25)'}
-        strokeWidth={activeTab === 'failure' ? 2 : 1.5} />
+      {/* Fork */}
+      <line x1="130" y1="70" x2="60" y2="108"
+        stroke={activeTab === 'success' ? '#D2FA69' : '#2B3B30'} strokeWidth="1.5" />
+      <line x1="130" y1="70" x2="200" y2="108"
+        stroke={activeTab === 'failure' ? '#FFD38B' : '#2B3B30'} strokeWidth="1.5" />
 
-      {/* Goal reached circle */}
-      <circle cx="60" cy="145" r="18"
-        fill={activeTab === 'success' ? 'rgba(210,250,105,0.15)' : 'transparent'}
-        stroke={activeTab === 'success' ? '#D2FA69' : 'rgba(210,250,105,0.3)'}
-        strokeWidth="1.5" />
-      <text x="60" y="143" textAnchor="middle" fill={activeTab === 'success' ? '#D2FA69' : '#6A7A6E'} fontSize="10">✓</text>
-      <text x="60" y="172" textAnchor="middle" fill={activeTab === 'success' ? '#D2FA69' : '#6A7A6E'} fontSize="8" fontFamily="var(--font-display)">Goal</text>
-      <text x="60" y="182" textAnchor="middle" fill={activeTab === 'success' ? '#D2FA69' : '#6A7A6E'} fontSize="8" fontFamily="var(--font-display)">reached</text>
+      {/* Goal reached node */}
+      <circle cx="60" cy="120" r="16"
+        fill={activeTab === 'success' ? 'rgba(210,250,105,0.12)' : 'none'}
+        stroke={activeTab === 'success' ? '#D2FA69' : '#2B3B30'} strokeWidth="1.5" />
+      <text x="60" y="123" textAnchor="middle" fontSize="11"
+        fill={activeTab === 'success' ? '#D2FA69' : '#73877A'} fontFamily="sans-serif">✓</text>
 
-      {/* Deadline missed circle */}
-      <circle cx="160" cy="145" r="18"
-        fill={activeTab === 'failure' ? 'rgba(255,211,139,0.12)' : 'transparent'}
-        stroke={activeTab === 'failure' ? '#FFD38B' : 'rgba(161,177,165,0.3)'}
-        strokeWidth="1.5" />
-      <text x="160" y="143" textAnchor="middle" fill={activeTab === 'failure' ? '#FFD38B' : '#6A7A6E'} fontSize="10">✕</text>
-      <text x="160" y="172" textAnchor="middle" fill={activeTab === 'failure' ? '#FFD38B' : '#6A7A6E'} fontSize="8" fontFamily="var(--font-display)">Deadline</text>
-      <text x="160" y="182" textAnchor="middle" fill={activeTab === 'failure' ? '#FFD38B' : '#6A7A6E'} fontSize="8" fontFamily="var(--font-display)">missed</text>
+      {/* Deadline missed node */}
+      <circle cx="200" cy="120" r="16"
+        fill={activeTab === 'failure' ? 'rgba(255,211,139,0.1)' : 'none'}
+        stroke={activeTab === 'failure' ? '#FFD38B' : '#2B3B30'} strokeWidth="1.5" />
+      <text x="200" y="123" textAnchor="middle" fontSize="11"
+        fill={activeTab === 'failure' ? '#FFD38B' : '#73877A'} fontFamily="sans-serif">×</text>
+
+      {/* Labels */}
+      <text x="60" y="148" textAnchor="middle" fontSize="9"
+        fill={activeTab === 'success' ? '#D2FA69' : '#73877A'} fontFamily="sans-serif">Goal reached</text>
+      <text x="60" y="160" textAnchor="middle" fontSize="8" fill="#73877A" fontFamily="sans-serif">payout available</text>
+      <text x="200" y="148" textAnchor="middle" fontSize="9"
+        fill={activeTab === 'failure' ? '#FFD38B' : '#73877A'} fontFamily="sans-serif">Deadline missed</text>
+      <text x="200" y="160" textAnchor="middle" fontSize="8" fill="#73877A" fontFamily="sans-serif">refund available</text>
+
+      {/* Fine print */}
+      <text x="130" y="190" textAnchor="middle" fontSize="7.5" fill="#73877A" fontFamily="sans-serif">
+        Refunds claimed, not automatic · No early withdrawal
+      </text>
     </svg>
   )
 }
@@ -329,246 +292,208 @@ function Walkthrough({ motionPaused }: { motionPaused: boolean }) {
   const [successStep, setSuccessStep] = useState<SuccessStep>('start')
   const [failureStep, setFailureStep] = useState<FailureStep>('start')
   const reduced = useReducedMotion()
+  const sectionRef = useRef<HTMLElement>(null)
+  const [visible, setVisible] = useState(true)
 
-  const walkthroughProgress = tab === 'success'
-    ? (successStep === 'start' ? 0.40 : 1.0)
-    : 0.40
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0 })
+    if (sectionRef.current) obs.observe(sectionRef.current)
+    return () => obs.disconnect()
+  }, [])
 
-  function handleTabChange(t: WalkthroughTab) {
+  function switchTab(t: WalkthroughTab) {
     setTab(t)
     setSuccessStep('start')
     setFailureStep('start')
   }
 
-  return (
-    <section id="walkthrough" className="py-24 px-4" style={{ background: 'var(--surface)' }}>
-      <div className="mx-auto max-w-6xl">
+  // Stop any decorative animation when section is offscreen
+  const sectionPaused = motionPaused || !visible || !!reduced
 
-        {/* Split: left editorial, right diagram */}
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-14">
+  return (
+    <section
+      id="walkthrough"
+      ref={sectionRef}
+      className="relative overflow-hidden py-24 px-4"
+      style={{ minHeight: 480 }}
+    >
+      {/* Outcomes atmosphere background */}
+      <img
+        src="/art/huipot/outcomes-atmosphere.png"
+        alt=""
+        className="absolute inset-0 w-full h-full"
+        style={{ objectFit: 'cover', objectPosition: 'center bottom', zIndex: 0, opacity: 0.85 }}
+        loading="lazy"
+        draggable={false}
+      />
+      {/* Top fade blending into previous section */}
+      <div
+        className="absolute inset-x-0 top-0 h-32 pointer-events-none"
+        style={{ background: 'linear-gradient(to bottom, var(--canvas), transparent)', zIndex: 1 }}
+      />
+      {/* Bottom fade */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, var(--canvas), transparent)', zIndex: 1 }}
+      />
+
+      <div className="relative mx-auto max-w-5xl" style={{ zIndex: 2 }}>
+        {/* Heading — left aligned per concept */}
+        <div className="mb-10 max-w-md">
+          <h2
+            className="display font-bold leading-tight mb-3"
+            style={{ color: 'var(--ink)', fontSize: 'clamp(32px, 4vw, 52px)' }}
+          >
+            One goal.<br />Two clear outcomes.
+          </h2>
+          <p className="text-sm" style={{ color: 'rgba(255,211,139,0.9)', background: 'rgba(48,36,20,0.7)', display: 'inline-block', padding: '4px 10px', borderRadius: 6 }}>
+            Illustration only — no wallet, no funds moved.
+          </p>
+        </div>
+
+        {/* Split: left tabs+controls, right outcome diagram */}
+        <div className="grid md:grid-cols-[1fr_320px] gap-8 items-start">
+          {/* Left: tabs + active step */}
           <div>
-            <h2
-              className="font-bold leading-tight mb-4"
-              style={{
-                color: 'var(--ink)',
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(36px, 4vw, 52px)',
-              }}
-            >
-              One goal.<br />Two clear outcomes.
-            </h2>
-            <p className="text-base mb-6" style={{ color: 'var(--muted)', maxWidth: '42ch' }}>
-              See exactly what happens when a pool succeeds or misses its deadline.
-              Every step is explicit — nothing moves automatically.
-            </p>
-            <div
-              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium"
-              style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)', border: '1px solid rgba(255,211,139,0.2)' }}
-            >
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-              Illustration only — no wallet, no funds moved.
+            {/* Tabs */}
+            <div className="flex gap-1 rounded-xl p-1 mb-6" style={{ background: 'rgba(28,41,32,0.85)', maxWidth: 320, backdropFilter: 'blur(8px)' }}>
+              {(['success', 'failure'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => switchTab(t)}
+                  className="flex-1 rounded-lg py-2.5 text-sm font-semibold transition-colors"
+                  style={tab === t
+                    ? { background: 'var(--accent)', color: 'var(--accent-ink)' }
+                    : { color: 'var(--muted)' }
+                  }
+                >
+                  {t === 'success' ? 'Goal reached' : 'Deadline missed'}
+                </button>
+              ))}
+            </div>
+
+            {/* Steps */}
+            <div className="space-y-4 max-w-sm">
+              <AnimatePresence mode="wait" initial={!sectionPaused}>
+                {tab === 'success' ? (
+                  <motion.div
+                    key={`success-${successStep}`}
+                    initial={reduced ? undefined : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduced ? undefined : { opacity: 0, y: -8 }}
+                    transition={{ duration: 0.22 }}
+                    className="space-y-3"
+                  >
+                    {successStep === 'start' && (
+                      <>
+                        <div className="rounded-xl p-4" style={{ background: 'rgba(28,41,32,0.88)', border: '1px solid var(--border)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs mb-0.5" style={{ color: 'var(--muted)' }}>Progress</p>
+                          <p className="display text-xl font-bold tabular-nums" style={{ color: 'var(--ink)' }}>0.40 / 1.00 USDC</p>
+                          <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>40% — goal not yet reached.</p>
+                        </div>
+                        <button
+                          onClick={() => setSuccessStep('funded')}
+                          className="w-full rounded-xl py-3 text-sm font-semibold"
+                          style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
+                        >Add 0.60 demo USDC</button>
+                      </>
+                    )}
+                    {successStep === 'funded' && (
+                      <>
+                        <div className="rounded-xl p-4" style={{ background: 'rgba(28,41,32,0.88)', border: '1px solid var(--accent)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--accent)' }}>Goal reached — payout available</p>
+                          <p className="display text-xl font-bold tabular-nums" style={{ color: 'var(--ink)' }}>1.00 / 1.00 USDC</p>
+                          <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>Anyone may trigger payout.</p>
+                        </div>
+                        <button onClick={() => setSuccessStep('paid')} className="w-full rounded-xl py-3 text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>Simulate payout</button>
+                      </>
+                    )}
+                    {successStep === 'paid' && (
+                      <>
+                        <div className="rounded-xl p-4" style={{ background: 'rgba(29,48,32,0.9)', border: '1px solid rgba(200,244,170,0.3)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs font-semibold mb-1" style={{ color: 'var(--success-text)' }}>Payout complete</p>
+                          <p className="text-sm" style={{ color: 'var(--success-text)' }}>1.00 USDC → <strong>Fixed recipient</strong></p>
+                        </div>
+                        <div className="rounded-xl p-3" style={{ background: 'rgba(28,41,32,0.75)', border: '1px dashed var(--border)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--accent)', letterSpacing: '0.06em' }}>ILLUSTRATIVE RECEIPT</p>
+                          <dl className="space-y-1 text-xs" style={{ color: 'var(--muted)' }}>
+                            <div className="flex justify-between"><dt>Event</dt><dd style={{ color: 'var(--ink)' }}>PaidOut</dd></div>
+                            <div className="flex justify-between"><dt>Amount</dt><dd style={{ color: 'var(--ink)' }}>1.000000 USDC</dd></div>
+                            <div className="flex justify-between"><dt>To</dt><dd style={{ color: 'var(--ink)' }}>Fixed recipient</dd></div>
+                          </dl>
+                        </div>
+                        <button onClick={() => setSuccessStep('start')} className="w-full rounded-xl py-2.5 text-sm" style={{ background: 'rgba(28,41,32,0.8)', color: 'var(--muted)', border: '1px solid var(--border)' }}>Reset and replay</button>
+                      </>
+                    )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={`failure-${failureStep}`}
+                    initial={reduced ? undefined : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduced ? undefined : { opacity: 0, y: -8 }}
+                    transition={{ duration: 0.22 }}
+                    className="space-y-3"
+                  >
+                    {failureStep === 'start' && (
+                      <>
+                        <div className="rounded-xl p-4" style={{ background: 'rgba(28,41,32,0.88)', border: '1px solid var(--border)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs mb-0.5" style={{ color: 'var(--muted)' }}>Progress</p>
+                          <p className="display text-xl font-bold tabular-nums" style={{ color: 'var(--ink)' }}>0.40 / 1.00 USDC</p>
+                          <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>40% — deadline approaching.</p>
+                        </div>
+                        <button onClick={() => setFailureStep('expired')} className="w-full rounded-xl py-3 text-sm font-semibold" style={{ background: 'rgba(28,41,32,0.88)', color: 'var(--muted)', border: '1px solid var(--border-strong)', backdropFilter: 'blur(8px)' }}>Advance demo deadline</button>
+                      </>
+                    )}
+                    {failureStep === 'expired' && (
+                      <>
+                        <div className="rounded-xl p-4" style={{ background: 'rgba(48,36,20,0.88)', border: '1px solid rgba(255,211,139,0.3)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--warning-text)' }}>Goal not reached — refund available</p>
+                          <p className="text-xs mt-1" style={{ color: 'var(--warning-text)' }}>Deadline passed at 0.40/1.00. Claim your deposit back.</p>
+                        </div>
+                        <div className="rounded-xl px-3 py-2 text-xs" style={{ background: 'rgba(28,41,32,0.75)', color: 'var(--muted)' }}>Refunds must be claimed. Fees are not refunded.</div>
+                        <button onClick={() => setFailureStep('refunded')} className="w-full rounded-xl py-3 text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>Simulate refund claim</button>
+                      </>
+                    )}
+                    {failureStep === 'refunded' && (
+                      <>
+                        <div className="rounded-xl p-4" style={{ background: 'rgba(29,48,32,0.9)', border: '1px solid rgba(200,244,170,0.3)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs font-semibold mb-1" style={{ color: 'var(--success-text)' }}>Refund confirmed</p>
+                          <p className="text-sm" style={{ color: 'var(--success-text)' }}>0.40 USDC → <strong>Contributor</strong>. Network fee charged.</p>
+                        </div>
+                        <div className="rounded-xl p-3" style={{ background: 'rgba(28,41,32,0.75)', border: '1px dashed var(--border)', backdropFilter: 'blur(8px)' }}>
+                          <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--accent)', letterSpacing: '0.06em' }}>ILLUSTRATIVE RECEIPT</p>
+                          <dl className="space-y-1 text-xs" style={{ color: 'var(--muted)' }}>
+                            <div className="flex justify-between"><dt>Event</dt><dd style={{ color: 'var(--ink)' }}>Refunded</dd></div>
+                            <div className="flex justify-between"><dt>Amount</dt><dd style={{ color: 'var(--ink)' }}>0.400000 USDC</dd></div>
+                            <div className="flex justify-between"><dt>To</dt><dd style={{ color: 'var(--ink)' }}>Contributor</dd></div>
+                          </dl>
+                        </div>
+                        <button onClick={() => setFailureStep('start')} className="w-full rounded-xl py-2.5 text-sm" style={{ background: 'rgba(28,41,32,0.8)', color: 'var(--muted)', border: '1px solid var(--border)' }}>Reset and replay</button>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-          <div className="flex justify-center">
+
+          {/* Right: outcome diagram */}
+          <div className="hidden md:flex flex-col items-center justify-start pt-10">
             <OutcomeDiagram activeTab={tab} />
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 rounded-xl p-1 mb-10" style={{ background: 'var(--raised)', maxWidth: 340 }}>
-          {(['success', 'failure'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => handleTabChange(t)}
-              className="flex-1 rounded-lg py-2.5 text-sm font-semibold transition-colors"
-              style={tab === t
-                ? { background: 'var(--accent)', color: 'var(--accent-ink)' }
-                : { color: 'var(--muted)' }
-              }
-            >
-              {t === 'success' ? 'Goal reached' : 'Deadline missed'}
-            </button>
-          ))}
-        </div>
-
-        {/* Demo content: torus left, steps right */}
-        <div className="grid md:grid-cols-2 gap-10 items-start">
-          <div className="flex justify-center">
-            <RingTorus
-              progress={walkthroughProgress}
-              motionPaused={motionPaused}
-              size={320}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <AnimatePresence mode="wait">
-              {tab === 'success' ? (
-                <motion.div
-                  key={`success-${successStep}`}
-                  initial={reduced ? undefined : { opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduced ? undefined : { opacity: 0, y: -8 }}
-                  transition={{ duration: 0.24 }}
-                  className="space-y-4"
-                >
-                  {successStep === 'start' && (
-                    <>
-                      <div className="rounded-2xl p-5" style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}>
-                        <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Progress</p>
-                        <p className="font-bold tabular-nums text-2xl" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
-                          0.40 / 1.00 USDC
-                        </p>
-                        <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>40% — goal not yet reached.</p>
-                      </div>
-                      <button
-                        onClick={() => setSuccessStep('funded')}
-                        className="w-full rounded-xl py-3.5 text-sm font-semibold transition-colors"
-                        style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
-                      >
-                        Add 0.60 demo USDC
-                      </button>
-                    </>
-                  )}
-                  {successStep === 'funded' && (
-                    <>
-                      <div className="rounded-2xl p-5" style={{ background: 'var(--raised)', border: '1px solid var(--accent)' }}>
-                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--accent)' }}>
-                          Goal reached — payout available
-                        </p>
-                        <p className="font-bold tabular-nums text-2xl" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
-                          1.00 / 1.00 USDC
-                        </p>
-                        <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>
-                          Contract rules allow payout. Anyone may trigger it.
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setSuccessStep('paid')}
-                        className="w-full rounded-xl py-3.5 text-sm font-semibold transition-colors"
-                        style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
-                      >
-                        Simulate payout
-                      </button>
-                    </>
-                  )}
-                  {successStep === 'paid' && (
-                    <>
-                      <div className="rounded-2xl p-5" style={{ background: 'var(--success-bg)', border: '1px solid rgba(200,244,170,0.3)' }}>
-                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--success-text)' }}>Payout complete</p>
-                        <p className="text-sm" style={{ color: 'var(--success-text)' }}>
-                          1.00 USDC sent to <strong>Fixed recipient</strong>.
-                        </p>
-                      </div>
-                      <div className="rounded-xl p-4" style={{ background: 'var(--raised)', border: '1px dashed var(--border)' }}>
-                        <p className="text-xs font-semibold mb-2 tracking-widest" style={{ color: 'var(--accent)' }}>ILLUSTRATIVE RECEIPT</p>
-                        <dl className="space-y-1 text-xs" style={{ color: 'var(--muted)' }}>
-                          <div className="flex justify-between"><dt>Event</dt><dd style={{ color: 'var(--ink)' }}>PaidOut</dd></div>
-                          <div className="flex justify-between"><dt>Amount</dt><dd style={{ color: 'var(--ink)' }}>1.000000 USDC</dd></div>
-                          <div className="flex justify-between"><dt>Destination</dt><dd style={{ color: 'var(--ink)' }}>Fixed recipient</dd></div>
-                        </dl>
-                      </div>
-                      <button
-                        onClick={() => setSuccessStep('start')}
-                        className="w-full rounded-xl py-3 text-sm font-medium transition-colors"
-                        style={{ background: 'var(--raised)', color: 'var(--muted)', border: '1px solid var(--border)' }}
-                      >
-                        Reset and replay
-                      </button>
-                    </>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={`failure-${failureStep}`}
-                  initial={reduced ? undefined : { opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduced ? undefined : { opacity: 0, y: -8 }}
-                  transition={{ duration: 0.24 }}
-                  className="space-y-4"
-                >
-                  {failureStep === 'start' && (
-                    <>
-                      <div className="rounded-2xl p-5" style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}>
-                        <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Progress</p>
-                        <p className="font-bold tabular-nums text-2xl" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
-                          0.40 / 1.00 USDC
-                        </p>
-                        <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>40% — deadline approaching.</p>
-                      </div>
-                      <button
-                        onClick={() => setFailureStep('expired')}
-                        className="w-full rounded-xl py-3.5 text-sm font-semibold transition-colors"
-                        style={{ background: 'var(--raised)', color: 'var(--muted)', border: '1px solid var(--border-strong)' }}
-                      >
-                        Advance demo deadline
-                      </button>
-                    </>
-                  )}
-                  {failureStep === 'expired' && (
-                    <>
-                      <div className="rounded-2xl p-5" style={{ background: 'var(--warning-bg)', border: '1px solid rgba(255,211,139,0.3)' }}>
-                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--warning-text)' }}>
-                          Goal not reached — refund available
-                        </p>
-                        <p className="text-sm" style={{ color: 'var(--warning-text)' }}>
-                          Deadline passed at 0.40/1.00. Each contributor may claim their deposit back.
-                        </p>
-                      </div>
-                      <div className="rounded-xl px-4 py-3 text-xs" style={{ background: 'var(--raised)', color: 'var(--muted)' }}>
-                        Refunds must be claimed. Fees are not refunded.
-                      </div>
-                      <button
-                        onClick={() => setFailureStep('refunded')}
-                        className="w-full rounded-xl py-3.5 text-sm font-semibold transition-colors"
-                        style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
-                      >
-                        Simulate refund claim
-                      </button>
-                    </>
-                  )}
-                  {failureStep === 'refunded' && (
-                    <>
-                      <div className="rounded-2xl p-5" style={{ background: 'var(--success-bg)', border: '1px solid rgba(200,244,170,0.3)' }}>
-                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--success-text)' }}>Refund confirmed</p>
-                        <p className="text-sm" style={{ color: 'var(--success-text)' }}>
-                          0.40 USDC returned to <strong>Contributor</strong>. Network fee charged.
-                        </p>
-                      </div>
-                      <div className="rounded-xl p-4" style={{ background: 'var(--raised)', border: '1px dashed var(--border)' }}>
-                        <p className="text-xs font-semibold mb-2 tracking-widest" style={{ color: 'var(--accent)' }}>ILLUSTRATIVE RECEIPT</p>
-                        <dl className="space-y-1 text-xs" style={{ color: 'var(--muted)' }}>
-                          <div className="flex justify-between"><dt>Event</dt><dd style={{ color: 'var(--ink)' }}>Refunded</dd></div>
-                          <div className="flex justify-between"><dt>Amount</dt><dd style={{ color: 'var(--ink)' }}>0.400000 USDC</dd></div>
-                          <div className="flex justify-between"><dt>Returned to</dt><dd style={{ color: 'var(--ink)' }}>Contributor</dd></div>
-                        </dl>
-                      </div>
-                      <button
-                        onClick={() => setFailureStep('start')}
-                        className="w-full rounded-xl py-3 text-sm font-medium transition-colors"
-                        style={{ background: 'var(--raised)', color: 'var(--muted)', border: '1px solid var(--border)' }}
-                      >
-                        Reset and replay
-                      </button>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* CTA below demo */}
-        <div className="mt-12 text-center">
-          <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>Ready to try the app?</p>
+        {/* CTA below */}
+        <div className="mt-12">
           <Link
             to="/pools"
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors"
-            style={{ background: 'var(--surface)', color: 'var(--ink)', border: '1px solid var(--border-strong)' }}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
+            style={{ background: 'rgba(28,41,32,0.9)', color: 'var(--ink)', border: '1px solid var(--border-strong)', backdropFilter: 'blur(8px)' }}
           >
             Explore testnet pools <ArrowRight className="h-4 w-4" />
           </Link>
-          <p className="mt-4 text-xs" style={{ color: 'var(--subtle)' }}>
+          <p className="mt-3 text-xs" style={{ color: 'var(--subtle)' }}>
             Real writes require a supported wallet, Arc Testnet connection, and test USDC.
           </p>
         </div>
@@ -577,7 +502,7 @@ function Walkthrough({ motionPaused }: { motionPaused: boolean }) {
   )
 }
 
-// ─── FAQ ──────────────────────────────────────────────────────────────────────
+// ─── FAQ Item ─────────────────────────────────────────────────────────────────
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
   return (
@@ -589,18 +514,13 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         aria-expanded={open}
       >
         {q}
-        <ChevronDown
-          className="h-4 w-4 shrink-0 transition-transform"
-          style={{ transform: open ? 'rotate(180deg)' : 'none', color: 'var(--muted)' }}
-        />
+        <ChevronDown className="h-4 w-4 shrink-0 transition-transform" style={{ transform: open ? 'rotate(180deg)' : 'none', color: 'var(--muted)' }} />
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
             <p className="pb-4 text-sm" style={{ color: 'var(--muted)' }}>{a}</p>
@@ -611,34 +531,17 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   )
 }
 
+// ─── Copy button ──────────────────────────────────────────────────────────────
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
-      className="shrink-0 rounded-lg p-1.5"
-      style={{ color: 'var(--muted)' }}
+      className="shrink-0 rounded-lg p-1.5" style={{ color: 'var(--muted)' }}
       aria-label="Copy"
     >
       {copied ? <Check className="h-3.5 w-3.5" style={{ color: 'var(--success-text)' }} /> : <Copy className="h-3.5 w-3.5" />}
     </button>
-  )
-}
-
-// ─── Ring brand mark (circle outline, not square) ─────────────────────────────
-export function RingMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="16" r="13" fill="none" stroke="#D2FA69" strokeWidth="2.5" />
-      <circle cx="16" cy="16" r="7" fill="none" stroke="#D2FA69" strokeWidth="2" />
-      {/* Lime arc 40% */}
-      <circle cx="16" cy="16" r="10"
-        fill="none" stroke="#D2FA69" strokeWidth="4"
-        strokeDasharray={`${2 * Math.PI * 10 * 0.4} ${2 * Math.PI * 10 * 0.6}`}
-        strokeLinecap="round"
-        style={{ transform: 'rotate(-90deg)', transformOrigin: '16px 16px' }}
-      />
-    </svg>
   )
 }
 
@@ -649,18 +552,13 @@ export function Landing() {
   const heroRef = useRef<HTMLDivElement>(null)
   const [heroVisible, setHeroVisible] = useState(true)
 
-  // Stop hero ring when scrolled offscreen
+  // Stop hero when offscreen or tab hidden
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => setHeroVisible(e.isIntersecting), { threshold: 0 })
     if (heroRef.current) obs.observe(heroRef.current)
-    return () => obs.disconnect()
-  }, [])
-
-  // Stop animations when tab hidden
-  useEffect(() => {
-    const onVis = () => { if (document.hidden) setHeroVisible(false) }
+    const onVis = () => { if (document.hidden) setHeroVisible(false); else setHeroVisible(true) }
     document.addEventListener('visibilitychange', onVis)
-    return () => document.removeEventListener('visibilitychange', onVis)
+    return () => { obs.disconnect(); document.removeEventListener('visibilitychange', onVis) }
   }, [])
 
   const handlePauseToggle = useCallback(() => setMotionPaused((p) => !p), [])
@@ -668,18 +566,13 @@ export function Landing() {
 
   const sectionVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] as const } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] } },
   }
 
   return (
     <div style={{ background: 'var(--canvas)' }}>
-
       {/* Skip link */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 rounded-xl px-4 py-2 text-sm font-semibold"
-        style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
-      >
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 rounded-xl px-4 py-2 text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
         Skip to content
       </a>
 
@@ -697,181 +590,169 @@ export function Landing() {
       </div>
 
       {/* ── L1 Hero ── */}
-      {/* NOTE: no <main> here — App.tsx wraps routes in <main id="main-content"> */}
       <section
         id="main-content"
         ref={heroRef}
-        className="relative overflow-hidden px-4"
-        style={{
-          minHeight: 680,
-          paddingTop: 80,
-          paddingBottom: 80,
-          /* Atmospheric directional light behind torus */
-          background: `
-            radial-gradient(ellipse 55% 60% at 72% 45%, rgba(28,48,34,0.55) 0%, transparent 70%),
-            var(--canvas)
-          `,
-        }}
+        className="relative overflow-hidden"
+        style={{ minHeight: 'clamp(580px, 65vh, 720px)', background: '#0B100E' }}
+        aria-label="Hero"
       >
-        <div className="mx-auto" style={{ maxWidth: 1200 }}>
-          <div className="grid md:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
+        {/* Background atmosphere */}
+        <img
+          src="/art/huipot/hero-atmosphere.png"
+          alt=""
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: 'cover', objectPosition: 'center bottom', zIndex: 0 }}
+          fetchPriority="high"
+          draggable={false}
+        />
+        {/* Left scrim — protect copy legibility */}
+        <div
+          className="absolute inset-y-0 left-0 pointer-events-none"
+          style={{
+            width: '55%',
+            background: 'linear-gradient(to right, rgba(11,16,14,0.92) 0%, rgba(11,16,14,0.70) 60%, transparent 100%)',
+            zIndex: 1,
+          }}
+        />
+        {/* Bottom fade into How-it-works band */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, var(--canvas), transparent)', zIndex: 1 }}
+        />
 
-            {/* Left: copy */}
+        {/* Content */}
+        <div className="relative mx-auto px-8 h-full flex items-center" style={{ maxWidth: 1200, zIndex: 2 }}>
+          <div className="grid w-full items-center gap-10"
+            style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,auto)' }}>
+
+            {/* ── Copy column ── */}
             <motion.div
               initial={reduced ? undefined : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+              style={{ maxWidth: 560, paddingTop: 80, paddingBottom: 80 }}
             >
-              <p
-                className="mb-5 text-xs font-semibold tracking-widest"
-                style={{ color: 'var(--accent)', letterSpacing: '0.14em' }}
-              >
+              <p className="mb-4 text-xs font-semibold tracking-widest" style={{ color: 'var(--accent)', letterSpacing: '0.12em' }}>
                 SHARED GOALS. CLEAR RULES.
               </p>
               <h1
-                className="font-bold leading-[0.98] mb-6"
+                className="display font-bold mb-6"
                 style={{
                   color: 'var(--ink)',
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(48px, 6.5vw, 104px)',
+                  fontSize: 'clamp(48px, 6.5vw, 100px)',
+                  lineHeight: 1.01,
                   maxWidth: '12ch',
-                  /* Stable dark backing for text over atmospheric bg */
-                  textShadow: '0 2px 24px rgba(0,0,0,0.4)',
+                  textShadow: '0 2px 16px rgba(0,0,0,0.5)',
                 }}
               >
                 Pool together.{' '}
-                <br className="hidden sm:block" />
+                <br />
                 Make it{' '}
                 <span style={{ color: 'var(--accent)' }}>happen.</span>
               </h1>
-              <p
-                className="mb-8 text-lg leading-relaxed"
-                style={{ color: 'var(--muted)', maxWidth: '50ch' }}
-              >
+              <p className="mb-8 text-lg leading-relaxed" style={{ color: '#C4D4C8', maxWidth: '48ch', textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
                 Pool USDC for one shared goal. Reach the target to make the funds payable
                 to a fixed recipient. Miss the deadline and each contributor can claim
                 their deposit back.
               </p>
-              <div className="flex flex-wrap gap-3 mb-6">
-                {/* Pill-shaped primary CTA */}
+              <div className="flex flex-wrap gap-3 mb-5">
                 <Link
                   to="/create"
-                  className="inline-flex items-center gap-2 px-7 py-4 text-sm font-semibold transition-colors hover:opacity-90"
-                  style={{
-                    background: 'var(--accent)',
-                    color: 'var(--accent-ink)',
-                    borderRadius: 9999,
-                  }}
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-colors hover:opacity-90"
+                  style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
                 >
                   Create a pool <ArrowRight className="h-4 w-4" />
                 </Link>
-                {/* Text/play secondary */}
                 <a
                   href="#walkthrough"
-                  className="inline-flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-colors hover:opacity-80"
+                  className="inline-flex items-center gap-2 px-4 py-3.5 text-sm font-semibold transition-colors"
                   style={{ color: 'var(--ink)' }}
                 >
-                  <span
-                    className="inline-flex items-center justify-center rounded-full"
-                    style={{ background: 'var(--raised)', border: '1px solid var(--border)', width: 28, height: 28 }}
-                  >
-                    <svg width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
-                      <path d="M0 0L10 6L0 12Z" fill="currentColor" />
-                    </svg>
-                  </span>
+                  <CirclePlay className="h-4 w-4" style={{ color: 'var(--accent)' }} />
                   Try the walkthrough
                 </a>
               </div>
-              <p className="text-xs" style={{ color: 'var(--subtle)' }}>
+              <p className="text-xs" style={{ color: 'rgba(115,135,122,0.9)' }}>
                 No platform fee · Network fees apply
               </p>
             </motion.div>
 
-            {/* Right: dimensional torus */}
+            {/* ── Scene column ── */}
             <motion.div
-              initial={reduced ? undefined : { opacity: 0, scale: 0.9 }}
+              initial={reduced ? undefined : { opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.08, ease: [0.25, 0.1, 0.25, 1] }}
-              className="mx-auto md:mx-0 flex flex-col items-center gap-4"
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+              className="hidden md:flex justify-center items-center"
+              style={{ paddingTop: 40, paddingBottom: 40 }}
             >
-              <RingTorus progress={0.40} motionPaused={heroPaused} size={480} />
-              {/* Chip row — fixed 0.40 remaining, arithmetic consistent */}
-              <div className="flex gap-2 justify-center">
-                <div
-                  className="rounded-full px-3 py-1.5 text-xs font-medium"
-                  style={{ background: 'rgba(210,250,105,0.13)', color: 'var(--accent)', border: '1px solid rgba(210,250,105,0.22)' }}
-                >
-                  +0.40 USDC
-                </div>
-                <div
-                  className="rounded-full px-3 py-1.5 text-xs font-medium"
-                  style={{ background: 'var(--surface)', color: 'var(--muted)', border: '1px solid var(--border)' }}
-                >
-                  0.60 to go
-                </div>
-              </div>
+              <TorusScene
+                size={520}
+                motionPaused={heroPaused}
+                showChips={true}
+              />
             </motion.div>
-
           </div>
+        </div>
+
+        {/* Mobile scene — below copy */}
+        <div
+          className="md:hidden relative mx-auto px-4 pb-10 flex justify-center"
+          style={{ zIndex: 2 }}
+        >
+          <TorusScene
+            size={Math.min(320, typeof window !== 'undefined' ? window.innerWidth - 40 : 320)}
+            motionPaused={heroPaused}
+            showChips={true}
+          />
         </div>
       </section>
 
-      {/* ── L2 How it works — editorial band with outlined numbers ── */}
+      {/* ── L2 How it works ── */}
       <motion.section
         id="how-it-works"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
         variants={reduced ? {} : sectionVariants}
-        className="px-4"
+        className="py-16 px-4"
         style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}
       >
-        <div className="mx-auto" style={{ maxWidth: 1200 }}>
-          <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x" style={{ '--tw-divide-opacity': 1, borderColor: 'var(--border)' } as React.CSSProperties}>
+        <div className="mx-auto max-w-5xl">
+          <div className="grid md:grid-cols-3 gap-0">
             {[
-              {
-                n: '01', title: 'Set the terms.',
-                body: 'Choose one target, deadline and fixed recipient.',
-              },
-              {
-                n: '02', title: 'Pool your USDC.',
-                body: 'Share the link and contribute toward the exact goal.',
-              },
-              {
-                n: '03', title: 'Payout or refund.',
-                body: 'Reach the goal to make payout available; otherwise contributors claim refunds after the deadline.',
-              },
-            ].map((step) => (
-              <div key={step.n} className="px-8 py-10">
-                {/* Outlined number circle */}
+              { n: '01', title: 'Set the terms.', body: 'Choose one target, deadline and fixed recipient.' },
+              { n: '02', title: 'Pool your USDC.', body: 'Share the link and contribute toward the exact goal.' },
+              { n: '03', title: 'Payout or refund.', body: 'Reach the goal to make payout available; otherwise contributors claim refunds after the deadline.' },
+            ].map((step, i) => (
+              <div
+                key={step.n}
+                className="flex gap-5 px-8 py-7"
+                style={{ borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}
+              >
+                {/* Outlined circle number */}
                 <div
-                  className="flex items-center justify-center mb-4"
+                  className="shrink-0 flex items-center justify-center rounded-full"
                   style={{
                     width: 36, height: 36,
-                    borderRadius: '50%',
                     border: '1.5px solid var(--accent)',
                     color: 'var(--accent)',
                     fontFamily: 'var(--font-display)',
-                    fontSize: 12,
+                    fontSize: '0.7rem',
                     fontWeight: 600,
                     letterSpacing: '0.04em',
                   }}
                 >
                   {step.n}
                 </div>
-                <h3
-                  className="font-semibold mb-2"
-                  style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 17 }}
-                >
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
-                  {step.body}
-                </p>
+                <div>
+                  <h3 className="display text-base font-semibold mb-1.5" style={{ color: 'var(--ink)' }}>{step.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>{step.body}</p>
+                </div>
               </div>
             ))}
           </div>
-          <p className="py-4 text-xs text-center" style={{ color: 'var(--subtle)', borderTop: '1px solid var(--border)' }}>
+          <p className="mt-4 text-xs text-center" style={{ color: 'var(--subtle)' }}>
             Terms cannot be changed after creation.
           </p>
         </div>
@@ -880,7 +761,7 @@ export function Landing() {
       {/* ── L3 Walkthrough ── */}
       <Walkthrough motionPaused={motionPaused} />
 
-      {/* ── L4 Use cases (hairline rows) + commitment rules ── */}
+      {/* ── L4 Use cases + commitment ── */}
       <motion.section
         initial="hidden"
         whileInView="visible"
@@ -888,61 +769,39 @@ export function Landing() {
         variants={reduced ? {} : sectionVariants}
         className="py-24 px-4"
       >
-        <div className="mx-auto grid md:grid-cols-2 gap-16 items-start" style={{ maxWidth: 1200 }}>
+        <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-16 items-start">
+          {/* Use cases — hairline rows */}
           <div>
-            <h2
-              className="font-bold mb-8"
-              style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,3vw,40px)' }}
-            >
+            <h2 className="display text-3xl font-bold mb-8" style={{ color: 'var(--ink)' }}>
               For the things you do together.
             </h2>
-            {/* Hairline-separated rows, not cards */}
             <div>
               {[
-                {
-                  title: 'Community workshop',
-                  body: 'Pool for shared recording equipment. Funds reach the vendor once the target is met.',
-                },
-                {
-                  title: 'Shared team tools',
-                  body: 'Split software costs among remote collaborators with clear, auditable accountability.',
-                },
-                {
-                  title: 'Creative collaboration',
-                  body: 'Fund a joint project with transparent terms — every contributor knows exactly what they committed to.',
-                },
+                { title: 'Community workshop', body: 'Pool for shared recording equipment. Funds reach the vendor once the target is met.' },
+                { title: 'Shared team tools', body: 'Split software costs among remote collaborators with clear, auditable accountability.' },
+                { title: 'Creative collaboration', body: 'Fund a joint project with transparent terms — every contributor knows exactly what they committed to.' },
               ].map((uc, i) => (
                 <div
                   key={uc.title}
                   className="py-5"
-                  style={{ borderTop: i === 0 ? '1px solid var(--border)' : '1px solid var(--border)', borderBottom: i === 2 ? '1px solid var(--border)' : 'none' }}
+                  style={{ borderTop: i === 0 ? '1px solid var(--border)' : 'none', borderBottom: '1px solid var(--border)' }}
                 >
-                  <h3
-                    className="font-semibold mb-1"
-                    style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 15 }}
-                  >
-                    {uc.title}
-                  </h3>
+                  <h3 className="display text-sm font-semibold mb-1" style={{ color: 'var(--ink)' }}>{uc.title}</h3>
                   <p className="text-sm" style={{ color: 'var(--muted)' }}>{uc.body}</p>
                 </div>
               ))}
+              <p className="mt-4 text-xs" style={{ color: 'var(--subtle)' }}>
+                Illustrative examples, not active or endorsed pools.
+              </p>
             </div>
-            <p className="mt-4 text-xs" style={{ color: 'var(--subtle)' }}>
-              Illustrative examples only — not active or endorsed pools.
-            </p>
           </div>
 
+          {/* Commitment rules */}
           <div>
-            <h2
-              className="font-bold mb-8"
-              style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,3vw,40px)' }}
-            >
+            <h2 className="display text-3xl font-bold mb-8" style={{ color: 'var(--ink)' }}>
               Know the commitment.
             </h2>
-            <div
-              className="rounded-2xl p-6 space-y-4"
-              style={{ background: 'var(--warning-bg)', border: '1px solid rgba(255,211,139,0.2)' }}
-            >
+            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'var(--warning-bg)', border: '1px solid rgba(255,211,139,0.2)' }}>
               {[
                 'Fixed recipient and terms are set once at creation and cannot be changed.',
                 'No early withdrawal or cancellation for contributors.',
@@ -970,51 +829,36 @@ export function Landing() {
         className="py-24 px-4"
         style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}
       >
-        <div className="mx-auto" style={{ maxWidth: 1200 }}>
+        <div className="mx-auto max-w-5xl">
           <div className="mb-12">
-            <h2
-              className="font-bold mb-3"
-              style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 'clamp(32px,4vw,52px)' }}
-            >
-              Built to be inspected.
-            </h2>
-            <p className="text-base" style={{ color: 'var(--muted)' }}>
-              No platform fee · Unaudited · Arc Testnet only · No mainnet proof claimed.
-            </p>
+            <h2 className="display text-4xl font-bold mb-3" style={{ color: 'var(--ink)' }}>Built to be inspected.</h2>
+            <p className="text-base" style={{ color: 'var(--muted)' }}>No platform fee · Unaudited · Arc Testnet only · No mainnet proof claimed.</p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6">
             <div className="rounded-2xl p-6" style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}>
-              <p className="font-semibold mb-3" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 16 }}>Try it</p>
+              <p className="display text-lg font-semibold mb-3" style={{ color: 'var(--ink)' }}>Try it</p>
               <div className="space-y-3">
-                <a href="#walkthrough" className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent)' }}>
-                  <ArrowRight className="h-3.5 w-3.5" /> Walkthrough
-                </a>
-                <Link to="/pools" className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent)' }}>
-                  <ArrowRight className="h-3.5 w-3.5" /> Real pool lookup
-                </Link>
+                <a href="#walkthrough" className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent)' }}><ArrowRight className="h-3.5 w-3.5" /> Walkthrough</a>
+                <Link to="/pools" className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent)' }}><ArrowRight className="h-3.5 w-3.5" /> Real pool lookup</Link>
                 <p className="text-xs mt-2" style={{ color: 'var(--subtle)' }}>No wallet required for reads.</p>
               </div>
             </div>
-
             <div className="rounded-2xl p-6" style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}>
-              <p className="font-semibold mb-3" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 16 }}>Inspect it</p>
+              <p className="display text-lg font-semibold mb-3" style={{ color: 'var(--ink)' }}>Inspect it</p>
               <div className="space-y-3">
                 {[
                   { label: 'Source', href: 'https://github.com/aquattdabackup/HuiPot' },
                   { label: 'Specification', href: 'https://github.com/aquattdabackup/HuiPot/blob/main/docs/SPEC.md' },
                   { label: 'Contract on ArcScan', href: `https://explorer.testnet.arc.io/address/${CONTRACT_ADDRESS}` },
                 ].map((l) => (
-                  <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent)' }}>
+                  <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm" style={{ color: 'var(--accent)' }}>
                     <ExternalLink className="h-3.5 w-3.5" /> {l.label}
                   </a>
                 ))}
               </div>
             </div>
-
             <div className="rounded-2xl p-6" style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}>
-              <p className="font-semibold mb-3" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 16 }}>Status</p>
+              <p className="display text-lg font-semibold mb-3" style={{ color: 'var(--ink)' }}>Status</p>
               <dl className="space-y-2 text-sm">
                 {[
                   { k: 'Network', v: 'Arc Testnet', ok: true },
@@ -1025,10 +869,7 @@ export function Landing() {
                   <div key={k} className="flex items-center justify-between gap-2">
                     <dt style={{ color: 'var(--muted)' }}>{k}</dt>
                     <dd className="flex items-center gap-1">
-                      {ok
-                        ? <ShieldCheck className="h-3.5 w-3.5" style={{ color: 'var(--success-text)' }} />
-                        : <AlertCircle className="h-3.5 w-3.5" style={{ color: 'var(--warning-text)' }} />
-                      }
+                      {ok ? <ShieldCheck className="h-3.5 w-3.5" style={{ color: 'var(--success-text)' }} /> : <AlertCircle className="h-3.5 w-3.5" style={{ color: 'var(--warning-text)' }} />}
                       <span style={{ color: ok ? 'var(--success-text)' : 'var(--warning-text)' }}>{v}</span>
                     </dd>
                   </div>
@@ -1055,31 +896,18 @@ export function Landing() {
         className="py-24 px-4"
         style={{ borderTop: '1px solid var(--border)' }}
       >
-        <div className="mx-auto" style={{ maxWidth: 680 }}>
-          <h2
-            className="font-bold mb-10 text-center"
-            style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 'clamp(26px,3vw,36px)' }}
-          >
-            Questions
-          </h2>
-          <FaqItem q="Can I withdraw early?" a="No. Contributions are locked until the pool resolves — either by reaching the goal and payout, or by expiring past the deadline and entering refund mode." />
-          <FaqItem q="What if the goal is not reached?" a="After the deadline passes with less than the full goal contributed, each contributor may claim their deposited principal back. Gas fees are not refunded." />
-          <FaqItem q="Who receives the money?" a="The fixed recipient address set at pool creation. This address is immutable and cannot be changed after the pool is created." />
-          <FaqItem q="Is payout automatic?" a="No. The contract rules determine eligibility. A wallet transaction explicitly triggers payout or refund. Anyone may trigger payout once the goal is met." />
-          <FaqItem q="Is this mainnet?" a="The current deployment is on Arc Testnet. No mainnet proof is claimed. This is for testing and demonstration only." />
-
+        <div className="mx-auto max-w-2xl">
+          <h2 className="display text-3xl font-bold mb-10 text-center" style={{ color: 'var(--ink)' }}>Questions</h2>
+          <div>
+            <FaqItem q="Can I withdraw early?" a="No. Contributions are locked until the pool resolves — either by reaching the goal and payout, or by expiring past the deadline and entering refund mode." />
+            <FaqItem q="What if the goal is not reached?" a="After the deadline passes with less than the full goal contributed, each contributor may claim their deposited principal back. Gas fees are not refunded." />
+            <FaqItem q="Who receives the money?" a="The fixed recipient address set at pool creation. This address is immutable and cannot be changed after the pool is created." />
+            <FaqItem q="Is payout automatic?" a="No. The contract rules determine eligibility. A wallet transaction explicitly triggers payout or refund. Anyone may trigger payout once the goal is met." />
+            <FaqItem q="Is this mainnet?" a="The current deployment is on Arc Testnet. No mainnet proof is claimed. This is for testing and demonstration only." />
+          </div>
           <div className="mt-16 text-center">
-            <p
-              className="font-bold mb-6"
-              style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 'clamp(20px,2.5vw,28px)' }}
-            >
-              Your next shared goal starts here.
-            </p>
-            <Link
-              to="/create"
-              className="inline-flex items-center gap-2 px-7 py-4 text-sm font-semibold transition-colors hover:opacity-90"
-              style={{ background: 'var(--accent)', color: 'var(--accent-ink)', borderRadius: 9999 }}
-            >
+            <p className="display text-2xl font-bold mb-6" style={{ color: 'var(--ink)' }}>Your next shared goal starts here.</p>
+            <Link to="/create" className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold hover:opacity-90" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
               Create a pool <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -1088,10 +916,10 @@ export function Landing() {
 
       {/* Footer */}
       <footer className="px-4 py-8" style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="mx-auto flex flex-wrap items-center justify-between gap-4" style={{ maxWidth: 1200 }}>
+        <div className="mx-auto max-w-5xl flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <RingMark size={28} />
-            <span className="font-semibold" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)', fontSize: 15 }}>HuiPot</span>
+            <RingMark size={24} />
+            <span className="display text-sm font-semibold" style={{ color: 'var(--ink)' }}>HuiPot</span>
           </div>
           <div className="flex flex-wrap gap-5 text-xs" style={{ color: 'var(--subtle)' }}>
             <a href="https://github.com/aquattdabackup/HuiPot" target="_blank" rel="noopener noreferrer" className="hover:underline">Source</a>
