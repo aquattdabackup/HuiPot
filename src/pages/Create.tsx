@@ -4,12 +4,12 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchCh
 import { ConnectKitButton } from 'connectkit'
 import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert } from 'lucide-react'
 import { decodeEventLog } from 'viem'
-import { HUIPOT_ADDRESS, HUIPOT_ABI } from '../contract'
+import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
 import { TARGET_CHAIN_ID, parseProductAmount, formatNativeAmount, explorerTxUrl } from '../config'
 import { CommitmentNotice } from '../components/CommitmentNotice'
 import { formatDeadline, parseOnchainError } from '../lib/utils'
 
-const DEPLOYED = HUIPOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
+const DEPLOYED = DEPLOYMENT_CONFIGURED
 
 function fieldError(errors: Record<string, string>, field: string) {
   return errors[field] ? (

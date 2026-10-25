@@ -1,6 +1,12 @@
-// Contract address — updated after deployment
-// Replace HUIPOT_ADDRESS with the deployed contract address
-export const HUIPOT_ADDRESS = ((import.meta.env.VITE_HUIPOT_ADDRESS as string) ?? '0x0000000000000000000000000000000000000000') as `0x${string}`
+// Contract address — set VITE_HUIPOT_ADDRESS in your build environment.
+// If missing, malformed, or zero, the app shows a "Deployment not configured" banner
+// and disables all writes. This is not a deployed-contract error; it is a build-config error.
+const _rawAddr = (import.meta.env.VITE_HUIPOT_ADDRESS as string | undefined) ?? ''
+const _isValidAddr = /^0x[0-9a-fA-F]{40}$/.test(_rawAddr) && _rawAddr !== '0x0000000000000000000000000000000000000000'
+export const HUIPOT_ADDRESS: `0x${string}` = _isValidAddr
+  ? (_rawAddr as `0x${string}`)
+  : '0x0000000000000000000000000000000000000000'
+export const DEPLOYMENT_CONFIGURED = _isValidAddr
 
 export const HUIPOT_ABI = [
   // Write functions

@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useReadContract } from 'wagmi'
 import { ArrowLeft, ShieldCheck, ShieldAlert, ExternalLink, Search, AlertCircle, Loader2 } from 'lucide-react'
-import { HUIPOT_ADDRESS, HUIPOT_ABI } from '../contract'
+import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
 import { TARGET_CHAIN_ID, arcTestnet, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
 import { formatAddress, formatDeadline, statusLabel, STATUS } from '../lib/utils'
 
-const DEPLOYED = HUIPOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
+const DEPLOYED = DEPLOYMENT_CONFIGURED
 
 // Arc system USDC Transfer emitter address (native value moves appear as Transfer from this address)
 const ARC_SYSTEM_EMITTER = '0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE'
@@ -170,18 +170,26 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
   }
 
   // Look for Arc system Transfer log indicating native USDC movement.
-  // The Transfer MUST be FROM the contract (topics[1] = from address) so that an unrelated
-  // Transfer in the same tx (e.g. a fee paid by the user) does not satisfy the check.
   // Arc Transfer(address indexed from, address indexed to, uint256 value)
   // keccak256("Transfer(address,address,uint256)") = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
   const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-  const arcLogs = receipt.logs.filter(
+
+  // For PaidOut/Refunded: Transfer FROM the contract (topics[1] = HuiPot) — outbound movement.
+  // For Contributed: Transfer TO the contract (topics[2] = HuiPot) — inbound movement.
+  const arcOutboundLogs = receipt.logs.filter(
     (l) =>
       l.address.toLowerCase() === ARC_SYSTEM_EMITTER.toLowerCase() &&
       l.topics[0] === TRANSFER_TOPIC &&
-      // topics[1] = from (indexed address) — must be the HuiPot contract
       ('0x' + l.topics[1].slice(-40)).toLowerCase() === HUIPOT_ADDRESS.toLowerCase()
   )
+  const arcInboundLogs = receipt.logs.filter(
+    (l) =>
+      l.address.toLowerCase() === ARC_SYSTEM_EMITTER.toLowerCase() &&
+      l.topics[0] === TRANSFER_TOPIC &&
+      ('0x' + l.topics[2].slice(-40)).toLowerCase() === HUIPOT_ADDRESS.toLowerCase()
+  )
+  // Choose which set to use based on event type
+  const arcLogs = eventFound === 'Contributed' ? arcInboundLogs : arcOutboundLogs
 
   // For PaidOut: verify the event amount equals the on-chain pool target.
   // arcTransferAmountMatchesEvent alone is insufficient — if event=1 and transfer=1
@@ -234,8 +242,10 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
       notes.push('No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.')
     } else if (eventFound === 'Refunded') {
       notes.push('No Arc system Transfer from this contract found. A refund should produce a Transfer from the contract to the contributor. Verify independently on ArcScan.')
+    } else if (eventFound === 'Contributed') {
+      notes.push('No Arc system inbound Transfer to this contract found. A contribution should produce a Transfer to the contract. Verify independently on ArcScan.')
     } else {
-      notes.push('No Arc system Transfer from this contract found. This is expected for a contribution (value moves into the contract, not out). Verify independently on ArcScan.')
+      notes.push('No Arc system Transfer found. Verify independently on ArcScan.')
     }
   }
 
@@ -243,21 +253,25 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     notes.push(`Payout amount in event: ${BigInt(amountInLog).toString()} native base units (18 dec).`)
   }
 
-  // R2: overallValid requires ALL applicable dimensions bound.
+  // R2+F05: overallValid requires ALL applicable dimensions bound.
   // Missing movement evidence is PARTIAL (overallValid=false), never all-checks success.
   //
   // PaidOut: receipt ok + contract target + event + pool id + recipient + amount present +
   //          movement FROM contract + movement destination matches recipient + movement amount matches event
   // Refunded: receipt ok + contract target + event + pool id + amount present +
   //           movement FROM contract + movement destination matches contributor + movement amount matches event
-  // Contributed: receipt ok + contract target + event + pool id + amount present
-  //              (movement is INTO the contract, no outbound Transfer from contract expected)
+  // Contributed: receipt ok + contract target + event + pool id + amount present +
+  //              inbound Transfer TO contract + transfer amount matches event amount
+  //              (movement is INTO the contract; no recipient match needed)
   const amountPresent = amountInLog !== null
-  const movementRequired = eventFound === 'PaidOut' || eventFound === 'Refunded'
+  const movementRequired = eventFound === 'PaidOut' || eventFound === 'Refunded' || eventFound === 'Contributed'
   const movementOk = !movementRequired ||
-    (arcTransferFound &&
-      arcTransferToMatchesRecipient === true &&
-      arcTransferAmountMatchesEvent === true)
+    (eventFound === 'Contributed'
+      ? (arcTransferFound && arcTransferAmountMatchesEvent === true)
+      : (arcTransferFound &&
+          arcTransferToMatchesRecipient === true &&
+          arcTransferAmountMatchesEvent === true)
+    )
 
   const overallValid =
     receiptStatusOk &&
@@ -297,7 +311,9 @@ export function Proof() {
   })()
   const validPoolId = poolIdBig !== null && poolIdBig > 0n
 
-  const [txHashInput, setTxHashInput] = useState('')
+  const [searchParams] = useSearchParams()
+  const prefillTx = searchParams.get('tx') ?? ''
+  const [txHashInput, setTxHashInput] = useState(prefillTx)
   const [verifyState, setVerifyState] = useState<VerifyState>({ phase: 'idle' })
 
   const { data: pool, isLoading, isError: poolError } = useReadContract({
@@ -325,6 +341,19 @@ export function Proof() {
   })
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
+
+  // F07: Auto-verify when ?tx= prefill is present and pool data just loaded
+  useEffect(() => {
+    if (!prefillTx || !pool || verifyState.phase !== 'idle') return
+    if (!/^0x[0-9a-fA-F]{64}$/.test(prefillTx)) return
+    const [, rcpt, tgt] = pool
+    setVerifyState({ phase: 'loading' })
+    verifyTx(prefillTx, poolId ?? '', rcpt, tgt)
+      .then((result) => setVerifyState({ phase: 'done', result }))
+      .catch((err) => setVerifyState({ phase: 'error', message: `RPC error: ${err instanceof Error ? err.message : String(err)}` }))
+  // pool reference changing triggers the effect; other deps are stable strings/primitives
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillTx, pool])
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault()

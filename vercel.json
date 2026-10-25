@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/((?!assets|art|favicon\\.ico|robots\\.txt|manifest\\.json).*)", "destination": "/index.html" }
+  ]
+}

@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useReadContract } from 'wagmi'
 import { Plus, Search, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
-import { HUIPOT_ADDRESS, HUIPOT_ABI } from '../contract'
+import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
 import { TARGET_CHAIN_ID } from '../config'
 import { PoolCard } from '../components/PoolCard'
 
-const DEPLOYED = HUIPOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
+const DEPLOYED = DEPLOYMENT_CONFIGURED
 const MAX_DISPLAY = 20
 
 function PoolLoader({ poolId }: { poolId: bigint }) {

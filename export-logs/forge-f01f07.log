@@ -1,0 +1,307 @@
+No files changed, compilation skipped
+
+Ran 27 tests for contracts/test/HuiPotGoalPool.AC01.t.sol:HuiPotGoalPool_AC01
+[PASS] test_AC01_CreatorEqualsRecipient_Allowed() (gas: 188429)
+[PASS] test_AC01_ImmutableTerms_CannotBeChangedExternally() (gas: 345801)
+[PASS] test_AC01_IndependentIds_Increment() (gas: 321209)
+[PASS] test_AC01_Revert_Deadline30DaysPlusOne() (gas: 16475)
+[PASS] test_AC01_Revert_DeadlineExactlyNow() (gas: 16297)
+[PASS] test_AC01_Revert_DeadlinePast() (gas: 16313)
+[PASS] test_AC01_Revert_GetPool_IdTooLarge() (gas: 13366)
+[PASS] test_AC01_Revert_GetPool_IdZero() (gas: 11286)
+[PASS] test_AC01_Revert_GetStatus_IdZero() (gas: 8599)
+[PASS] test_AC01_Revert_NonQuantumTarget_OneWei() (gas: 16234)
+[PASS] test_AC01_Revert_NonQuantumTarget_QuantumMinusOne() (gas: 16284)
+[PASS] test_AC01_Revert_NonpayableCreatePool() (gas: 21710)
+[PASS] test_AC01_Revert_PurposeEmpty() (gas: 18377)
+[PASS] test_AC01_Revert_PurposeExactly281() (gas: 40663)
+[PASS] test_AC01_Revert_SelfAsRecipient() (gas: 16070)
+[PASS] test_AC01_Revert_TargetQuantumPlusOne() (gas: 16284)
+[PASS] test_AC01_Revert_TitleEmpty() (gas: 18463)
+[PASS] test_AC01_Revert_TitleExactly81() (gas: 27475)
+[PASS] test_AC01_Revert_ZeroRecipient() (gas: 16108)
+[PASS] test_AC01_Revert_ZeroTarget() (gas: 16100)
+[PASS] test_AC01_ValidCreate_EmitsPoolCreated() (gas: 183549)
+[PASS] test_AC01_ValidCreate_StatusIsActive() (gas: 184891)
+[PASS] test_AC01_ValidCreate_StoresFields() (gas: 193182)
+[PASS] test_AC01_Valid_DeadlineExactly30Days() (gas: 177288)
+[PASS] test_AC01_Valid_PurposeExactly280() (gas: 403107)
+[PASS] test_AC01_Valid_QuantumTarget() (gas: 177185)
+[PASS] test_AC01_Valid_TitleExactly80() (gas: 255247)
+Suite result: ok. 27 passed; 0 failed; 0 skipped; finished in 2.12ms (800.53µs CPU time)
+
+Ran 14 tests for contracts/test/HuiPotGoalPool.AC02.t.sol:HuiPotGoalPool_AC02
+[PASS] test_AC02_Contributes_EmitsContributed() (gas: 80725)
+[PASS] test_AC02_Contributes_EmitsContributedWithCumulative() (gas: 117557)
+[PASS] test_AC02_ExactRemaining_Succeeds() (gas: 135304)
+[PASS] test_AC02_MultiWallet_AccumulatesTotal() (gas: 171854)
+[PASS] test_AC02_RepeatedContributions_Accumulate() (gas: 120603)
+[PASS] test_AC02_Revert_AfterDeadline() (gas: 51834)
+[PASS] test_AC02_Revert_ExceedsRemaining_AfterPartial() (gas: 92863)
+[PASS] test_AC02_Revert_ExceedsRemaining_Full() (gas: 38339)
+[PASS] test_AC02_Revert_NonQuantum_OneUSDCPlusOne() (gas: 27282)
+[PASS] test_AC02_Revert_NonQuantum_OneWei() (gas: 27258)
+[PASS] test_AC02_Revert_NonQuantum_QuantumMinusOne() (gas: 27326)
+[PASS] test_AC02_Revert_PastDeadline() (gas: 51857)
+[PASS] test_AC02_Revert_PostGoal_PoolFunded() (gas: 110860)
+[PASS] test_AC02_Revert_ZeroDeposit() (gas: 20444)
+Suite result: ok. 14 passed; 0 failed; 0 skipped; finished in 1.38ms (506.05µs CPU time)
+
+Ran 1 test for contracts/test/HuiPotGoalPool.R6.t.sol:HuiPotGoalPool_R6c
+[PASS] test_R6c_RejectingThenAccepting_Payout() (gas: 358448)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 464.98µs (165.99µs CPU time)
+
+Ran 1 test for contracts/test/HuiPotGoalPool.R6.t.sol:HuiPotGoalPool_R6d
+[PASS] test_R6d_RejectingThenAccepting_ClaimRefund() (gas: 398761)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 502.58µs (132.19µs CPU time)
+
+Ran 1 test for contracts/test/HuiPotGoalPool.R6.t.sol:HuiPotGoalPool_R6e
+[PASS] test_R6e_Rollback_FailedPayout_StateAndAccounting() (gas: 332790)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 395.04µs (138.07µs CPU time)
+
+Ran 1 test for contracts/test/HuiPotGoalPool.R6.t.sol:HuiPotGoalPool_R6f
+[PASS] test_R6f_Rollback_FailedClaimRefund_StateAndAccounting() (gas: 326933)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 412.76µs (135.88µs CPU time)
+
+Ran 20 tests for contracts/test/HuiPotGoalPool.AC0304.t.sol:HuiPotGoalPool_AC0304
+[PASS] test_AC03_ContributeAfterDeadline_Fails() (gas: 51857)
+[PASS] test_AC03_ContributeAtDeadline_Fails() (gas: 51753)
+[PASS] test_AC03_ContributeJustBeforeDeadline_Succeeds() (gas: 95279)
+[PASS] test_AC03_FundedPool_StaysFunded_AfterDeadline() (gas: 102278)
+[PASS] test_AC03_UnderfundedRefundsOpen_AfterDeadline() (gas: 95742)
+[PASS] test_AC03_UnderfundedRefundsOpen_AtDeadline() (gas: 95654)
+[PASS] test_AC03_ZeroDepositPool_ClosedAfterDeadline_NoTx() (gas: 37117)
+[PASS] test_AC03_ZeroDepositPool_ClosedAtDeadline_NoTx() (gas: 37134)
+[PASS] test_AC04_BalanceDelta_GasAccounted() (gas: 161711)
+[PASS] test_AC04_Payout_AnyCaller_SendsTargetToRecipient() (gas: 161032)
+[PASS] test_AC04_Payout_EmitsPaidOut() (gas: 163623)
+[PASS] test_AC04_Payout_PaidOutFieldIsTrue() (gas: 161674)
+[PASS] test_AC04_Payout_StatusIsPaid() (gas: 157819)
+[PASS] test_AC04_RecipientEqualsCaller() (gas: 293457)
+[PASS] test_AC04_Revert_ClaimRefundAfterPayout() (gas: 159292)
+[PASS] test_AC04_Revert_ContributeAfterPayout() (gas: 168010)
+[PASS] test_AC04_Revert_PayoutAlreadyPaid() (gas: 163797)
+[PASS] test_AC04_Revert_PayoutEarly_Active() (gas: 29054)
+[PASS] test_AC04_Revert_PayoutOnInvalidPool() (gas: 15808)
+[PASS] test_AC04_Revert_SecondPayoutAfterPayout() (gas: 158788)
+Suite result: ok. 20 passed; 0 failed; 0 skipped; finished in 4.33ms (903.30µs CPU time)
+
+Ran 19 tests for contracts/test/HuiPotGoalPool.AC0506.t.sol:HuiPotGoalPool_AC0506
+[PASS] test_AC05_ClaimRefund_EmitsRefunded() (gas: 190006)
+[PASS] test_AC05_ClaimRefund_FullPrincipal() (gas: 189598)
+[PASS] test_AC05_FinalRefund_MovesToClosed() (gas: 150485)
+[PASS] test_AC05_GetClaimable_ReturnsCorrectAmount() (gas: 98572)
+[PASS] test_AC05_GetClaimable_ZeroAfterClaim() (gas: 150587)
+[PASS] test_AC05_MultiContributor_EachClaimsIndependently() (gas: 223266)
+[PASS] test_AC05_Revert_ClaimOnInvalidPool() (gas: 18205)
+[PASS] test_AC05_Revert_NoClaimAfterGoalMet() (gas: 100314)
+[PASS] test_AC05_Revert_NoClaimBeforeExpiry() (gas: 83575)
+[PASS] test_AC05_Revert_OtherWalletCannotClaim() (gas: 145146)
+[PASS] test_AC05_Revert_RepeatedClaim() (gas: 193883)
+[PASS] test_AC05_ZeroDepositPool_AlreadyClosed_NoTx() (gas: 37173)
+[PASS] test_AC06_AccountingInvariants_AcrossMultiplePools() (gas: 454755)
+[PASS] test_AC06_ContractBalanceMatchesDeposits() (gas: 115062)
+[PASS] test_AC06_DirectETHFallback_Reverts() (gas: 15028)
+[PASS] test_AC06_DirectETHTransfer_Reverts() (gas: 15099)
+[PASS] test_AC06_Invariant_LiabilityNeverNegative() (gas: 190565)
+[PASS] test_AC06_PoolsAreIsolated_ContributionsNotShared() (gas: 301936)
+[PASS] test_AC06_PoolsIsolated_FillingOneDoesNotAffectOther() (gas: 254952)
+Suite result: ok. 19 passed; 0 failed; 0 skipped; finished in 2.04ms (1.05ms CPU time)
+
+Ran 5 tests for contracts/test/HuiPotGoalPool.AC07.t.sol:HuiPotGoalPool_AC07
+[PASS] test_AC07_CrossPoolReentrant_Contribute_DuringPayout() (gas: 630331)
+[PASS] test_AC07_ReentrantClaimRefund_BlockedByReentrancyGuard() (gas: 559740)
+[PASS] test_AC07_ReentrantPayout_BlockedByReentrancyGuard() (gas: 474981)
+[PASS] test_AC07_RejectingContributor_ClaimRefundReverts() (gas: 474601)
+[PASS] test_AC07_RejectingRecipient_PayoutReverts() (gas: 338837)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 1.39ms (559.16µs CPU time)
+
+Ran 18 tests for contracts/test/HuiPotGoalPool.AC0809.t.sol:HuiPotGoalPool_AC0809
+[PASS] test_AC08_Contributed_AccumulatingNewTotal() (gas: 117729)
+[PASS] test_AC08_Contributed_CorrectAmountAndNewTotal() (gas: 80909)
+[PASS] test_AC08_GoalReached_EmittedExactlyOnce_WhenGoalMet() (gas: 120433)
+[PASS] test_AC08_GoalReached_NOT_EmittedOnNonFillingContribution() (gas: 79644)
+[PASS] test_AC08_PaidOut_CorrectFields() (gas: 163630)
+[PASS] test_AC08_PoolCreated_CorrectFields() (gas: 162825)
+[PASS] test_AC08_Refunded_CorrectFields() (gas: 151215)
+[PASS] test_AC08_Revert_NoEventOnRevertedContribution() (gas: 32826)
+[PASS] test_AC09_ContributionAmounts_DisplayInFullUnits() (gas: 79628)
+[PASS] test_AC09_Contribution_BelowQuantum_Reverts() (gas: 27219)
+[PASS] test_AC09_Contribution_ExactQuantum_Succeeds() (gas: 225588)
+[PASS] test_AC09_Contribution_NotDivisibleByQuantum_Reverts() (gas: 27220)
+[PASS] test_AC09_GetPool_ReturnsNative18DecAmounts() (gas: 32061)
+[PASS] test_AC09_NoERC20Calls_ContractBalanceIsNative() (gas: 115218)
+[PASS] test_AC09_OneUSDC_Is_1e18_NativeUnits() (gas: 290)
+[PASS] test_AC09_SmallestValidContribution_IsOneMillionthUSDC() (gas: 225610)
+[PASS] test_AC09_Target_MustBeMultipleOf1e12() (gas: 16201)
+[PASS] test_AC09_Target_QuantumExactly_Succeeds() (gas: 160040)
+Suite result: ok. 18 passed; 0 failed; 0 skipped; finished in 1.89ms (879.22µs CPU time)
+
+Ran 5 tests for contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol:HuiPotGoalPool_Fuzz
+[PASS] testFuzz_Contribute_NonQuantumReverts(uint256) (runs: 256, μ: 191521, ~: 191521)
+[PASS] testFuzz_Contribute_ValidQuantumAmount(uint256) (runs: 256, μ: 240263, ~: 240297)
+[PASS] testFuzz_CreatePool_ValidParams(uint256,uint256) (runs: 256, μ: 176548, ~: 176786)
+[PASS] testFuzz_FillPool_ExactTarget(uint256) (runs: 256, μ: 248719, ~: 248988)
+[PASS] testFuzz_RefundRecoversFull(uint256) (runs: 256, μ: 296000, ~: 296247)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 89.71ms (89.25ms CPU time)
+
+Ran 1 test for contracts/test/HuiPotGoalPool.R6.t.sol:HuiPotGoalPool_R6b
+[PASS] test_R6b_ForcedSurplus_BalanceCoversLiabilities() (gas: 385811)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 683.54µs (224.43µs CPU time)
+
+Ran 4 tests for contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol:HuiPotGoalPool_Invariant
+[PASS] invariant_ContractBalance_EqualsLiability() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25769 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25508 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25846 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25519 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25358 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_PaidIsZeroOrTarget() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25769 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25508 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25846 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25519 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25358 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_PayoutAtMostOnce() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25769 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25508 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25846 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25519 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25358 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_RefundedNeverExceedsContributed() (runs: 256, calls: 128000, reverts: 0)
+
+╭-------------+------------------+-------+---------+----------╮
+| Contract    | Selector         | Calls | Reverts | Discards |
++=============================================================+
+| PoolHandler | claimRefundAlice | 25769 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | claimRefundBob   | 25508 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | contribute       | 25846 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | payout           | 25519 | 0       | 0        |
+|-------------+------------------+-------+---------+----------|
+| PoolHandler | warpForward      | 25358 | 0       | 0        |
+╰-------------+------------------+-------+---------+----------╯
+
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 21.97s (41.93s CPU time)
+
+Ran 3 tests for contracts/test/HuiPotGoalPool.R6.t.sol:HuiPotGoalPool_R6a_MultiPool_Invariant
+[PASS] invariant_MultiPool_BalanceCoversLiabilities() (runs: 256, calls: 128000, reverts: 0)
+
+╭-----------------------+------------------+-------+---------+----------╮
+| Contract              | Selector         | Calls | Reverts | Discards |
++=======================================================================+
+| PoolInterleaveHandler | claimRefundAlice | 21205 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | claimRefundBob   | 21369 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | contributeToPool | 21231 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | createNextPool   | 21479 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | payoutPool       | 21346 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | warpForward      | 21370 | 0       | 0        |
+╰-----------------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_MultiPool_NoCrossPoolLeak() (runs: 256, calls: 128000, reverts: 0)
+
+╭-----------------------+------------------+-------+---------+----------╮
+| Contract              | Selector         | Calls | Reverts | Discards |
++=======================================================================+
+| PoolInterleaveHandler | claimRefundAlice | 21205 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | claimRefundBob   | 21369 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | contributeToPool | 21231 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | createNextPool   | 21479 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | payoutPool       | 21346 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | warpForward      | 21370 | 0       | 0        |
+╰-----------------------+------------------+-------+---------+----------╯
+
+[PASS] invariant_MultiPool_PayoutAtMostOnce() (runs: 256, calls: 128000, reverts: 0)
+
+╭-----------------------+------------------+-------+---------+----------╮
+| Contract              | Selector         | Calls | Reverts | Discards |
++=======================================================================+
+| PoolInterleaveHandler | claimRefundAlice | 21205 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | claimRefundBob   | 21369 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | contributeToPool | 21231 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | createNextPool   | 21479 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | payoutPool       | 21346 | 0       | 0        |
+|-----------------------+------------------+-------+---------+----------|
+| PoolInterleaveHandler | warpForward      | 21370 | 0       | 0        |
+╰-----------------------+------------------+-------+---------+----------╯
+
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 31.70s (44.39s CPU time)
+
+╭----------------------------------------+--------+--------+---------╮
+| Test Suite                             | Passed | Failed | Skipped |
++====================================================================+
+| HuiPotGoalPool_AC01                    | 27     | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_AC02                    | 14     | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_AC0304                  | 20     | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_AC0506                  | 19     | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_AC07                    | 5      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_AC0809                  | 18     | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_Fuzz                    | 5      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_Invariant               | 4      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_R6a_MultiPool_Invariant | 3      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_R6b                     | 1      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_R6c                     | 1      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_R6d                     | 1      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_R6e                     | 1      | 0      | 0       |
+|----------------------------------------+--------+--------+---------|
+| HuiPotGoalPool_R6f                     | 1      | 0      | 0       |
+╰----------------------------------------+--------+--------+---------╯
+

@@ -6,10 +6,10 @@ import {
   CirclePlay, ShieldCheck, AlertCircle,
 } from 'lucide-react'
 
-const HUIPOT_ADDRESS = import.meta.env.VITE_HUIPOT_ADDRESS as string | undefined
+import { HUIPOT_ADDRESS as _CONTRACT_ADDR, DEPLOYMENT_CONFIGURED } from '../contract'
 const CONTRACT_ADDRESS =
-  HUIPOT_ADDRESS && HUIPOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
-    ? HUIPOT_ADDRESS
+  DEPLOYMENT_CONFIGURED
+    ? _CONTRACT_ADDR
     : '0x81a139599d252eb2dc2bbb6c267e911a21264288'
 
 // ─── RingMark (exported for AppHeader) ───────────────────────────────────────
