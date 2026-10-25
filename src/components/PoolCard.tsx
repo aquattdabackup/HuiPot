@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { formatNativeAmount, explorerAddressUrl } from '../config'
 import { formatAddress, formatDeadline, statusLabel, statusColor } from '../lib/utils'
 import { ExternalLink } from 'lucide-react'
@@ -25,17 +25,25 @@ export function PoolCard({
   totalContributed,
   status,
 }: PoolCardProps) {
+  const navigate = useNavigate()
   const pct = target > 0n ? Number((totalContributed * 100n) / target) : 0
   const clampedPct = Math.min(100, pct)
+  const href = `/pools/${poolId.toString()}`
 
   return (
-    <Link
-      to={`/pools/${poolId.toString()}`}
-      className="block rounded-2xl p-5 transition-shadow hover:shadow-md no-underline"
+    // Outer div is the card, not an anchor — avoids nested-anchor violations.
+    // The entire surface responds to click for keyboard and pointer navigation.
+    <div
+      role="article"
+      className="group rounded-2xl p-5 transition-all cursor-pointer"
       style={{
-        background: 'var(--surface-strong)',
+        background: 'var(--surface)',
         border: '1px solid var(--border)',
       }}
+      onClick={() => navigate(href)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(href) } }}
+      tabIndex={0}
+      aria-label={`${title} — open pool ${poolId.toString()}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3
@@ -65,7 +73,7 @@ export function PoolCard({
         </div>
         <div
           className="h-2 w-full overflow-hidden rounded-full"
-          style={{ background: 'var(--surface-muted)' }}
+          style={{ background: 'var(--raised)' }}
           role="progressbar"
           aria-valuenow={clampedPct}
           aria-valuemin={0}
@@ -81,18 +89,21 @@ export function PoolCard({
 
       <div className="flex items-center justify-between text-xs" style={{ color: 'var(--muted)' }}>
         <span>{formatDeadline(deadline)}</span>
+        {/* Sibling control — stopPropagation prevents triggering card navigation */}
         <a
           href={explorerAddressUrl(recipient)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
           className="flex items-center gap-1 hover:underline"
           style={{ color: 'var(--muted)' }}
+          aria-label={`View recipient ${recipient} on ArcScan`}
         >
           {formatAddress(recipient)}
           <ExternalLink className="h-3 w-3" />
         </a>
       </div>
-    </Link>
+    </div>
   )
 }

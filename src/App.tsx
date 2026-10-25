@@ -1,17 +1,19 @@
 import { Routes, Route } from 'react-router-dom'
 import { AppHeader } from './components/AppHeader'
-import { Home } from './pages/Home'
+import { Landing } from './pages/Landing'
+import { Explore } from './pages/Explore'
 import { Create } from './pages/Create'
 import { Pool } from './pages/Pool'
 import { Proof } from './pages/Proof'
 
 export default function App() {
   return (
-    <div className="min-h-dvh" style={{ background: 'var(--bg-gradient)' }}>
+    <div className="min-h-dvh" style={{ background: 'var(--canvas)' }}>
       <AppHeader />
       <main>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/pools" element={<Explore />} />
           <Route path="/create" element={<Create />} />
           <Route path="/pools/:poolId" element={<Pool />} />
           <Route path="/pools/:poolId/proof" element={<Proof />} />

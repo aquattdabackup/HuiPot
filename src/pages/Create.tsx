@@ -234,8 +234,8 @@ export function Create() {
           >
             View transaction on ArcScan
           </a>
-          <Link to="/" className="text-sm" style={{ color: 'var(--muted)' }}>
-            Back to home
+          <Link to="/pools" className="text-sm" style={{ color: 'var(--muted)' }}>
+            Back to pools
           </Link>
         </div>
       </div>
@@ -254,7 +254,7 @@ export function Create() {
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6">
         <Link
-          to="/"
+          to="/pools"
           className="flex items-center gap-1.5 text-sm no-underline"
           style={{ color: 'var(--muted)' }}
         >

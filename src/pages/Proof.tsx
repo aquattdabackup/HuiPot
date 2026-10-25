@@ -43,6 +43,7 @@ interface VerifyResult {
   arcTransferTo: string | null
   arcTransferToMatchesRecipient: boolean | null
   arcTransferAmountMatchesEvent: boolean | null
+  eventAmountMatchesTarget: boolean | null  // payout: event amount must equal pool target
   overallValid: boolean
   notes: string[]
 }
@@ -82,7 +83,7 @@ function EvidenceRow({
   )
 }
 
-async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipient: string): Promise<VerifyResult> {
+async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipient: string, expectedTarget: bigint): Promise<VerifyResult> {
   const rpc = arcTestnet.rpcUrls.default.http[0]
   const notes: string[] = []
 
@@ -106,6 +107,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
       recipientMatchesPool: null,
       arcTransferFound: false, arcTransferAmount: null, arcTransferTo: null,
       arcTransferToMatchesRecipient: null, arcTransferAmountMatchesEvent: null,
+      eventAmountMatchesTarget: null,
       overallValid: false, notes,
     }
   }
@@ -181,6 +183,17 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
       ('0x' + l.topics[1].slice(-40)).toLowerCase() === HUIPOT_ADDRESS.toLowerCase()
   )
 
+  // For PaidOut: verify the event amount equals the on-chain pool target.
+  // arcTransferAmountMatchesEvent alone is insufficient — if event=1 and transfer=1
+  // they match each other but both are wrong against a 1e18 target.
+  let eventAmountMatchesTarget: boolean | null = null
+  if (eventFound === 'PaidOut' && amountInLog !== null) {
+    eventAmountMatchesTarget = BigInt(amountInLog) === expectedTarget
+    if (!eventAmountMatchesTarget) {
+      notes.push(`PaidOut event amount (${amountInLog}) does not match pool target (${expectedTarget.toString()}).`)
+    }
+  }
+
   let arcTransferFound = false
   let arcTransferAmount: string | null = null
   let arcTransferTo: string | null = null
@@ -252,6 +265,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     eventFound !== null &&
     poolIdMatches === true &&
     (eventFound !== 'PaidOut' || recipientMatchesPool === true) &&
+    (eventFound !== 'PaidOut' || eventAmountMatchesTarget === true) &&
     amountPresent &&
     movementOk
 
@@ -261,7 +275,7 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     poolIdInLog, poolIdMatches,
     eventFound, amountInLog, recipientInLog, recipientMatchesPool,
     arcTransferFound, arcTransferAmount, arcTransferTo, arcTransferToMatchesRecipient,
-    arcTransferAmountMatchesEvent,
+    arcTransferAmountMatchesEvent, eventAmountMatchesTarget,
     overallValid, notes,
   }
 }
@@ -325,8 +339,8 @@ export function Proof() {
     }
     setVerifyState({ phase: 'loading' })
     try {
-      const [, recipient] = pool
-      const result = await verifyTx(hash, poolId ?? '', recipient)
+      const [, recipient, target] = pool
+      const result = await verifyTx(hash, poolId ?? '', recipient, target)
       setVerifyState({ phase: 'done', result })
     } catch (err) {
       setVerifyState({ phase: 'error', message: `RPC error: ${err instanceof Error ? err.message : String(err)}` })
@@ -380,7 +394,7 @@ export function Proof() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <Link to={`/pools/${poolId}`} className="flex items-center gap-1.5 text-sm no-underline" style={{ color: 'var(--muted)' }}>
           <ArrowLeft className="h-4 w-4" /> Pool #{poolId}
         </Link>
@@ -541,7 +555,7 @@ export function Proof() {
                     <EvidenceRow
                       label="Amount (event)"
                       value={nativeAmount !== null ? `${formatNativeAmount(nativeAmount)} USDC` : '–'}
-                      verified={nativeAmount !== null && nativeAmount === target ? true : nativeAmount !== null ? false : null}
+                      verified={r.eventAmountMatchesTarget ?? null}
                     />
                   </>
                 )}
