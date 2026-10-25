@@ -5,6 +5,7 @@ import { ArrowLeft, ShieldCheck, ShieldAlert, ExternalLink, Search, AlertCircle,
 import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
 import { TARGET_CHAIN_ID, arcTestnet, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
 import { formatAddress, formatDeadline, statusLabel, STATUS } from '../lib/utils'
+import { type VerifyResult, computeOverallValid } from '../lib/verifyTxLogic'
 
 const DEPLOYED = DEPLOYMENT_CONFIGURED
 
@@ -26,27 +27,8 @@ type VerifyState =
   | { phase: 'error'; message: string }
   | { phase: 'done'; result: VerifyResult }
 
-interface VerifyResult {
-  txHash: string
-  receiptStatus: '0x1' | '0x0' | string
-  receiptStatusOk: boolean
-  toAddress: string | null
-  toMatchesContract: boolean
-  poolIdInLog: string | null
-  poolIdMatches: boolean | null
-  eventFound: 'PaidOut' | 'Refunded' | 'Contributed' | null
-  amountInLog: string | null
-  recipientInLog: string | null
-  recipientMatchesPool: boolean | null
-  arcTransferFound: boolean
-  arcTransferAmount: string | null
-  arcTransferTo: string | null
-  arcTransferToMatchesRecipient: boolean | null
-  arcTransferAmountMatchesEvent: boolean | null
-  eventAmountMatchesTarget: boolean | null  // payout: event amount must equal pool target
-  overallValid: boolean
-  notes: string[]
-}
+// VerifyResult and computeOverallValid are imported from ../lib/verifyTxLogic
+// so the test suite exercises the exact same predicate as production.
 
 function EvidenceRow({
   label,
@@ -105,8 +87,9 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
       poolIdInLog: null, poolIdMatches: null,
       eventFound: null, amountInLog: null, recipientInLog: null,
       recipientMatchesPool: null,
-      arcTransferFound: false, arcTransferAmount: null, arcTransferTo: null,
+      arcTransferFound: false, arcTransferAmount: null, arcTransferTo: null, arcTransferFrom: null,
       arcTransferToMatchesRecipient: null, arcTransferAmountMatchesEvent: null,
+      arcTransferFromMatchesContributor: null,
       eventAmountMatchesTarget: null,
       overallValid: false, notes,
     }
@@ -205,19 +188,27 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
   let arcTransferFound = false
   let arcTransferAmount: string | null = null
   let arcTransferTo: string | null = null
+  let arcTransferFrom: string | null = null
   let arcTransferToMatchesRecipient: boolean | null = null
   let arcTransferAmountMatchesEvent: boolean | null = null
+  let arcTransferFromMatchesContributor: boolean | null = null
 
   if (arcLogs.length > 0) {
     // For PaidOut: find the Transfer whose destination matches the event recipient.
-    // For Refunded/Contributed: find the Transfer whose destination matches the log contributor.
+    // For Refunded: find the Transfer whose destination matches the contributor (topics[2] of Refunded).
+    // For Contributed: find the Transfer whose SENDER matches the contributor (topics[1] of Transfer = contributor).
     const targetAddr = recipientInLog ?? null
-    const matchedLog = targetAddr
-      ? arcLogs.find((l) => ('0x' + l.topics[2].slice(-40)).toLowerCase() === targetAddr.toLowerCase())
+    const matchedLog = eventFound === 'Contributed' && targetAddr
+      // Inbound: match sender (topics[1]) to contributor address
+      ? arcLogs.find((l) => ('0x' + l.topics[1].slice(-40)).toLowerCase() === targetAddr.toLowerCase())
         ?? arcLogs[0]
-      : arcLogs[0]
+      : targetAddr
+        ? arcLogs.find((l) => ('0x' + l.topics[2].slice(-40)).toLowerCase() === targetAddr.toLowerCase())
+          ?? arcLogs[0]
+        : arcLogs[0]
 
     arcTransferFound = true
+    arcTransferFrom = '0x' + matchedLog.topics[1].slice(-40)
     arcTransferTo = '0x' + matchedLog.topics[2].slice(-40)
     arcTransferAmount = BigInt(matchedLog.data).toString()
 
@@ -228,6 +219,10 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
       // For refunds, the Transfer destination should match the contributor address
       arcTransferToMatchesRecipient = arcTransferTo.toLowerCase() === recipientInLog.toLowerCase()
       if (!arcTransferToMatchesRecipient) notes.push(`Arc Transfer destination (${arcTransferTo}) does not match refund contributor (${recipientInLog}).`)
+    } else if (eventFound === 'Contributed' && recipientInLog) {
+      // For contributions, the Transfer SENDER must match the contributor (the one who called contribute())
+      arcTransferFromMatchesContributor = arcTransferFrom.toLowerCase() === recipientInLog.toLowerCase()
+      if (!arcTransferFromMatchesContributor) notes.push(`Arc Transfer sender (${arcTransferFrom}) does not match contributor (${recipientInLog}).`)
     }
 
     // Check amount in Arc Transfer matches amount in event log
@@ -253,43 +248,28 @@ async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipien
     notes.push(`Payout amount in event: ${BigInt(amountInLog).toString()} native base units (18 dec).`)
   }
 
-  // R2+F05: overallValid requires ALL applicable dimensions bound.
-  // Missing movement evidence is PARTIAL (overallValid=false), never all-checks success.
-  //
-  // PaidOut: receipt ok + contract target + event + pool id + recipient + amount present +
-  //          movement FROM contract + movement destination matches recipient + movement amount matches event
-  // Refunded: receipt ok + contract target + event + pool id + amount present +
-  //           movement FROM contract + movement destination matches contributor + movement amount matches event
-  // Contributed: receipt ok + contract target + event + pool id + amount present +
-  //              inbound Transfer TO contract + transfer amount matches event amount
-  //              (movement is INTO the contract; no recipient match needed)
-  const amountPresent = amountInLog !== null
-  const movementRequired = eventFound === 'PaidOut' || eventFound === 'Refunded' || eventFound === 'Contributed'
-  const movementOk = !movementRequired ||
-    (eventFound === 'Contributed'
-      ? (arcTransferFound && arcTransferAmountMatchesEvent === true)
-      : (arcTransferFound &&
-          arcTransferToMatchesRecipient === true &&
-          arcTransferAmountMatchesEvent === true)
-    )
-
-  const overallValid =
-    receiptStatusOk &&
-    toMatchesContract &&
-    eventFound !== null &&
-    poolIdMatches === true &&
-    (eventFound !== 'PaidOut' || recipientMatchesPool === true) &&
-    (eventFound !== 'PaidOut' || eventAmountMatchesTarget === true) &&
-    amountPresent &&
-    movementOk
+  // Build the partial result and delegate overallValid to the shared predicate
+  // (imported from ../lib/verifyTxLogic — same code path as the test suite).
+  const partial: VerifyResult = {
+    txHash, receiptStatus: receipt.status, receiptStatusOk,
+    toAddress, toMatchesContract,
+    poolIdInLog, poolIdMatches,
+    eventFound, amountInLog, recipientInLog, recipientMatchesPool,
+    arcTransferFound, arcTransferAmount, arcTransferTo, arcTransferFrom,
+    arcTransferToMatchesRecipient, arcTransferAmountMatchesEvent,
+    arcTransferFromMatchesContributor, eventAmountMatchesTarget,
+    overallValid: false, notes,
+  }
+  const overallValid = computeOverallValid(partial)
 
   return {
     txHash, receiptStatus: receipt.status, receiptStatusOk,
     toAddress, toMatchesContract,
     poolIdInLog, poolIdMatches,
     eventFound, amountInLog, recipientInLog, recipientMatchesPool,
-    arcTransferFound, arcTransferAmount, arcTransferTo, arcTransferToMatchesRecipient,
-    arcTransferAmountMatchesEvent, eventAmountMatchesTarget,
+    arcTransferFound, arcTransferAmount, arcTransferTo, arcTransferFrom,
+    arcTransferToMatchesRecipient, arcTransferAmountMatchesEvent,
+    arcTransferFromMatchesContributor, eventAmountMatchesTarget,
     overallValid, notes,
   }
 }
@@ -601,6 +581,15 @@ export function Proof() {
                 />
                 {r.arcTransferFound && (
                   <>
+                    {r.arcTransferFrom && (
+                      <EvidenceRow
+                        label="Transfer from"
+                        value={formatAddress(r.arcTransferFrom)}
+                        link={explorerAddressUrl(r.arcTransferFrom)}
+                        verified={r.eventFound === 'Contributed' ? (r.arcTransferFromMatchesContributor ?? null) : null}
+                        mono
+                      />
+                    )}
                     <EvidenceRow
                       label="Transfer to"
                       value={r.arcTransferTo ? formatAddress(r.arcTransferTo) : '–'}

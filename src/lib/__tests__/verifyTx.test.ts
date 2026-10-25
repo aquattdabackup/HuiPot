@@ -1,95 +1,93 @@
 /**
- * Regression tests for the verifyTx overallValid logic (F01-F07 / R1-R5).
+ * Regression tests for the verifyTx overallValid logic.
  *
- * These tests import the SAME overallValid predicate used in production Proof.tsx
- * by extracting it into a testable pure function. They do NOT duplicate the predicate
- * inline — the function under test IS the production logic.
+ * IMPORTANT: computeOverallValid and VerifyResult are imported directly from
+ * the production module (src/lib/verifyTxLogic.ts). There is no hand-written
+ * duplicate of the predicate in this file. If production logic changes, these
+ * tests will catch divergence automatically.
  *
- * F05 new cases: Contributed now requires inbound Arc Transfer evidence.
- * R2 preserved: five payout negative fixtures.
- * R3 structural: ActionPanel is a local (not exported) component.
+ * Coverage:
+ *   R2 preserved  — 5 payout negative fixtures
+ *   F05 new       — 3 contribution negative fixtures (no inbound, wrong amount, zero amount)
+ *   NF extras     — 8 additional negative cases
+ *   PC controls   — 3 positive controls (PaidOut, Refunded, Contributed)
+ *   R3 structural — ActionPanel not exported; Landing has no write hooks
  */
 import { describe, it, expect } from 'vitest'
-
-// ── Extract production overallValid logic ─────────────────────────────────────
-// We replicate the EXACT predicate from Proof.tsx here.
-// If Proof.tsx changes, update this to match — the test failure will tell you.
-interface MockResult {
-  receiptStatusOk: boolean
-  toMatchesContract: boolean
-  eventFound: 'PaidOut' | 'Refunded' | 'Contributed' | null
-  poolIdMatches: boolean | null
-  recipientMatchesPool: boolean | null
-  amountInLog: string | null
-  eventAmountMatchesTarget: boolean | null
-  arcTransferFound: boolean
-  arcTransferToMatchesRecipient: boolean | null
-  arcTransferAmountMatchesEvent: boolean | null
-}
-
-function computeOverallValid(r: MockResult): boolean {
-  const amountPresent = r.amountInLog !== null
-  // F05: Contributed also requires movement evidence (inbound Transfer)
-  const movementRequired = r.eventFound === 'PaidOut' || r.eventFound === 'Refunded' || r.eventFound === 'Contributed'
-  const movementOk = !movementRequired ||
-    (r.eventFound === 'Contributed'
-      ? (r.arcTransferFound && r.arcTransferAmountMatchesEvent === true)
-      : (r.arcTransferFound &&
-          r.arcTransferToMatchesRecipient === true &&
-          r.arcTransferAmountMatchesEvent === true)
-    )
-
-  return (
-    r.receiptStatusOk &&
-    r.toMatchesContract &&
-    r.eventFound !== null &&
-    r.poolIdMatches === true &&
-    (r.eventFound !== 'PaidOut' || r.recipientMatchesPool === true) &&
-    (r.eventFound !== 'PaidOut' || r.eventAmountMatchesTarget === true) &&
-    amountPresent &&
-    movementOk
-  )
-}
+import { computeOverallValid, type VerifyResult } from '../verifyTxLogic'
 
 // ── Base fixtures ─────────────────────────────────────────────────────────────
 
-const BASE_PAIDOUT: MockResult = {
+const BASE_PAIDOUT: VerifyResult = {
+  txHash: '0x' + 'a'.repeat(64),
+  receiptStatus: '0x1',
   receiptStatusOk: true,
+  toAddress: '0x81a139599d252eb2dc2bbb6c267e911a21264288',
   toMatchesContract: true,
   eventFound: 'PaidOut',
+  poolIdInLog: '1',
   poolIdMatches: true,
+  amountInLog: (10n ** 18n).toString(),       // 1 USDC in native 18-dec
+  recipientInLog: '0xaabbccddeeaabbccddeeaabbccddeeaabbccddee',
   recipientMatchesPool: true,
-  amountInLog: (10n ** 18n).toString(),
   eventAmountMatchesTarget: true,
   arcTransferFound: true,
+  arcTransferAmount: (10n ** 18n).toString(),
+  arcTransferTo: '0xaabbccddeeaabbccddeeaabbccddeeaabbccddee',
+  arcTransferFrom: '0x81a139599d252eb2dc2bbb6c267e911a21264288',
   arcTransferToMatchesRecipient: true,
   arcTransferAmountMatchesEvent: true,
+  arcTransferFromMatchesContributor: null,
+  overallValid: true,
+  notes: [],
 }
 
-const BASE_REFUNDED: MockResult = {
+const BASE_REFUNDED: VerifyResult = {
+  txHash: '0x' + 'b'.repeat(64),
+  receiptStatus: '0x1',
   receiptStatusOk: true,
+  toAddress: '0x81a139599d252eb2dc2bbb6c267e911a21264288',
   toMatchesContract: true,
   eventFound: 'Refunded',
+  poolIdInLog: '1',
   poolIdMatches: true,
-  recipientMatchesPool: null,
   amountInLog: (4n * 10n ** 17n).toString(),  // 0.4 USDC
+  recipientInLog: '0x1234567890123456789012345678901234567890',
+  recipientMatchesPool: null,
   eventAmountMatchesTarget: null,
   arcTransferFound: true,
+  arcTransferAmount: (4n * 10n ** 17n).toString(),
+  arcTransferTo: '0x1234567890123456789012345678901234567890',
+  arcTransferFrom: '0x81a139599d252eb2dc2bbb6c267e911a21264288',
   arcTransferToMatchesRecipient: true,
   arcTransferAmountMatchesEvent: true,
+  arcTransferFromMatchesContributor: null,
+  overallValid: true,
+  notes: [],
 }
 
-const BASE_CONTRIBUTED: MockResult = {
+const BASE_CONTRIBUTED: VerifyResult = {
+  txHash: '0x' + 'c'.repeat(64),
+  receiptStatus: '0x1',
   receiptStatusOk: true,
+  toAddress: '0x81a139599d252eb2dc2bbb6c267e911a21264288',
   toMatchesContract: true,
   eventFound: 'Contributed',
+  poolIdInLog: '1',
   poolIdMatches: true,
-  recipientMatchesPool: null,
   amountInLog: (4n * 10n ** 17n).toString(),  // 0.4 USDC
+  recipientInLog: '0x1234567890123456789012345678901234567890', // contributor
+  recipientMatchesPool: null,
   eventAmountMatchesTarget: null,
   arcTransferFound: true,
-  arcTransferToMatchesRecipient: null,        // not checked for Contributed
+  arcTransferAmount: (4n * 10n ** 17n).toString(),
+  arcTransferTo: '0x81a139599d252eb2dc2bbb6c267e911a21264288', // to contract
+  arcTransferFrom: '0x1234567890123456789012345678901234567890', // from contributor
+  arcTransferToMatchesRecipient: null,
   arcTransferAmountMatchesEvent: true,
+  arcTransferFromMatchesContributor: true,    // sender matches contributor
+  overallValid: true,
+  notes: [],
 }
 
 // ── Preserved R2 negative fixtures (payout) ───────────────────────────────────
@@ -97,7 +95,7 @@ const BASE_CONTRIBUTED: MockResult = {
 describe('overallValid — R2 regression (preserved)', () => {
 
   it('NF-1: PaidOut event=1 base unit, Transfer=1 base unit, target=1e18 → false', () => {
-    const r: MockResult = {
+    const r: VerifyResult = {
       ...BASE_PAIDOUT,
       amountInLog: '1',
       eventAmountMatchesTarget: false,
@@ -107,9 +105,11 @@ describe('overallValid — R2 regression (preserved)', () => {
   })
 
   it('NF-2: PaidOut with missing Arc Transfer evidence → false', () => {
-    const r: MockResult = {
+    const r: VerifyResult = {
       ...BASE_PAIDOUT,
       arcTransferFound: false,
+      arcTransferTo: null,
+      arcTransferFrom: null,
       arcTransferToMatchesRecipient: null,
       arcTransferAmountMatchesEvent: null,
     }
@@ -117,19 +117,21 @@ describe('overallValid — R2 regression (preserved)', () => {
   })
 
   it('NF-3: PaidOut with wrong Transfer destination → false', () => {
-    const r: MockResult = { ...BASE_PAIDOUT, arcTransferToMatchesRecipient: false }
+    const r: VerifyResult = { ...BASE_PAIDOUT, arcTransferToMatchesRecipient: false }
     expect(computeOverallValid(r)).toBe(false)
   })
 
   it('NF-4: PaidOut with wrong Transfer amount vs event → false', () => {
-    const r: MockResult = { ...BASE_PAIDOUT, arcTransferAmountMatchesEvent: false }
+    const r: VerifyResult = { ...BASE_PAIDOUT, arcTransferAmountMatchesEvent: false }
     expect(computeOverallValid(r)).toBe(false)
   })
 
   it('NF-5: Refunded without Arc Transfer evidence → false', () => {
-    const r: MockResult = {
+    const r: VerifyResult = {
       ...BASE_REFUNDED,
       arcTransferFound: false,
+      arcTransferTo: null,
+      arcTransferFrom: null,
       arcTransferToMatchesRecipient: null,
       arcTransferAmountMatchesEvent: null,
     }
@@ -150,7 +152,7 @@ describe('overallValid — positive controls', () => {
     expect(computeOverallValid(BASE_REFUNDED)).toBe(true)
   })
 
-  it('PC-3: valid Contributed with inbound Transfer → true', () => {
+  it('PC-3: valid Contributed with inbound Transfer from correct sender → true', () => {
     expect(computeOverallValid(BASE_CONTRIBUTED)).toBe(true)
   })
 
@@ -161,26 +163,39 @@ describe('overallValid — positive controls', () => {
 describe('overallValid — F05 contribution negatives', () => {
 
   it('F05-NF-1: Contributed with no inbound Transfer evidence → false', () => {
-    const r: MockResult = {
+    const r: VerifyResult = {
       ...BASE_CONTRIBUTED,
       arcTransferFound: false,
+      arcTransferAmount: null,
       arcTransferAmountMatchesEvent: null,
+      arcTransferFromMatchesContributor: null,
     }
     expect(computeOverallValid(r)).toBe(false)
   })
 
   it('F05-NF-2: Contributed with wrong inbound Transfer amount → false', () => {
-    const r: MockResult = {
+    const r: VerifyResult = {
       ...BASE_CONTRIBUTED,
       arcTransferAmountMatchesEvent: false,
     }
     expect(computeOverallValid(r)).toBe(false)
   })
 
-  it('F05-NF-3: Contributed with zero event amount → false (amountInLog null)', () => {
-    const r: MockResult = {
+  it('F05-NF-3: Contributed with zero event amount → false (BigInt("0") > 0n fails)', () => {
+    // amountInLog="0" is a decoded zero — not null, but BigInt("0") > 0n is false
+    const r: VerifyResult = {
       ...BASE_CONTRIBUTED,
-      amountInLog: null,
+      amountInLog: '0',
+    }
+    expect(computeOverallValid(r)).toBe(false)
+  })
+
+  it('F05-NF-4: Contributed with inbound Transfer from WRONG sender → false', () => {
+    // Transfer exists and amount matches, but sender is not the contributor
+    const r: VerifyResult = {
+      ...BASE_CONTRIBUTED,
+      arcTransferFrom: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+      arcTransferFromMatchesContributor: false,
     }
     expect(computeOverallValid(r)).toBe(false)
   })
@@ -220,9 +235,16 @@ describe('overallValid — additional negatives', () => {
   })
 
   it('PaidOut with correct Transfer but wrong event amount vs target → false', () => {
-    // Transfer and event agree but both disagree with on-chain target
-    const r: MockResult = { ...BASE_PAIDOUT, eventAmountMatchesTarget: false }
+    const r: VerifyResult = { ...BASE_PAIDOUT, eventAmountMatchesTarget: false }
     expect(computeOverallValid(r)).toBe(false)
+  })
+
+  it('PaidOut with amountInLog null → false', () => {
+    expect(computeOverallValid({ ...BASE_PAIDOUT, amountInLog: null })).toBe(false)
+  })
+
+  it('Contributed with amountInLog null → false', () => {
+    expect(computeOverallValid({ ...BASE_CONTRIBUTED, amountInLog: null })).toBe(false)
   })
 
 })
@@ -240,11 +262,12 @@ describe('R3 structural — ActionPanel isolation', () => {
   it('Landing page does NOT import useWriteContract (no write hooks in landing)', async () => {
     const src = await import('../../../src/pages/Landing?raw') as { default: string }
     const code = src.default
-    // Landing is a marketing/demo page — it must never import useWriteContract
-    // (all writes are in Pool.tsx's ActionPanel, which is a separate component)
     expect(code).not.toContain('useWriteContract')
-    // Landing also must not import useAccount — it has no wallet-connected actions
     expect(code).not.toContain('useAccount')
+  })
+
+  it('verifyTxLogic exports computeOverallValid as a function (production path confirmed)', () => {
+    expect(typeof computeOverallValid).toBe('function')
   })
 
 })
