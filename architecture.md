@@ -16,8 +16,9 @@
 | `docs/DESIGN.md` | Historical v1 design; retained interaction/error requirements, with v2 visual/layout overrides |
 | `docs/REDESIGN.md`, `docs/STUDIO_REDESIGN.md` | Current dark/lime five-screen design and exact browser implementation handoff; v2 overrides v1 visual/layout direction |
 | `docs/design/` | Generated visual references, exact image prompts and calculated token contrast; not runtime screenshots |
-| `src/pages/Landing.tsx` | Landing, SVG RingHero and local-state success/failure walkthrough; all currently in one file |
+| `src/pages/Landing.tsx` | Landing, layered SVG RingTorus and local-state success/failure walkthrough; ffc04fb improves the SVG composition but does not include production raster assets |
 | `docs/STUDIO_VISUAL_RECHECK.md` | Source-based visual fidelity findings, interaction gaps and exact Studio correction prompt |
+| `docs/STUDIO_ASSET_INTEGRATION.md`, `docs/design/assets/` | Current supplied-art handoff: three text-free PNG inputs, alpha/hash metadata, precise composition and runtime optimization requirements; Studio integration pending |
 | `docs/STUDIO_PROMPTS.md` | Prepared, unexecuted A-D browser prompts and required exports |
 | `docs/STUDIO_GITHUB_START.md` | Approved repo-based A entry prompt with full-file access checks |
 | `docs/LOG.md` | Decisions and actual execution evidence |
@@ -26,7 +27,7 @@
 ## Invariants
 - Explain in Vietnamese; save artifacts in English.
 - Studio produces contracts, tests, application code, and fixes. Codex prepares planning documents and reviews evidence.
-- The user authorized the dark/lime redesign and existing-repository delivery. Studio's first redesign exists; a visual correction pass is prepared for the chosen browser workflow. Hosting and wallet actions retain separate gates.
+- The user authorized the dark/lime redesign, original background/object asset generation and existing-repository delivery. Studio's SVG correction exists at ffc04fb; the next browser handoff integrates supplied raster art. Hosting and wallet actions retain separate gates.
 - Proposed funds model: exact capped target, fixed recipient, immediate payout on successful funding, individual principal refunds only after underfunded expiry, no early exit/cancellation or admin recovery.
 - Keep planned, built, tested, deployed, and published states distinct.
 - No credential values in files. Mainnet actions require separate human approval and signatures.

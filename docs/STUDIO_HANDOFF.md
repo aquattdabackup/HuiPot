@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Latest visual task — October 25, 2026:** after the SVG revision `ffc04fb`, the user requested actual backgrounds matching the original concept. Read [STUDIO_ASSET_INTEGRATION.md](STUDIO_ASSET_INTEGRATION.md) and [production art inputs](design/assets/README.md) for the supplied assets and exact next execution prompt. Codex prepared artwork/documents only; Studio source integration is pending. Earlier task descriptions are history. Do not repeat setup or token requests.
+
 ## Current task — dark/lime UI redesign
 
 The user explicitly selected dark + lime and retained human-operated Studio in the browser. Use [STUDIO_REDESIGN.md](STUDIO_REDESIGN.md) and [REDESIGN.md](REDESIGN.md) for the current implementation task. Design assets are concepts, not runtime screenshots. The optional `arc-ui-craft` skill is absent; the explicit project checklist and new design spec are used. No redesign prompt has been executed by Codex. Earlier setup/phase gate descriptions below are history; do not repeat setup or request tokens.

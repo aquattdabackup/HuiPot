@@ -1,0 +1,44 @@
+﻿{
+    "created_date":  "2026-10-25",
+    "timezone":  "Asia/Ho_Chi_Minh",
+    "generator":  "built-in image_gen",
+    "reference":  "../landing-dark-lime-concept.png",
+    "prompts":  "../PRODUCTION_ASSET_PROMPTS.md",
+    "role":  "Generated art inputs for Studio integration; not application screenshots",
+    "runtime_integration":  "Pending Studio",
+    "assets":  [
+                   {
+                       "file":  "hero-atmosphere-v1.png",
+                       "width":  1672,
+                       "height":  940,
+                       "pixel_format":  "Format24bppRgb",
+                       "bytes":  1760319,
+                       "sha256":  "8d4cf1953fb434f6cf2e829f13f57929803963c309284bf9cba8bd5811a7eaf1",
+                       "alpha_top_left":  255,
+                       "alpha_center":  255,
+                       "alpha_left_body_sample":  255
+                   },
+                   {
+                       "file":  "outcomes-atmosphere-v1.png",
+                       "width":  1672,
+                       "height":  941,
+                       "pixel_format":  "Format24bppRgb",
+                       "bytes":  1752339,
+                       "sha256":  "ecba00a5165a6c47f8dce60d4839018fc49b3c87d4a7bd763abaf11ada539876",
+                       "alpha_top_left":  255,
+                       "alpha_center":  255,
+                       "alpha_left_body_sample":  255
+                   },
+                   {
+                       "file":  "torus-cutout-v1.png",
+                       "width":  1254,
+                       "height":  1254,
+                       "pixel_format":  "Format32bppArgb",
+                       "bytes":  2010370,
+                       "sha256":  "a3a8970c7e9ccb4c0ccfd06e213515601206b52ecdc4e9cbf36a1ca5e503e45c",
+                       "alpha_top_left":  0,
+                       "alpha_center":  0,
+                       "alpha_left_body_sample":  252
+                   }
+               ]
+}

@@ -1,5 +1,13 @@
 # Project log
 
+## October 25, 2026 — supplied background and torus art for Studio
+
+- User still rejects resemblance to the concept and explicitly requests usable background imagery plus precise instructions. GitHub connector and initially clean local checkout matched `ffc04fb5156a7f3dc68ae34ccea4e765c818f23f`. This revision improves the SVG torus, sizing, brand, process and branching diagram; the earlier flat-320px finding is historical. Hero still uses CSS radial light and the walkthrough a solid surface; no production raster images existed.
+- Used built-in Imagegen with the original concept as a style reference to create three text-free art inputs: hero atmosphere, transparent graphite/lime torus and outcomes atmosphere. All three succeeded, were visually inspected and copied unchanged into `docs/design/assets/`. Exact prompts and output identifiers are recorded. Codex authored the artwork, not Studio application code.
+- Read dimensions and alpha with System.Drawing after Python Pillow was unavailable; no dependency was installed. Hero: 1672x940; torus: 1254x1254 with alpha 0 at both outer corner and center; outcomes: 1672x941. Manifest records byte lengths and SHA-256. Source files total 5,523,028 bytes; runtime optimization is explicitly assigned to Studio, not claimed complete.
+- Added `docs/STUDIO_ASSET_INTEGRATION.md`: concrete asset paths, layer order, desktop/mobile placement, animation, readable dynamic text, fixed illustrative torus semantics, optimization and screenshot acceptance. Runtime URLs are planned; files have not been wired into src. This supersedes the optional SVG approximation for the hero. Prepared exact execution prompt only, not submitted to Studio.
+- Application/contract source and hosting settings remain unchanged. No new app test/build/check/Forge run, deployed-page observation or wallet test was performed for this artwork/documentation task. Visual inspection here refers to generated assets, not rendered app acceptance.
+
 ## October 25, 2026 — first redesign visual fidelity review
 
 - User reported the pushed UI does not match the selected concept and requested inspection. GitHub connector confirmed main at `74576a333c26230ed287c9f871a5e68b83525fd1`, matching the initially clean local checkout. Implementation commit is `3a06e17`.
