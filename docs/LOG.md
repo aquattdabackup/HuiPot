@@ -1,5 +1,14 @@
 # Project log
 
+## October 25, 2026 ? Independent recheck of Studio 2ae2f71
+
+- Read AGENTS.md and historical STUDIO_FIX_REPORT.md in full; confirmed input main SHA 2ae2f71b6814a7b57e0ff0bd5903f1f1f6c031c3.
+- Actual suites: Forge 120/0/0; Vitest 37/1 timeout then unchanged retry 38/0/0; lint/typecheck and build pass (large-chunk warning). All attempts retained in docs/evidence/recheck-2ae2f71.
+- Production verifier probes: 12 pass/2 fail; zero amount with matching zero transfer and wrong inbound sender still accepted. No application source fixes by Codex.
+- Studio claim of removing duplicate-predicate tests is contradicted by source; F01-F07 completion report is missing. See docs/STUDIO_FUNCTIONAL_RECHECK.md for source findings and exact follow-up.
+- No browser/wallet/hosting/mainnet/submission action performed. Studio browser handoff remains the selected route.
+
+
 ## October 25, 2026 — competition and functional readiness at 37ee96c
 
 - User explicitly redirected work from appearance to sensible, reliable functionality and competition fit, then requested continued execution. Read the supplied rules, requirements, setup status and specification; reviewed the current contract, Create/Pool/Proof/Explore, deployment configuration and test code. GitHub main and initially clean local checkout matched `37ee96c268ed68ac9b951d189aaf03cca978b462`.
@@ -39,7 +48,7 @@
 - Companion product-interface image generation failed with a network error; no resulting image was received or included. The complete written product layouts remain the implementation reference.
 - Calculated seven design token contrast pairs; all meet their assigned thresholds. Saved `docs/design/contrast-check.json`. Read the official W3C contrast and pause/stop/hide guidance; final rendered accessibility remains untested.
 - Added v2 pointers in DESIGN and STUDIO_HANDOFF and amended only SPEC's screen scope/AC10 coverage. Contract and D2-D8 financial rules are unchanged. Mainnet, testnet wallet, public hosting, video upload and submission remain outside this task.
-- Prior independent validation of d2fecc8: 120 Forge tests and 17 Vitest parser tests pass; check/lint/typecheck pass. Four of the five previously failing Proof fixtures are repaired; the equal-but-wrong payout amount fixture still returns true. R6b now injects surplus via vm.deal and verifies exact refunds. These are validation history, not evidence for a redesigned app that has not yet been built.
+- Prior independent validation of d2fecc8: 120 Forge tests and 17 Vitest parser tests pass; check/lint/typecheck and build pass (large-chunk warning). Four of the five previously failing Proof fixtures are repaired; the equal-but-wrong payout amount fixture still returns true. R6b now injects surplus via vm.deal and verifies exact refunds. These are validation history, not evidence for a redesigned app that has not yet been built.
 
 Delivery checks: relative Markdown targets in the new design/handoff/reference and memory documents resolve; UI01-UI10 are present; `git diff --check` passes; `src` and `contracts` have no changes. Remote main was rechecked at the same baseline before delivery. No application tests were rerun for this documentation/reference-only change; browser and testnet wallet checks were not run.
 

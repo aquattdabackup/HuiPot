@@ -1,0 +1,32 @@
+[
+  {
+    "command": "forge test --summary --fuzz-seed 1",
+    "exit": 0,
+    "seconds": 62.12,
+    "log": "forge.log"
+  },
+  {
+    "command": "bun run test",
+    "exit": 1,
+    "seconds": 16.86,
+    "log": "vitest.log"
+  },
+  {
+    "command": "bun run test",
+    "exit": 0,
+    "seconds": 10.61,
+    "log": "vitest-warm.log"
+  },
+  {
+    "command": "bun run check",
+    "exit": 0,
+    "seconds": 12.88,
+    "log": "check.log"
+  },
+  {
+    "command": "bun run build",
+    "exit": 0,
+    "seconds": 37.56,
+    "log": "build.log"
+  }
+]

@@ -3,7 +3,7 @@
 ## Project Overview
 - Purpose: deliver HuiPot Goal Pool, a focused Studio-built USDC application for the provisionally documented Arc microgrant program. The user selected the concept on October 24, 2026.
 - Current checkout: `C:\Users\luong\HuiPot`; older `/workspace/HuiPot` references describe a previous cloud environment.
-- Contract: one non-upgradeable multi-pool native-USDC contract. Studio source has five routes (Landing, Explore pools, Create, Pool, Proof); 37ee96c integrates the supplied raster artwork. Current priority is functional acceptance and competition evidence, not additional visual scope. See docs/FUNCTIONAL_READINESS.md.
+- Contract: one non-upgradeable multi-pool native-USDC contract. Studio source has five routes (Landing, Explore pools, Create, Pool, Proof); 37ee96c integrates the supplied raster artwork. 2ae2f71 adds deployment validation, SPA routing, a review panel and inbound Proof checks, but acceptance remains partial (docs/STUDIO_FUNCTIONAL_RECHECK.md). Current priority is functional acceptance and competition evidence, not additional visual scope. See docs/FUNCTIONAL_READINESS.md.
 - Implementation: `contracts/HuiPotGoalPool.sol`; Vite/React/wagmi/ConnectKit frontend in `src/`; Foundry configuration at repository root. Build: `bun run build`; lint: `bun run lint`; contract tests: `forge test --summary --fuzz-seed 1`.
 
 ## Components and Evidence

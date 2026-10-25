@@ -1,0 +1,131 @@
+{
+  "sourceRevision": "2ae2f71b6814a7b57e0ff0bd5903f1f1f6c031c3",
+  "scope": "Unchanged production verifier with synthetic receipts; no network or wallet",
+  "passed": 12,
+  "failed": 2,
+  "results": [
+    {
+      "name": "valid payout",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "notes": [
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout missing movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout wrong transfer destination",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "Arc Transfer destination (0x3333333333333333333333333333333333333333) does not match PaidOut recipient (0x1111111111111111111111111111111111111111).",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout unrelated transfer sender",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout transfer amount 1 base unit",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "Arc Transfer amount (1) does not match event amount (1000000000000000000).",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout event and transfer 1 base unit versus 1 USDC target",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "PaidOut event amount (1) does not match pool target (1000000000000000000).",
+        "Payout amount in event: 1 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "valid refund",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "notes": []
+    },
+    {
+      "name": "refund unrelated movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system Transfer from this contract found. A refund should produce a Transfer from the contract to the contributor. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "valid contribution with matching inbound movement",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "notes": []
+    },
+    {
+      "name": "contribution without inbound evidence",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system inbound Transfer to this contract found. A contribution should produce a Transfer to the contract. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution with wrong inbound amount",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "Arc Transfer amount (1) does not match event amount (400000000000000000)."
+      ]
+    },
+    {
+      "name": "contribution with zero event amount",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "notes": [
+        "No Arc system inbound Transfer to this contract found. A contribution should produce a Transfer to the contract. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution zero event AND zero inbound movement",
+      "expected": false,
+      "actual": true,
+      "pass": false,
+      "notes": []
+    },
+    {
+      "name": "contribution inbound sender differs from event contributor",
+      "expected": false,
+      "actual": true,
+      "pass": false,
+      "notes": []
+    }
+  ]
+}
