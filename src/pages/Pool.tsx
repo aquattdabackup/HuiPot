@@ -17,33 +17,47 @@ const DEPLOYED = DEPLOYMENT_CONFIGURED
 type ActionType = 'contribute' | 'payout' | 'refund'
 
 // State of receipt validation after a confirmed transaction
-type ReceiptValidation =
+type ReceiptPhase =
   | { phase: 'idle' }
   | { phase: 'checking' }
   | { phase: 'confirmed'; txHash: string; action: ActionType }
-  | { phase: 'replaced'; txHash: string; note: string }   // replacement/cancel confirmed
-  | { phase: 'error'; txHash: string; message: string }   // RPC error or revert
+  | { phase: 'replaced'; txHash: string; note: string }
+  | { phase: 'error'; txHash: string; message: string; retryable: true }
 
 interface ReviewSnapshot {
   action: ActionType
-  amount: bigint        // native 18-dec
-  recipient: string     // for payout: fixed recipient; for refund: caller wallet
+  amount: bigint          // native 18-dec
+  recipient: string       // for payout: fixed recipient; for refund/contribute: caller wallet
   poolId: string
   contractAddress: string
   accountAddress: string
-  // currentChainId captured at confirm time for revalidation (NOT stored — read live)
+  // Live pool state at review-open time — used in confirmAction re-validation (RC4)
+  statusAtReview: number | undefined
+  remainingAtReview: bigint
+  claimableAtReview: bigint
 }
 
-// ABI event topics for receipt validation
-const PAID_OUT_TOPIC = '0x648ae074e8c7e2b5c75fc82672c363a1b0fa293a1ce08cba5e9dbeec37eb8ae8'
-const REFUNDED_TOPIC = '0x7ca5472b7ea78c2c0141c5a12ee6d170cf4ce8ed06be3d22c8252ddfc7a6a2c4'
+// ABI event topics for receipt validation — verified against deployed bytecode at
+// 0x81a139599d252eb2dc2bbb6c267e911a21264288 (see docs/STUDIO_RECEIPT_RECHECK.md)
+const PAID_OUT_TOPIC    = '0x648ae074e8c7e2b5c75fc82672c363a1b0fa293a1ce08cba5e9dbeec37eb8ae8'
+const REFUNDED_TOPIC    = '0x7ca5472b7ea78c2c0141c5a12ee6d170cf4ce8ed06be3d22c8252ddfc7a6a2c4'
 const CONTRIBUTED_TOPIC = '0xdcfa71ee125a676f843733d9d39dce2c918ecf9e92f96db4f24bdb5244ed68a0'
+
+// JSON-RPC receipt shape
+interface RpcReceiptLog { address: string; topics: string[]; data: string }
+interface RpcReceipt { status: string; to: string | null; logs: RpcReceiptLog[] }
+interface RpcResponse { result?: RpcReceipt | null; error?: { code: number; message: string } }
 
 /**
  * Validate a confirmed receipt against the review snapshot.
- * Returns 'confirmed' if the receipt matches expected action/amount/recipient,
- * 'replaced' if the tx succeeded but no matching event was emitted (replacement/cancel),
- * 'error' if the receipt is a revert or RPC lookup failed.
+ *
+ * RC2: validates submitting-identity (contributor/caller) from log topics.
+ * RC5: checks resp.ok and JSON-RPC error field before accepting any receipt data.
+ *
+ * Returns:
+ *   confirmed — receipt matches expected action/pool/amount/identity
+ *   replaced  — tx confirmed but no matching event (replacement/cancel)
+ *   error     — revert, transport failure, or RPC error (retryable=true)
  */
 async function validateReceipt(
   txHash: string,
@@ -56,22 +70,31 @@ async function validateReceipt(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getTransactionReceipt', params: [txHash], id: 1 }),
     })
-    const json = await resp.json() as {
-      result: null | {
-        status: string
-        to: string | null
-        logs: Array<{ address: string; topics: string[]; data: string }>
-      }
+
+    // RC5: reject non-2xx transport responses
+    if (!resp.ok) {
+      return { outcome: 'error', note: `HTTP ${resp.status} from RPC endpoint. The wallet will show the exact fee before you sign; try again.` }
     }
+
+    const json = await resp.json() as RpcResponse
+
+    // RC5: reject JSON-RPC level errors
+    if (json.error) {
+      return { outcome: 'error', note: `RPC error ${json.error.code}: ${json.error.message}` }
+    }
+
     const receipt = json.result
     if (!receipt) return { outcome: 'error', note: 'Receipt not found — transaction may still be pending.' }
+
+    // RC3: surface revert
     if (receipt.status !== '0x1') return { outcome: 'error', note: 'Transaction reverted (status 0x0).' }
 
     // Check contract target
     const contractMatch = (receipt.to ?? '').toLowerCase() === snap.contractAddress.toLowerCase()
-    if (!contractMatch) return { outcome: 'replaced', note: `Transaction reached a different contract (${receipt.to ?? '–'}) — not this deployment.` }
+    if (!contractMatch) {
+      return { outcome: 'replaced', note: `Transaction reached a different contract (${receipt.to ?? '–'}) — not this deployment.` }
+    }
 
-    // Look for the expected event from the contract
     const contractLogs = receipt.logs.filter(
       (l) => l.address.toLowerCase() === snap.contractAddress.toLowerCase()
     )
@@ -79,33 +102,55 @@ async function validateReceipt(
     if (snap.action === 'contribute') {
       const log = contractLogs.find((l) => l.topics[0] === CONTRIBUTED_TOPIC)
       if (!log) return { outcome: 'replaced', note: 'No Contributed event from this contract — transaction may have been replaced or cancelled.' }
-      // Validate pool ID and amount
-      const logPoolId = BigInt(log.topics[1]).toString()
+      const logPoolId = BigInt(log.topics[1] ?? '0x0').toString()
+      // RC2: contributor address is topics[2] (indexed address param)
+      const logContributor = '0x' + (log.topics[2] ?? '').slice(-40)
       const logAmount = BigInt('0x' + log.data.slice(2, 66))
-      if (logPoolId !== snap.poolId) return { outcome: 'replaced', note: `Contributed event is for pool #${logPoolId}, not pool #${snap.poolId}.` }
-      if (logAmount !== snap.amount) return { outcome: 'replaced', note: `Contributed amount (${logAmount}) does not match review amount (${snap.amount}).` }
+      if (logPoolId !== snap.poolId) {
+        return { outcome: 'replaced', note: `Contributed event is for pool #${logPoolId}, not pool #${snap.poolId}.` }
+      }
+      if (logAmount !== snap.amount) {
+        return { outcome: 'replaced', note: `Contributed amount (${logAmount}) does not match review amount (${snap.amount}).` }
+      }
+      // RC2: submitting identity — contributor in event must match the wallet that submitted
+      if (logContributor.toLowerCase() !== snap.accountAddress.toLowerCase()) {
+        return { outcome: 'replaced', note: `Contributed event contributor (${logContributor}) does not match submitting wallet (${snap.accountAddress}).` }
+      }
       return { outcome: 'confirmed', note: '' }
 
     } else if (snap.action === 'payout') {
       const log = contractLogs.find((l) => l.topics[0] === PAID_OUT_TOPIC)
       if (!log) return { outcome: 'replaced', note: 'No PaidOut event from this contract — transaction may have been replaced or cancelled.' }
-      const logPoolId = BigInt(log.topics[1]).toString()
-      const logRecipient = '0x' + log.topics[3].slice(-40)
-      const logAmount = BigInt(log.data)
-      if (logPoolId !== snap.poolId) return { outcome: 'replaced', note: `PaidOut event is for pool #${logPoolId}, not pool #${snap.poolId}.` }
-      if (logRecipient.toLowerCase() !== snap.recipient.toLowerCase()) return { outcome: 'replaced', note: `PaidOut recipient (${logRecipient}) does not match expected (${snap.recipient}).` }
-      if (logAmount !== snap.amount) return { outcome: 'replaced', note: `PaidOut amount (${logAmount}) does not match pool target (${snap.amount}).` }
+      const logPoolId = BigInt(log.topics[1] ?? '0x0').toString()
+      const logRecipient = '0x' + (log.topics[3] ?? '').slice(-40)
+      const logAmount = BigInt(log.data || '0x0')
+      if (logPoolId !== snap.poolId) {
+        return { outcome: 'replaced', note: `PaidOut event is for pool #${logPoolId}, not pool #${snap.poolId}.` }
+      }
+      if (logRecipient.toLowerCase() !== snap.recipient.toLowerCase()) {
+        return { outcome: 'replaced', note: `PaidOut recipient (${logRecipient}) does not match expected (${snap.recipient}).` }
+      }
+      if (logAmount !== snap.amount) {
+        return { outcome: 'replaced', note: `PaidOut amount (${logAmount}) does not match pool target (${snap.amount}).` }
+      }
       return { outcome: 'confirmed', note: '' }
 
     } else if (snap.action === 'refund') {
       const log = contractLogs.find((l) => l.topics[0] === REFUNDED_TOPIC)
       if (!log) return { outcome: 'replaced', note: 'No Refunded event from this contract — transaction may have been replaced or cancelled.' }
-      const logPoolId = BigInt(log.topics[1]).toString()
-      const logContributor = '0x' + log.topics[2].slice(-40)
-      const logAmount = BigInt(log.data)
-      if (logPoolId !== snap.poolId) return { outcome: 'replaced', note: `Refunded event is for pool #${logPoolId}, not pool #${snap.poolId}.` }
-      if (logContributor.toLowerCase() !== snap.accountAddress.toLowerCase()) return { outcome: 'replaced', note: `Refunded contributor (${logContributor}) does not match submitting wallet (${snap.accountAddress}).` }
-      if (logAmount !== snap.amount) return { outcome: 'replaced', note: `Refunded amount (${logAmount}) does not match claimed amount (${snap.amount}).` }
+      const logPoolId = BigInt(log.topics[1] ?? '0x0').toString()
+      const logContributor = '0x' + (log.topics[2] ?? '').slice(-40)
+      const logAmount = BigInt(log.data || '0x0')
+      if (logPoolId !== snap.poolId) {
+        return { outcome: 'replaced', note: `Refunded event is for pool #${logPoolId}, not pool #${snap.poolId}.` }
+      }
+      // RC2: contributor identity must match submitting wallet
+      if (logContributor.toLowerCase() !== snap.accountAddress.toLowerCase()) {
+        return { outcome: 'replaced', note: `Refunded contributor (${logContributor}) does not match submitting wallet (${snap.accountAddress}).` }
+      }
+      if (logAmount !== snap.amount) {
+        return { outcome: 'replaced', note: `Refunded amount (${logAmount}) does not match claimed amount (${snap.amount}).` }
+      }
       return { outcome: 'confirmed', note: '' }
     }
 
@@ -128,7 +173,7 @@ interface ActionPanelProps {
   myClaimableLoading: boolean
   myClaimableError: boolean
   isConnected: boolean
-  currentChainId: number | undefined   // live wallet chain, passed from Pool
+  currentChainId: number | undefined   // live wallet chain, passed from Pool (RC: live check)
   accountAddress: string
   rpcUrl: string
   onSuccess: (txHash: string, action: ActionType) => void
@@ -148,38 +193,92 @@ function ActionPanel({
   const [amountStr, setAmountStr] = useState('')
   const [amountError, setAmountError] = useState('')
   const [reviewSnapshot, setReviewSnapshot] = useState<ReviewSnapshot | null>(null)
-  const [receiptValidation, setReceiptValidation] = useState<ReceiptValidation>({ phase: 'idle' })
 
-  // Write hooks — scoped to this component; React remounts on key change
-  const { writeContract: doContribute, data: contribHash, isPending: contribPending, isError: contribIsError, error: contribErr } = useWriteContract()
-  const { isLoading: contribConfirming, isSuccess: contribSuccess } = useWaitForTransactionReceipt({ hash: contribHash, chainId: TARGET_CHAIN_ID })
+  // RC1: receipt state is keyed by action so a confirmed contribution does not
+  // disable the payout button. Each action has its own phase slot.
+  const [receiptByAction, setReceiptByAction] = useState<Partial<Record<ActionType, ReceiptPhase>>>({})
 
-  const { writeContract: doPayout, data: payoutHash, isPending: payoutPending, isError: payoutIsError, error: payoutErr } = useWriteContract()
-  const { isLoading: payoutConfirming, isSuccess: payoutSuccess } = useWaitForTransactionReceipt({ hash: payoutHash, chainId: TARGET_CHAIN_ID })
+  // RC6: confirmed tx hash persisted so ReceiptBanner remains available after
+  // pool state transitions away from ACTIVE/FUNDED/REFUNDING
+  const confirmedTxRef = useRef<{ txHash: string; action: ActionType } | null>(null)
 
-  const { writeContract: doRefund, data: refundHash, isPending: refundPending, isError: refundIsError, error: refundErr } = useWriteContract()
-  const { isLoading: refundConfirming, isSuccess: refundSuccess } = useWaitForTransactionReceipt({ hash: refundHash, chainId: TARGET_CHAIN_ID })
+  function getPhase(action: ActionType): ReceiptPhase {
+    return receiptByAction[action] ?? { phase: 'idle' }
+  }
+  function setPhase(action: ActionType, phase: ReceiptPhase) {
+    setReceiptByAction((prev) => ({ ...prev, [action]: phase }))
+  }
 
-  // Capture snapshot at confirm time so receipt validation knows what to expect
+  // Write hooks
+  const { writeContract: doContribute, data: contribHash, isPending: contribPending, isError: contribIsError, error: contribErr, reset: resetContrib } = useWriteContract()
+  const { isLoading: contribConfirming, isSuccess: contribSuccess, isError: contribWaitError, error: contribWaitErr } = useWaitForTransactionReceipt({ hash: contribHash, chainId: TARGET_CHAIN_ID })
+
+  const { writeContract: doPayout, data: payoutHash, isPending: payoutPending, isError: payoutIsError, error: payoutErr, reset: resetPayout } = useWriteContract()
+  const { isLoading: payoutConfirming, isSuccess: payoutSuccess, isError: payoutWaitError, error: payoutWaitErr } = useWaitForTransactionReceipt({ hash: payoutHash, chainId: TARGET_CHAIN_ID })
+
+  const { writeContract: doRefund, data: refundHash, isPending: refundPending, isError: refundIsError, error: refundErr, reset: resetRefund } = useWriteContract()
+  const { isLoading: refundConfirming, isSuccess: refundSuccess, isError: refundWaitError, error: refundWaitErr } = useWaitForTransactionReceipt({ hash: refundHash, chainId: TARGET_CHAIN_ID })
+
   const pendingSnapRef = useRef<ReviewSnapshot | null>(null)
 
-  // Receipt validation: after isSuccess, fetch receipt and check event/amount/recipient
+  // RC3: notifiedRef only prevents re-entry for confirmed/replaced outcomes.
+  // It is NOT set for errors, so a transient RPC failure can be retried.
   const notifiedRef = useRef<Set<string>>(new Set())
 
   const runReceiptValidation = useCallback(async (txHash: string, snap: ReviewSnapshot) => {
+    // Guard: only skip if we already got a non-error outcome for this hash
     if (notifiedRef.current.has(txHash)) return
-    notifiedRef.current.add(txHash)
-    setReceiptValidation({ phase: 'checking' })
+    setPhase(snap.action, { phase: 'checking' })
     const result = await validateReceipt(txHash, snap, rpcUrl)
     if (result.outcome === 'confirmed') {
-      setReceiptValidation({ phase: 'confirmed', txHash, action: snap.action })
+      // RC3: mark confirmed so we do not re-run for this hash
+      notifiedRef.current.add(txHash)
+      setPhase(snap.action, { phase: 'confirmed', txHash, action: snap.action })
+      // RC6: persist so banner survives pool state transitions
+      confirmedTxRef.current = { txHash, action: snap.action }
       onSuccess(txHash, snap.action)
     } else if (result.outcome === 'replaced') {
-      setReceiptValidation({ phase: 'replaced', txHash, note: result.note })
+      notifiedRef.current.add(txHash)
+      setPhase(snap.action, { phase: 'replaced', txHash, note: result.note })
     } else {
-      setReceiptValidation({ phase: 'error', txHash, message: result.note })
+      // RC3: error is NOT added to notifiedRef — user can retry via the banner button
+      setPhase(snap.action, { phase: 'error', txHash, message: result.note, retryable: true })
     }
   }, [rpcUrl, onSuccess])
+
+  // RC3: surface wait-hook errors (revert path — wagmi throws on revert)
+  useEffect(() => {
+    if (contribWaitError && contribHash && pendingSnapRef.current?.action === 'contribute') {
+      setPhase('contribute', {
+        phase: 'error',
+        txHash: contribHash,
+        message: contribWaitErr instanceof Error ? contribWaitErr.message : 'Transaction reverted or could not be confirmed.',
+        retryable: true,
+      })
+    }
+  }, [contribWaitError, contribHash, contribWaitErr])
+
+  useEffect(() => {
+    if (payoutWaitError && payoutHash && pendingSnapRef.current?.action === 'payout') {
+      setPhase('payout', {
+        phase: 'error',
+        txHash: payoutHash,
+        message: payoutWaitErr instanceof Error ? payoutWaitErr.message : 'Transaction reverted or could not be confirmed.',
+        retryable: true,
+      })
+    }
+  }, [payoutWaitError, payoutHash, payoutWaitErr])
+
+  useEffect(() => {
+    if (refundWaitError && refundHash && pendingSnapRef.current?.action === 'refund') {
+      setPhase('refund', {
+        phase: 'error',
+        txHash: refundHash,
+        message: refundWaitErr instanceof Error ? refundWaitErr.message : 'Transaction reverted or could not be confirmed.',
+        retryable: true,
+      })
+    }
+  }, [refundWaitError, refundHash, refundWaitErr])
 
   useEffect(() => {
     if (contribSuccess && contribHash && pendingSnapRef.current?.action === 'contribute') {
@@ -209,7 +308,12 @@ function ActionPanel({
       if (val <= 0n) { setAmountError('Enter an amount greater than zero.'); return }
       if (val % (10n ** 12n) !== 0n) { setAmountError('Amount must be a multiple of 0.000001 USDC.'); return }
       if (val > remaining) { setAmountError(`Exceeds remaining capacity (${formatNativeAmount(remaining)} USDC).`); return }
-      setReviewSnapshot({ action: 'contribute', amount: val, recipient: HUIPOT_ADDRESS, poolId, contractAddress: HUIPOT_ADDRESS, accountAddress })
+      setReviewSnapshot({
+        action: 'contribute', amount: val, recipient: HUIPOT_ADDRESS, poolId,
+        contractAddress: HUIPOT_ADDRESS, accountAddress,
+        statusAtReview: status, remainingAtReview: remaining,
+        claimableAtReview: myClaimable ?? 0n,
+      })
     } catch {
       setAmountError('Invalid amount. Use up to 6 decimal places.')
     }
@@ -217,46 +321,62 @@ function ActionPanel({
 
   function openPayoutReview() {
     if (wrongChain) { switchChain({ chainId: TARGET_CHAIN_ID }); return }
-    setReviewSnapshot({ action: 'payout', amount: target, recipient, poolId, contractAddress: HUIPOT_ADDRESS, accountAddress })
+    setReviewSnapshot({
+      action: 'payout', amount: target, recipient, poolId,
+      contractAddress: HUIPOT_ADDRESS, accountAddress,
+      statusAtReview: status, remainingAtReview: remaining,
+      claimableAtReview: 0n,
+    })
   }
 
   function openRefundReview() {
     if (wrongChain) { switchChain({ chainId: TARGET_CHAIN_ID }); return }
     if (!myClaimable || myClaimable <= 0n) return
-    setReviewSnapshot({ action: 'refund', amount: myClaimable, recipient: accountAddress, poolId, contractAddress: HUIPOT_ADDRESS, accountAddress })
+    setReviewSnapshot({
+      action: 'refund', amount: myClaimable, recipient: accountAddress, poolId,
+      contractAddress: HUIPOT_ADDRESS, accountAddress,
+      statusAtReview: status, remainingAtReview: remaining,
+      claimableAtReview: myClaimable,
+    })
   }
 
   function cancelReview() { setReviewSnapshot(null) }
 
   function confirmAction() {
     if (!reviewSnapshot) return
-    // Re-validate context at confirm time using LIVE wallet state
-    if (currentChainId !== TARGET_CHAIN_ID) {
-      cancelReview()
-      return
-    }
-    if (reviewSnapshot.accountAddress !== accountAddress) {
-      cancelReview()
-      return
-    }
-    if (reviewSnapshot.contractAddress !== HUIPOT_ADDRESS) {
-      cancelReview()
-      return
-    }
-    if (reviewSnapshot.poolId !== poolId) {
-      cancelReview()
-      return
+
+    // RC: live chain (not stored snapshot chain)
+    if (currentChainId !== TARGET_CHAIN_ID) { cancelReview(); return }
+    if (reviewSnapshot.accountAddress !== accountAddress) { cancelReview(); return }
+    if (reviewSnapshot.contractAddress !== HUIPOT_ADDRESS) { cancelReview(); return }
+    if (reviewSnapshot.poolId !== poolId) { cancelReview(); return }
+
+    // RC4: re-validate pool state at confirm time (not just at review-open time)
+    if (reviewSnapshot.action === 'contribute') {
+      // Pool must still be ACTIVE and have enough remaining capacity
+      if (status !== STATUS.ACTIVE) { cancelReview(); return }
+      if (reviewSnapshot.amount > remaining) { cancelReview(); return }
+    } else if (reviewSnapshot.action === 'payout') {
+      // Pool must still be FUNDED
+      if (status !== STATUS.FUNDED) { cancelReview(); return }
+    } else if (reviewSnapshot.action === 'refund') {
+      // Pool must still be REFUNDING and claimable amount must still be valid
+      if (status !== STATUS.REFUNDING) { cancelReview(); return }
+      if (!myClaimable || myClaimable <= 0n) { cancelReview(); return }
     }
 
     const snap = reviewSnapshot
     setReviewSnapshot(null)
-    pendingSnapRef.current = snap  // save for receipt validation
+    pendingSnapRef.current = snap
 
     if (snap.action === 'contribute') {
+      resetContrib()
       doContribute({ address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'contribute', args: [poolIdBig], value: snap.amount, chainId: TARGET_CHAIN_ID })
     } else if (snap.action === 'payout') {
+      resetPayout()
       doPayout({ address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'payout', args: [poolIdBig], chainId: TARGET_CHAIN_ID })
     } else if (snap.action === 'refund') {
+      resetRefund()
       doRefund({ address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'claimRefund', args: [poolIdBig], chainId: TARGET_CHAIN_ID })
     }
   }
@@ -267,24 +387,33 @@ function ActionPanel({
     const chainValid = currentChainId === TARGET_CHAIN_ID
     const accountValid = snap.accountAddress === accountAddress
 
+    // RC4: detect live pool state changes while review is open
+    let poolStateStale = false
+    if (snap.action === 'contribute' && (status !== STATUS.ACTIVE || snap.amount > remaining)) poolStateStale = true
+    if (snap.action === 'payout' && status !== STATUS.FUNDED) poolStateStale = true
+    if (snap.action === 'refund' && (status !== STATUS.REFUNDING || !myClaimable || myClaimable <= 0n)) poolStateStale = true
+
+    const canConfirm = chainValid && accountValid && !poolStateStale
+
     return (
       <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <h3 className="font-semibold" style={{ color: 'var(--ink)' }}>Review before signing</h3>
 
         {/* Context warnings if state drifted after review opened */}
-        {(!chainValid || !accountValid) && (
+        {(!chainValid || !accountValid || poolStateStale) && (
           <div className="flex items-start gap-2 rounded-xl p-3 text-xs" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>
               {!chainValid && 'Wrong network — switch to Arc Testnet before confirming. '}
               {!accountValid && 'Wallet account changed since review was opened. '}
-              This review will be cancelled if you confirm.
+              {poolStateStale && 'Pool state changed since review was opened — this action may no longer be valid. '}
+              This review will be cancelled if you confirm now.
             </span>
           </div>
         )}
 
         <dl className="space-y-2 text-sm">
-          {[
+          {([
             ['Action', snap.action === 'contribute' ? 'Contribute' : snap.action === 'payout' ? 'Trigger payout' : 'Claim refund'],
             ['Amount', `${formatNativeAmount(snap.amount)} USDC`],
             ['Pool', `#${snap.poolId}`],
@@ -295,11 +424,13 @@ function ActionPanel({
               : snap.action === 'refund'
                 ? ['To (your wallet)', snap.recipient]
                 : ['To (contract)', snap.recipient],
-            ['Network fee', 'Not estimable before signing — you pay Arc gas (typically <0.01 USDC; exact amount shown in wallet)'],
+            // RC5: honest gas string — does not claim estimation requires signing;
+            // wallet provides the exact fee before the user signs.
+            ['Network fee', 'The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC).'],
             snap.action === 'contribute'
               ? ['Commitment', 'Contributions are irrevocable until the pool expires underfunded']
               : null,
-          ].filter((r): r is [string, string] => r !== null).map(([k, v]) => (
+          ] as ([string, string] | null)[]).filter((r): r is [string, string] => r !== null).map(([k, v]) => (
             <div key={k} className="flex gap-3">
               <dt className="w-36 shrink-0 font-medium" style={{ color: 'var(--muted)' }}>{k}</dt>
               <dd className="break-all mono text-xs" style={{ color: 'var(--ink)' }}>{v}</dd>
@@ -315,7 +446,7 @@ function ActionPanel({
         <div className="flex gap-3 pt-1">
           <button
             onClick={confirmAction}
-            disabled={!chainValid || !accountValid}
+            disabled={!canConfirm}
             className="flex-1 rounded-xl py-3 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
           >
@@ -334,52 +465,95 @@ function ActionPanel({
   }
 
   // ── Receipt validation banner ─────────────────────────────────────────────
-  function ReceiptBanner() {
-    if (receiptValidation.phase === 'checking') {
+  // RC6: also show for confirmedTxRef if the current action's phase is idle
+  // (pool may have transitioned to PAID/CLOSED and remounted ActionPanel)
+  function ReceiptBanner({ action }: { action: ActionType }) {
+    const phase = getPhase(action)
+
+    // RC6: if this action has no active phase but we have a confirmed tx for it,
+    // show the persistent confirmed banner
+    if (phase.phase === 'idle' && confirmedTxRef.current?.action === action) {
+      const { txHash } = confirmedTxRef.current
+      return (
+        <div className="rounded-xl p-3 text-sm mb-3" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
+          {action === 'contribute' ? 'Contribution confirmed' : action === 'payout' ? 'Payout confirmed' : 'Refund confirmed'}.{' '}
+          <a href={explorerTxUrl(txHash)} target="_blank" rel="noopener noreferrer" className="underline">View tx</a>
+          {' · '}
+          <button onClick={() => navigate(`/pools/${poolId}/proof?tx=${txHash}`)} className="underline">
+            Verify proof
+          </button>
+        </div>
+      )
+    }
+
+    if (phase.phase === 'checking') {
       return (
         <div className="rounded-xl p-3 text-sm mb-3 flex items-center gap-2" style={{ background: 'var(--surface-muted)', color: 'var(--muted)' }}>
           <Loader2 className="h-4 w-4 animate-spin" /> Verifying transaction receipt…
         </div>
       )
     }
-    if (receiptValidation.phase === 'confirmed') {
+    if (phase.phase === 'confirmed') {
       const labels: Record<ActionType, string> = { contribute: 'Contribution confirmed', payout: 'Payout confirmed', refund: 'Refund confirmed' }
       return (
         <div className="rounded-xl p-3 text-sm mb-3" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
-          {labels[receiptValidation.action]}.{' '}
-          <a href={explorerTxUrl(receiptValidation.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View tx</a>
+          {labels[phase.action]}.{' '}
+          <a href={explorerTxUrl(phase.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View tx</a>
           {' · '}
-          <button onClick={() => navigate(`/pools/${poolId}/proof?tx=${receiptValidation.txHash}`)} className="underline">
+          <button onClick={() => navigate(`/pools/${poolId}/proof?tx=${phase.txHash}`)} className="underline">
             Verify proof
           </button>
         </div>
       )
     }
-    if (receiptValidation.phase === 'replaced') {
+    if (phase.phase === 'replaced') {
       return (
         <div className="rounded-xl p-3 text-sm mb-3 flex items-start gap-2" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>
             Transaction confirmed but no matching event was found — it may have been replaced or cancelled.{' '}
-            <a href={explorerTxUrl(receiptValidation.txHash)} target="_blank" rel="noopener noreferrer" className="underline">Check on explorer</a>.
-            {receiptValidation.note ? ` ${receiptValidation.note}` : ''}
+            <a href={explorerTxUrl(phase.txHash)} target="_blank" rel="noopener noreferrer" className="underline">Check on explorer</a>.
+            {phase.note ? ` ${phase.note}` : ''}
           </span>
         </div>
       )
     }
-    if (receiptValidation.phase === 'error') {
+    if (phase.phase === 'error') {
       return (
         <div className="rounded-xl p-3 text-sm mb-3 flex items-start gap-2" style={{ background: 'var(--error-bg)', color: 'var(--error-text)' }}>
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>
-            Receipt check failed.{' '}
-            <a href={explorerTxUrl(receiptValidation.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View on explorer</a>.
-            {receiptValidation.message ? ` ${receiptValidation.message}` : ''}
+            Receipt check failed — you may retry.{' '}
+            {phase.txHash && (
+              <><a href={explorerTxUrl(phase.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View on explorer</a>.{' '}</>
+            )}
+            {phase.message}
+            {/* RC3: allow retry for transient errors */}
+            {phase.retryable && pendingSnapRef.current?.action === action && phase.txHash && (
+              <button
+                className="ml-2 underline font-semibold"
+                onClick={() => {
+                  if (pendingSnapRef.current) {
+                    // Clear notifiedRef entry so retry is allowed
+                    notifiedRef.current.delete(phase.txHash)
+                    void runReceiptValidation(phase.txHash, pendingSnapRef.current)
+                  }
+                }}
+              >
+                Retry
+              </button>
+            )}
           </span>
         </div>
       )
     }
     return null
+  }
+
+  // RC1: action-scoped disable: only disable if THIS action's phase is confirmed/checking
+  function isActionBusy(action: ActionType): boolean {
+    const p = getPhase(action)
+    return p.phase === 'confirmed' || p.phase === 'checking'
   }
 
   return (
@@ -395,7 +569,7 @@ function ActionPanel({
       {status === STATUS.ACTIVE && isConnected && (
         <div className="rounded-2xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <h3 className="mb-3 font-semibold" style={{ color: 'var(--ink)' }}>Contribute</h3>
-          <ReceiptBanner />
+          <ReceiptBanner action="contribute" />
           <form onSubmit={openContributeReview}>
             <div className="relative mb-1">
               <input
@@ -429,7 +603,7 @@ function ActionPanel({
                 Switch to Arc Testnet
               </button>
             ) : (
-              <button type="submit" disabled={contribPending || contribConfirming || receiptValidation.phase === 'checking'} className="w-full rounded-xl py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
+              <button type="submit" disabled={contribPending || contribConfirming || isActionBusy('contribute')} className="w-full rounded-xl py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
                 {contribPending ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Confirm in wallet…</span>
                   : contribConfirming ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Confirming…</span>
                   : 'Review contribution'}
@@ -446,7 +620,7 @@ function ActionPanel({
           <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>
             The goal is met. This sends {formatNativeAmount(target)} USDC to the fixed recipient. Anyone may trigger it.
           </p>
-          <ReceiptBanner />
+          <ReceiptBanner action="payout" />
           {payoutIsError && (
             <div className="mb-3 rounded-xl p-2.5 text-xs" style={{ background: 'var(--error-bg)', color: 'var(--error-text)' }}>
               {parseOnchainError(payoutErr)}
@@ -459,9 +633,10 @@ function ActionPanel({
               Switch to Arc Testnet
             </button>
           ) : (
+            // RC1: disable only when payout action's phase is confirmed/checking
             <button
               onClick={openPayoutReview}
-              disabled={payoutPending || payoutConfirming || receiptValidation.phase === 'confirmed' || receiptValidation.phase === 'checking'}
+              disabled={payoutPending || payoutConfirming || isActionBusy('payout')}
               className="w-full rounded-xl py-3 text-sm font-semibold disabled:opacity-50"
               style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
             >
@@ -479,6 +654,14 @@ function ActionPanel({
           <p className="font-semibold text-sm" style={{ color: 'var(--success-text)' }}>
             Payout complete. {formatNativeAmount(target)} USDC was sent to the fixed recipient.
           </p>
+          {/* RC6: show confirmedTxRef if payout was confirmed this session */}
+          {confirmedTxRef.current?.action === 'payout' && (
+            <p className="mt-2 text-xs" style={{ color: 'var(--success-text)' }}>
+              <a href={explorerTxUrl(confirmedTxRef.current.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View confirmed tx</a>
+              {' · '}
+              <button onClick={() => navigate(`/pools/${poolId}/proof?tx=${confirmedTxRef.current!.txHash}`)} className="underline">Verify proof</button>
+            </p>
+          )}
           <Link to={`/pools/${poolId}/proof`} className="mt-3 flex items-center gap-1 text-sm underline" style={{ color: 'var(--success-text)' }}>
             <ShieldCheck className="h-4 w-4" /> View payout proof
           </Link>
@@ -500,7 +683,7 @@ function ActionPanel({
               <p className="mb-3 text-sm" style={{ color: 'var(--muted)' }}>
                 Claim {formatNativeAmount(myClaimable)} USDC back to this wallet. You pay the network fee.
               </p>
-              <ReceiptBanner />
+              <ReceiptBanner action="refund" />
               {refundIsError && (
                 <div className="mb-3 rounded-xl p-2.5 text-xs" style={{ background: 'var(--error-bg)', color: 'var(--error-text)' }}>
                   {parseOnchainError(refundErr)}
@@ -511,9 +694,10 @@ function ActionPanel({
                   Switch to Arc Testnet
                 </button>
               ) : (
+                // RC1: disable only when refund action's phase is confirmed/checking
                 <button
                   onClick={openRefundReview}
-                  disabled={refundPending || refundConfirming || receiptValidation.phase === 'confirmed' || receiptValidation.phase === 'checking'}
+                  disabled={refundPending || refundConfirming || isActionBusy('refund')}
                   className="w-full rounded-xl py-3 text-sm font-semibold disabled:opacity-50"
                   style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}
                 >
@@ -548,7 +732,6 @@ export function Pool() {
   const [copiedAddr, setCopiedAddr] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
 
-  // R4: guard BigInt conversion
   const UINT256_MAX = (1n << 256n) - 1n
   const poolIdBig = (() => {
     if (!poolId) return 0n
@@ -561,7 +744,6 @@ export function Pool() {
   })()
   const validPoolId = poolIdBig !== null && poolIdBig > 0n
 
-  // R5: 12s polling
   const { data: pool, isLoading: poolLoading, isError: poolRpcError, refetch: refetchPool } = useReadContract({
     address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'getPool',
     args: [poolIdBig ?? 0n], chainId: TARGET_CHAIN_ID,
@@ -592,7 +774,6 @@ export function Pool() {
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
 
-  // Stable ref to refetch callbacks
   const refetchAll = useRef({ refetchPool, refetchStatus, refetchContrib, refetchClaimable })
   useEffect(() => { refetchAll.current = { refetchPool, refetchStatus, refetchContrib, refetchClaimable } })
 

@@ -308,13 +308,94 @@ describe('R3 structural — ActionPanel isolation', () => {
     expect(code).not.toContain("snap.recipient.slice(0, 6)")
   })
 
-  it('Pool.tsx gas estimate is honest unavailable state (not a hardcoded fixed string)', async () => {
+  it('Pool.tsx gas estimate is honest: wallet provides fee, no false estimability claim', async () => {
     const src = await import('../../../src/pages/Pool?raw') as { default: string }
     const code = src.default
-    // Must say gas is not estimable before signing (honest)
-    expect(code).toContain('Not estimable before signing')
-    // Must NOT have a fixed hardcoded gas string as the sole display
+    // RC5: new honest string — wallet shows exact fee; does not falsely claim estimateGas requires signing
+    expect(code).toContain('The wallet will show the exact fee before you sign')
+    // Must NOT contain the old 'Not estimable before signing' claim (removed — inaccurate per RC5)
+    expect(code).not.toContain('Not estimable before signing')
+    // Must NOT have the original hardcoded gas string
     expect(code).not.toContain('Full target amount to recipient; you pay Arc gas (~<0.01 USDC)')
+  })
+
+})
+
+// ── RC1–RC6 regression tests ──────────────────────────────────────────────────
+
+describe('RC1–RC6 regression — Pool.tsx source structure', () => {
+
+  it('RC1: payout button disable uses isActionBusy("payout"), not global receiptValidation', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // isActionBusy function must exist and be used for payout/refund disable
+    expect(code).toContain('function isActionBusy(')
+    expect(code).toContain("isActionBusy('payout')")
+    expect(code).toContain("isActionBusy('refund')")
+    // Old pattern used a single receiptValidation.phase — that cross-contaminated actions
+    // New code uses receiptByAction (per-action map)
+    expect(code).toContain('receiptByAction')
+    expect(code).not.toContain('receiptValidation.phase')
+  })
+
+  it('RC2: validateReceipt checks contributor identity for Contributed event', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must extract contributor from topics[2] and compare to snap.accountAddress
+    expect(code).toContain('topics[2]')
+    expect(code).toContain('logContributor')
+    // Must reject mismatched contributor
+    expect(code).toContain('Contributed event contributor')
+    expect(code).toContain('does not match submitting wallet')
+  })
+
+  it('RC3: wait-hook errors surfaced; notifiedRef not set on error (retry allowed)', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must use isError from useWaitForTransactionReceipt
+    expect(code).toContain('contribWaitError')
+    expect(code).toContain('payoutWaitError')
+    expect(code).toContain('refundWaitError')
+    // notifiedRef.add must only be called for non-error outcomes
+    // Retry button clears notifiedRef for error hashes
+    expect(code).toContain('notifiedRef.current.delete(')
+    expect(code).toContain('retryable: true')
+  })
+
+  it('RC4: confirmAction re-validates pool status before submitting wallet write', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must check live status for contribute
+    expect(code).toContain("action === 'contribute'")
+    expect(code).toContain('status !== STATUS.ACTIVE')
+    // Must check live status for payout
+    expect(code).toContain('status !== STATUS.FUNDED')
+    // Must check live status for refund
+    expect(code).toContain('status !== STATUS.REFUNDING')
+    // Review modal must show stale warning
+    expect(code).toContain('poolStateStale')
+  })
+
+  it('RC5: validateReceipt checks resp.ok and JSON-RPC error field', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must check HTTP transport success
+    expect(code).toContain('resp.ok')
+    // Must check JSON-RPC error field
+    expect(code).toContain('json.error')
+    // Must have RpcResponse type or equivalent check
+    expect(code).toContain('json.error.code')
+  })
+
+  it('RC6: confirmedTxRef persists confirmed hash outside transient action states', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // confirmedTxRef must be set on confirmed outcome
+    expect(code).toContain('confirmedTxRef.current = {')
+    // ReceiptBanner must check confirmedTxRef for the idle fallback
+    expect(code).toContain("confirmedTxRef.current?.action === action")
+    // PAID state must also reference confirmedTxRef
+    expect(code).toContain("confirmedTxRef.current?.action === 'payout'")
   })
 
 })
