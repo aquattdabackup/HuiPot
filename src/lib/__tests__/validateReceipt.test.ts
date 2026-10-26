@@ -374,23 +374,26 @@ describe('RC1 structural — contribute re-enable after confirmed', () => {
     expect(code).toContain("return p.phase === 'checking'")
   })
 
-  it('RC3: Pool.tsx uses onReplaced in useWaitForTransactionReceipt', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
-    const code = src.default
-    // onReplaced handler must be wired
-    expect(code).toContain('onReplaced:')
-    // Repriced reason must be handled
-    expect(code).toContain("r.reason === 'repriced'")
-    // Cancelled reason must be handled
-    expect(code).toContain("r.reason === 'cancelled'")
+  it('RC3: Pool.tsx uses onReplaced; actionLifecycle.ts handles repriced/cancelled', async () => {
+    const poolSrc = await import('../../../src/pages/Pool?raw') as { default: string }
+    const poolCode = poolSrc.default
+    // onReplaced must be wired in Pool.tsx (passed to useWaitForTransactionReceipt)
+    expect(poolCode).toContain('onReplaced:')
+    // actionLifecycle.ts contains the repriced/cancelled handling
+    const lcSrc = await import('../actionLifecycle?raw') as { default: string }
+    const lcCode = lcSrc.default
+    expect(lcCode).toContain("r.reason === 'repriced'")
+    expect(lcCode).toContain("r.reason === 'cancelled'")
   })
 
-  it('RC3/RL1: Pool.tsx uses submissionIdRef for stale context prevention', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+  it('RC3/SC1: actionLifecycle.ts uses epoch for stale context prevention', async () => {
+    const src = await import('../actionLifecycle?raw') as { default: string }
     const code = src.default
-    // RL1: replaced validationGenRef with per-submission submissionIdRef
-    expect(code).toContain('submissionIdRef')
-    expect(code).toContain('submissionIdRef.current !== submissionId')
+    // SC1: epoch is the per-submission id in actionLifecycle
+    expect(code).toContain('epoch')
+    expect(code).toContain('epoch !== submissionId')
+    // SC1: callbacks reject via epoch check at entry
+    expect(code).toContain('if (epoch !== submissionId) return')
   })
 
   it('RC6: Pool.tsx renders ReceiptBanner at FUNDED state (contribution evidence survives ACTIVE→FUNDED)', async () => {
@@ -416,13 +419,17 @@ describe('RC1 structural — contribute re-enable after confirmed', () => {
     expect(refundOccurrences).toBeGreaterThanOrEqual(3)
   })
 
-  it('RC2: validateReceipt imported from shared lib (not inline in Pool.tsx)', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
-    const code = src.default
-    // Must import from validateReceipt lib
-    expect(code).toContain("from '../lib/validateReceipt'")
-    // Must NOT contain the inline async function validateReceipt definition
-    expect(code).not.toContain('async function validateReceipt(')
+  it('RC2/SC1: validateReceipt used from actionLifecycle.ts (not inline in Pool.tsx)', async () => {
+    const poolSrc = await import('../../../src/pages/Pool?raw') as { default: string }
+    const poolCode = poolSrc.default
+    // Pool.tsx must NOT contain inline async function validateReceipt
+    expect(poolCode).not.toContain('async function validateReceipt(')
+    // Pool.tsx must import from actionLifecycle (which imports validateReceipt internally)
+    expect(poolCode).toContain("from '../lib/actionLifecycle'")
+    // actionLifecycle.ts must import from validateReceipt
+    const lcSrc = await import('../actionLifecycle?raw') as { default: string }
+    const lcCode = lcSrc.default
+    expect(lcCode).toContain("from './validateReceipt'")
   })
 
 })

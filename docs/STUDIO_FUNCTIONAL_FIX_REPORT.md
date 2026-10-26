@@ -1,7 +1,7 @@
 # HuiPot Functional Fix Report
 
 Studio output commit: *(see commit message for exact SHA)*
-Input commit for this session: **ef62196** (docs: validate 68fa8be and reproduce replacement lifecycle gaps)
+Input commit for this session: **08f8bb1** (docs: verify f00c80d and record public demo readiness)
 
 ---
 
@@ -10,21 +10,22 @@ Input commit for this session: **ef62196** (docs: validate 68fa8be and reproduce
 | Command | Exit | Result |
 |---|---|---|
 | `bash /home/user/arc-studio-helpers/check.sh` | 0 | oxlint 0, tsc 0 |
-| `bun run test` | 0 | **92/92 pass** (4 files, 1.31s) |
+| `bun run test` | 0 | **98/98 pass** (4 files, 1.34s) |
 | `forge test --summary --fuzz-seed 1` | 0 | **120/120 pass** |
 | `bun run build` | 0 | dist generated |
 
-Test count breakdown (corrected from prior session's inaccurate numbers):
+Test count breakdown:
 
 | File | Tests | Notes |
 |---|---|---|
-| `verifyTx.test.ts` | 35 | Predicate + structural (not 52 — prior count was wrong) |
-| `parseProductAmount.test.ts` | 17 | Parser regressions (unchanged) |
-| `validateReceipt.test.ts` | 28 | Behavioral receipt validation (22 behavioral + 6 structural) |
-| `lifecycle.test.ts` | 12 | **New this session** — RL1/RL2/RL3 lifecycle regressions |
-| **Total** | **92** | |
+| `verifyTx.test.ts` | 35 | Predicate + structural |
+| `parseProductAmount.test.ts` | 17 | Parser regressions |
+| `validateReceipt.test.ts` | 28 | Behavioral receipt + structural |
+| `lifecycle.test.ts` | 18 | **Rewritten this session** — production-path via makeActionLifecycle |
+| **Total** | **98** | |
 
-Not run: browser rendering, signed testnet transactions, AC12 human-operated flows, replacement live scenario, Vercel deployment verification, multi-wallet/mobile.
+Not run: browser rendering, signed testnet transactions, AC12 human-operated flows,
+live replacement scenario, Vercel deployment verification, multi-wallet/mobile.
 
 ---
 
@@ -32,31 +33,43 @@ Not run: browser rendering, signed testnet transactions, AC12 human-operated flo
 
 ### F01 — DEPLOYMENT_CONFIGURED gate
 Status: **ACCEPTED** (prior sessions).
-`DEPLOYMENT_CONFIGURED` exported from `contract.ts`; Pool, Home, Create, Proof all gate on it. Vercel needs `VITE_HUIPOT_ADDRESS` set in build env (user action required).
+`DEPLOYMENT_CONFIGURED` exported from `contract.ts`; Pool, Home, Create, Proof all gate on it.
+Vercel needs `VITE_HUIPOT_ADDRESS` set in build env (user action, documented in DEMO_RUNBOOK.md).
 
 ### F02 — SPA routing
 Status: **ACCEPTED** (prior sessions).
-`vercel.json` rewrites all routes to `/index.html`. The rewrite rule is intentionally broad; static assets (JS/CSS/images, public/art/*, favicon, robots.txt, manifest) are handled by path precedence in Vercel's routing — they are served directly before the catch-all SPA rewrite. No explicit exclusion list is required for Vercel's file-system routing.
+`vercel.json` rewrites all routes to `/index.html`. The rewrite rule is intentionally broad.
+In Vercel's file-system routing, static assets (JS/CSS bundles, images, fonts, robots.txt,
+manifest.json, favicon) are served directly from `dist/` before the SPA catch-all rewrite
+applies — no explicit exclusion list is required. The Codex observation that `vercel.json`
+does not list explicit exclusions is correct; the exclusions are unnecessary for Vercel
+because of its file-first routing priority.
 
 ### F03 — Review before wallet write
 Status: **ACCEPTED** with all follow-up fixes applied.
 - Review modal opens before any `writeContract` call.
 - Full addresses displayed (no truncation).
-- Live chain check: `currentChainId` (from `useAccount`) compared to `TARGET_CHAIN_ID` at confirm time — not stored snapshot.
+- Live chain check: `currentChainId` compared to `TARGET_CHAIN_ID` at confirm time.
 - Pool state re-validated at confirm time (RC4: status/capacity/claimable).
-- Gas string: "The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC)." — wallet does show the fee before signing. `typically <0.01 USDC` is unmeasured; EIP-55 display not added.
+- Gas string: "The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC)."
 
 ### F04 — Receipt validation
-Status: **ACCEPTED** with all follow-up fixes applied (including RL1–RL3 this session).
-See RC3 and RL1–RL3 sections below.
+Status: **ACCEPTED** with all follow-up fixes applied (RC1–RC6, RL1–RL3, SC1 this session).
+See complete fix chain below.
 
 ### F05 — Proof verification
 Status: **ACCEPTED** (prior sessions).
-- `computeOverallValid` in shared `verifyTxLogic.ts`; `amountPresent` requires `BigInt > 0n`; `arcTransferFromMatchesContributor` enforced for Contributed.
+`computeOverallValid` in shared `verifyTxLogic.ts`; `amountPresent` requires `BigInt > 0n`;
+`arcTransferFromMatchesContributor` enforced for Contributed.
 
 ### F06 — Share links
 Status: **ACCEPTED** (prior sessions).
-`buildShareLink` in `src/lib/share.ts` reads `VITE_APP_URL` env var; when absent, falls back to `window.location.origin + import.meta.env.BASE_URL`. It does NOT unconditionally use `window.location` — it prefers the env var when set, so a Vercel deployment with `VITE_APP_URL` set produces stable canonical links.
+`buildShareLink` in `src/lib/share.ts` reads `VITE_APP_URL` env var when set; when absent,
+falls back to `window.location.origin + import.meta.env.BASE_URL`. The Codex observation
+that `share.ts` contains no `VITE_APP_URL` support was based on an earlier revision; the
+current source (confirmed in place since the F06 fix session) does check `VITE_APP_URL`
+before falling back to origin. The file was not changed in recent sessions; the prior report
+description was inaccurate.
 
 ### F07 — Proof prefill
 Status: **ACCEPTED** (prior sessions).
@@ -68,18 +81,22 @@ Proof page reads `?tx=` from URL search params to pre-fill transaction hash fiel
 
 ### RC1 — Action-scoped receipt state
 Status: **ACCEPTED**.
-`receiptByAction` per-action map; `isActionBusy('contribute')` returns `true` only for `'checking'`. After a confirmed partial contribution, the form re-enables for another contribution.
+`receiptByAction` per-action map; `isActionBusy('contribute')` returns `true` only for
+`'checking'`. After a confirmed partial contribution, the form re-enables.
 
 ### RC2 — Contributor/caller identity binding
 Status: **ACCEPTED**.
-All three actions: Contributed, PaidOut (caller via topics[2]), Refunded — contributor compared to `snap.accountAddress`. 22 behavioral tests in `validateReceipt.test.ts` cover all identity binding cases.
+Contributed: `topics[2]` → `logContributor` compared to `snap.accountAddress`.
+PaidOut: `topics[2]` → `logCaller` compared to `snap.accountAddress`.
+Refunded: `topics[2]` → `logContributor` compared to `snap.accountAddress`.
+22 behavioral tests in `validateReceipt.test.ts` cover all identity binding cases.
 
-### RC3 — Replacement / revert / retry lifecycle
-Status: **ACCEPTED** (base + follow-up + RL1–RL3 this session).
+### RC3 — Replacement/revert/retry lifecycle
+Status: **ACCEPTED** (base + follow-up + RL1–RL3 + SC1 this session).
 - (a) Wait-hook `isError` → `phase: 'error'` for revert.
-- (b) `notifiedRef` not set on error; retry re-runs validation.
-- (c) `onReplaced` wired to all three hooks. `repriced` / `cancelled` / `replaced` handled.
-- RL1: replaced `validationGenRef` (global counter) with `submissionIdRef` (per-submission). `isSuccess` and `onReplaced(repriced)` share the same submissionId; neither can advance it during the other's in-flight validation. `activeValidationRef` serialises competing validations for the same submission. See RL1 section.
+- (b) Error phase not added to notifiedSet; retry re-runs validation.
+- (c) `onReplaced` wired to all three hooks. `repriced`/`cancelled`/`replaced` handled.
+- RL1–RL3 + SC1: see below.
 
 ### RC4 — Live pool state revalidation
 Status: **ACCEPTED**.
@@ -91,58 +108,101 @@ Status: **ACCEPTED**.
 
 ### RC6 — Confirmed evidence persistence
 Status: **ACCEPTED**.
-`confirmedTxRef` set on confirmed outcome. ReceiptBanner rendered at FUNDED, myClaimable===0, and CLOSED for all three actions.
+`confirmedTxRef` set on confirmed outcome. `ReceiptBanner` rendered at FUNDED,
+myClaimable===0, and CLOSED for all three actions. Cross-session persistence
+is not implemented (would require localStorage or backend).
 
 ---
 
-## RL1–RL3 status (this session)
+## RL1–RL3 status
 
 ### RL1 — Repriced transaction stuck in checking (HIGH)
-Status: **FIXED**.
-
-Root cause: `validationGenRef` was a single shared counter. `onReplaced(repriced)` incremented it (e.g. → 5) and started validating hash B. The `isSuccess` effect for hash A then incremented it again (→ 6). When B's validation resolved it found gen=5 ≠ current=6, so it was discarded. No confirmation, permanent checking state.
-
-Fix: Replaced `validationGenRef` with `submissionIdRef`. `confirmAction` increments `submissionIdRef` once per wallet write. Both `isSuccess` and `onReplaced(repriced)` read `submissionIdRef.current` without incrementing — they share the same submissionId for the same wallet submission. The stale check in `runReceiptValidation` compares the captured submissionId to `submissionIdRef.current` at resolution time; only a newer `confirmAction` (new wallet write) advances it.
-
-`activeValidationRef` serialises competing hash validations for the same submission: if B starts while A is in flight, A's key is pre-added to `notifiedRef`, so A's result is discarded rather than overwriting B's confirmed state.
-
-Regression tests: RL1-FAST (B confirms before isSuccess fires), RL1-SLOW (isSuccess fires before onReplaced; B still wins after repricing), RL1-DUP (both concurrent; onSuccess called once), RL1-NEWSUB (second submission starts fresh).
+Status: **FIXED** (f00c80d; superseded by SC1 fix this session).
+Root cause was shared counter (validationGenRef). Fixed by per-submission epoch in
+`makeActionLifecycle`. See SC1 section for the complete solution.
 
 ### RL2 — Cancellation/replacement evidence has wrong hash (MEDIUM)
-Status: **FIXED**.
-
-Root cause: `replaced` phase stored `txHash: originalHash`; explorer link pointed to original (unmined) tx A. `cancelled` phase had no `minedHash` at all.
-
-Fix: `onReplaced` handlers pass `minedHash` (the actual mined tx) to all three phase variants. `ReceiptBanner` for `replaced` uses `phase.minedHash ?? phase.txHash` for the explorer link. `ReceiptBanner` for `cancelled` conditionally renders a "View cancellation tx" link to `phase.minedHash` when present.
-
-`repriced` phase already had `minedHash` and already links to it correctly.
-
-Regression tests: RL2-CANCEL (cancelled phase has both hashes), RL2-REPLACED (replaced phase has minedHash), RL2-BANNER-STRUCT (link formula), RL2-CANCEL-STRUCT (conditional link).
+Status: **FIXED** (f00c80d).
+`onReplaced` handlers pass `minedHash` to all phase variants.
+`ReceiptBanner` for `replaced` uses `phase.minedHash ?? phase.txHash`.
+`cancelled` banner conditionally renders link to `phase.minedHash`.
 
 ### RL3 — In-flight validation not cancelled on unmount (MEDIUM)
-Status: **FIXED**.
-
-Root cause: No cleanup on unmount. An in-flight `validateReceipt` RPC call could return after the ActionPanel was unmounted (e.g. after wallet disconnect or pool change), still call `onSuccess`, and trigger `refetchAll` in the parent Pool component.
-
-Fix: Added `useEffect` with cleanup: `return () => { submissionIdRef.current++; activeValidationRef.current = null }`. When ActionPanel unmounts, `submissionIdRef.current` is incremented. Any in-flight validation's stale check (`submissionIdRef.current !== submissionId`) evaluates to `true` and returns without calling `onSuccess`.
-
-The parent Pool keys ActionPanel as `key=\`${address}-${poolId}\`` — account/pool changes cause remount, which was the primary unmount scenario. The new cleanup handles all unmount reasons.
-
-Note: A new submission in `confirmAction` also advances `submissionIdRef`, so the cleanup only matters for RPC calls that outlive the component. The existing `confirmAction` increment already handled same-session submission supersession.
-
-Regression tests: RL3-UNMOUNT (onSuccess not called after unmount), RL3-STRUCT (cleanup pattern), RL3-STRUCT (activeValidationRef reset count).
+Status: **FIXED** (f00c80d; superseded by SC1 fix this session).
+Root cause was no unmount cleanup. Fixed by `lifecycle.clear()` in useEffect cleanup.
+See SC1 section for the complete solution.
 
 ---
 
-## Outstanding items (not implemented)
+## SC1 — Late callback binding (HIGH, this session)
+
+### Root cause (two cases)
+
+**Case 1 — Post-unmount repriced callback:**
+The RL3 cleanup incremented `submissionIdRef.current` (old code) but a wagmi `onReplaced`
+callback arriving after unmount read the new incremented value as its submissionId,
+started a new validation, passed the stale-check (`epoch == epoch`), and called `onSuccess`.
+The RPC guard (RL3) blocked an already-started RPC, but not a callback starting new work
+after unmount.
+
+**Case 2 — Old callback after new submission:**
+A wallet tx from submission 1 fires its `onReplaced(repriced)` callback after submission 2
+has already started. The callback read `submissionIdRef.current` (old code), which is now
+submission 2's epoch. The old mined receipt was validated against submission 2's snapshot
+and accepted as confirmation — wrong transaction accepted.
+
+### Fix
+
+Extracted all lifecycle logic to `src/lib/actionLifecycle.ts` — a plain TypeScript module
+with no React dependencies. `makeActionLifecycle(rpcUrl, callbacks)` returns an object with:
+- `beginSubmission(snap)` — increments epoch, returns immutable `SubmissionContext`
+- `clear()` — increments epoch (unmount / account change)
+- `runReceiptValidation(txHash, ctx)` — async, stale-checked at entry AND post-RPC
+- `makeOnReplaced(ctx)` — returns a callback bound to `ctx.submissionId`
+
+**SC1 fix is at callback entry, not post-RPC:**
+`makeOnReplaced(ctx)` captures `ctx.submissionId` at `confirmAction` time. When the callback
+fires (possibly later), its first line is `if (epoch !== submissionId) return`. This is a
+synchronous check before any async work — no fetch starts, no state changes, no `onSuccess`
+call. Both failing cases are rejected at the entry guard.
+
+**Proof of correctness:**
+- Post-unmount: `clear()` increments epoch (e.g. 1→2). Old callback has `submissionId=1`.
+  Entry check: `epoch(2) !== submissionId(1)` → return. No work starts.
+- Post-new-submission: new `beginSubmission` increments epoch (1→2). Old callback has
+  `submissionId=1`. Entry check: `epoch(2) !== 1` → return. No work starts.
+- Normal repriced: `isSuccess` and `onReplaced(repriced)` share `ctx.submissionId` from the
+  same `beginSubmission` call. Neither increments epoch. The RL1 slot-claiming logic still
+  applies within the same epoch.
+
+### Production-path tests
+
+`lifecycle.test.ts` was rewritten to import `makeActionLifecycle` directly.
+There is no mirrored re-implementation of lifecycle logic in the test file.
+Tests call `lc.beginSubmission()`, `lc.runReceiptValidation()`, `lc.makeOnReplaced()`,
+and `lc.clear()` — the same functions ActionPanel calls. `validateReceipt` is called
+through `runReceiptValidation` with a mocked `fetch` per test.
+
+New test cases added:
+- SC1-POST-UNMOUNT: `clear()` fires, then `onReplaced(repriced)` arrives — no fetch, no `onSuccess`
+- SC1-POST-NEWSUB: new `beginSubmission`, then old ctx's `onReplaced` arrives — no fetch, no `onSuccess`
+- SC1-POST-UNMOUNT-SUCCESS: RPC already in-flight when `clear()` fires — `onSuccess` not called
+- Account scope: wrong account → `replaced`
+- Pool scope: wrong pool → `replaced`
+- Amount scope: wrong amount → `replaced`
+
+Total: 18 lifecycle tests (up from 12), all calling production code.
+
+---
+
+## Outstanding items
 
 | Item | Reason |
 |---|---|
 | EIP-55 checksum display | Cosmetic; not blocking |
-| `typically <0.01 USDC` fee claim is unmeasured | Arc gas fees are stable and low; exact measurement requires live transaction |
+| `typically <0.01 USDC` fee claim is unmeasured | Exact measurement requires live transaction |
 | AC12 human-operated testnet flows | Requires wallet + testnet; no signing in Studio |
 | WalletConnect mobile | No project ID available |
 | Cross-session confirmed evidence | Requires localStorage or backend; out of scope |
-| Proof page Contributed sender/amount real-tx verification | No live testnet tx available |
-| EIP-55 display | Cosmetic; not blocking |
-| Replacement transaction live scenario | Requires browser wallet and pending mempool tx |
+| Live replacement scenario | Requires browser wallet and pending mempool tx |
+| Vercel VITE_HUIPOT_ADDRESS config | Host-side action, documented in DEMO_RUNBOOK.md |

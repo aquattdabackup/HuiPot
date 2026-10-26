@@ -1,128 +1,34 @@
 /**
- * lifecycle.test.ts — RL1/RL2/RL3 lifecycle regression tests
+ * lifecycle.test.ts — production-path lifecycle regression tests
  *
- * Tests the per-submission lifecycle logic mirrored from ActionPanel:
- *   - RL1: repriced tx validates under same submissionId; isSuccess for original does not race
- *   - RL2: cancelled/replaced phases carry minedHash for correct explorer link
- *   - RL3: unmount (submissionId advance) discards in-flight validation
+ * Tests call makeActionLifecycle() from src/lib/actionLifecycle.ts directly.
+ * There is no mirrored re-implementation of the lifecycle logic here.
  *
- * These tests instantiate a minimal lifecycle harness that mirrors the actual
- * ActionPanel logic without React. The harness shares the same ref semantics
- * (plain objects used as refs) and calls production validateReceipt.
- *
- * All 31 previously accepted receipt/action cases (validateReceipt.test.ts) are
- * unchanged; these tests add lifecycle-layer assertions on top.
+ * Covers:
+ *   RL1: per-submission id prevents isSuccess from discarding repriced validation
+ *   RL2: cancelled/replaced phases carry minedHash for correct explorer links
+ *   RL3: unmount (clear()) discards in-flight validation
+ *   SC1: late callbacks (post-unmount, post-new-submission) are rejected before
+ *        any work starts — epoch check happens at callback entry, not after RPC
+ *   Valid controls: confirmed after repriced, retry after error, second submission
+ *   Account/pool/chain scope: verified via ReceiptSnapshot fields in validateReceipt
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { validateReceipt, CONTRIBUTED_TOPIC, type ReceiptSnapshot } from '../validateReceipt'
+import { makeActionLifecycle } from '../actionLifecycle'
+import { CONTRIBUTED_TOPIC, type ReceiptSnapshot } from '../validateReceipt'
 
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
-// ─── Harness ─────────────────────────────────────────────────────────────────
-type Phase =
-  | { phase: 'idle' }
-  | { phase: 'checking' }
-  | { phase: 'confirmed'; txHash: string }
-  | { phase: 'replaced'; txHash: string; minedHash?: string; note: string }
-  | { phase: 'repriced'; originalHash: string; minedHash: string; note: string }
-  | { phase: 'cancelled'; originalHash: string; minedHash?: string; note: string }
-  | { phase: 'error'; txHash: string; message: string }
-
-function makeHarness(rpcUrl: string, onSuccess: (hash: string) => void) {
-  const submissionIdRef = { current: 0 }
-  const activeValidationRef = { current: null as { submissionId: number; txHash: string } | null }
-  const notifiedRef = { current: new Set<string>() }
-  let pendingSnap: ReceiptSnapshot | null = null
-  let currentPhase: Phase = { phase: 'idle' }
-
-  function setPhase(p: Phase) { currentPhase = p }
-  function getPhase() { return currentPhase }
-
-  async function runReceiptValidation(txHash: string, snap: ReceiptSnapshot, submissionId: number) {
-    const key = `${submissionId}:${txHash}`
-    if (notifiedRef.current.has(key)) return
-
-    // Claim slot: if different hash is active for same submission, mark old one consumed
-    const existing = activeValidationRef.current
-    if (existing && existing.submissionId === submissionId && existing.txHash !== txHash) {
-      notifiedRef.current.add(`${submissionId}:${existing.txHash}`)
-    }
-    activeValidationRef.current = { submissionId, txHash }
-
-    setPhase({ phase: 'checking' })
-    const result = await validateReceipt(txHash, snap, rpcUrl)
-
-    // Stale checks (mirror ActionPanel)
-    if (submissionIdRef.current !== submissionId) return
-    if (activeValidationRef.current?.txHash !== txHash) return
-    if (notifiedRef.current.has(key)) return
-
-    if (result.outcome === 'confirmed') {
-      notifiedRef.current.add(key)
-      setPhase({ phase: 'confirmed', txHash })
-      onSuccess(txHash)
-    } else if (result.outcome === 'replaced') {
-      notifiedRef.current.add(key)
-      setPhase({ phase: 'replaced', txHash, note: result.note })
-    } else {
-      setPhase({ phase: 'error', txHash, message: result.note })
-    }
-  }
-
-  function onReplacedHandler(
-    reason: 'repriced' | 'cancelled' | 'replaced',
-    originalHash: string,
-    minedHash: string,
-    action: string,
-  ) {
-    const submissionId = submissionIdRef.current
-    notifiedRef.current.add(`${submissionId}:${originalHash}`)
-    if (reason === 'cancelled') {
-      setPhase({ phase: 'cancelled', originalHash, minedHash, note: `Cancelled. Mined: ${minedHash.slice(0, 10)}…` })
-    } else if (reason === 'repriced' && pendingSnap?.action === action) {
-      void runReceiptValidation(minedHash, pendingSnap, submissionId)
-    } else {
-      setPhase({ phase: 'replaced', txHash: originalHash, minedHash, note: `Replaced (${reason}).` })
-    }
-  }
-
-  function isSuccessEffect(txHash: string, action: string) {
-    if (pendingSnap?.action === action) {
-      void runReceiptValidation(txHash, pendingSnap, submissionIdRef.current)
-    }
-  }
-
-  function newSubmission(snap: ReceiptSnapshot) {
-    pendingSnap = snap
-    submissionIdRef.current++
-    activeValidationRef.current = null
-  }
-
-  function unmount() {
-    submissionIdRef.current++
-    activeValidationRef.current = null
-  }
-
-  return {
-    getPhase,
-    submissionIdRef,
-    newSubmission,
-    onReplacedHandler,
-    isSuccessEffect,
-    unmount,
-    notifiedRef,
-  }
-}
-
-// ─── Fixtures ─────────────────────────────────────────────────────────────────
+// ─── Fixtures ──────────────────────────────────────────────────────────────────
 const RPC_URL = 'http://rpc.test'
 const CONTRACT = '0x1111111111111111111111111111111111111111'
 const POOL_ID = '42'
-const ACCOUNT = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const ACCOUNT_A = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const ACCOUNT_B = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 const AMOUNT = 1_000_000_000_000_000_000n
 
 function pad32(n: bigint) { return n.toString(16).padStart(64, '0') }
@@ -136,22 +42,16 @@ function makeContribLog(poolId: string, contributor: string, amount: bigint) {
   }
 }
 
-const validReceipt = {
-  status: '0x1',
-  to: CONTRACT,
-  logs: [makeContribLog(POOL_ID, ACCOUNT, AMOUNT)],
+function validReceiptFor(contributor = ACCOUNT_A, amount = AMOUNT) {
+  return { status: '0x1', to: CONTRACT, logs: [makeContribLog(POOL_ID, contributor, amount)] }
 }
 
 const baseSnap: ReceiptSnapshot = {
-  action: 'contribute',
-  amount: AMOUNT,
-  recipient: CONTRACT,
-  poolId: POOL_ID,
-  contractAddress: CONTRACT,
-  accountAddress: ACCOUNT,
+  action: 'contribute', amount: AMOUNT, recipient: CONTRACT,
+  poolId: POOL_ID, contractAddress: CONTRACT, accountAddress: ACCOUNT_A,
 }
 
-// Helper: stub fetch to return a specific receipt for each hash
+// Mock fetch to return specific receipts per txHash
 function stubFetchMap(map: Map<string, unknown>) {
   vi.stubGlobal('fetch', vi.fn(async (_url: string, opts?: { body?: string }) => {
     let hash = ''
@@ -161,198 +61,249 @@ function stubFetchMap(map: Map<string, unknown>) {
   }))
 }
 
-// Helper: wait for phase to match predicate
-async function waitForPhase(h: ReturnType<typeof makeHarness>, pred: (p: Phase) => boolean, timeout = 500) {
+// Wait for a predicate or throw after timeout
+async function waitFor(pred: () => boolean, timeout = 500) {
   const start = Date.now()
   while (Date.now() - start < timeout) {
-    if (pred(h.getPhase())) return
+    if (pred()) return
     await new Promise(r => setTimeout(r, 5))
   }
-  throw new Error(`waitForPhase timeout after ${timeout}ms — last phase: ${JSON.stringify(h.getPhase())}`)
+  throw new Error(`waitFor timeout after ${timeout}ms`)
 }
 
-// ─── RL1 tests ────────────────────────────────────────────────────────────────
-describe('RL1 — per-submission lifecycle', () => {
+// Build a lifecycle with spied callbacks
+function makeTestLifecycle() {
+  const phases: Record<string, unknown> = {}
+  const setPhase = vi.fn((action: string, phase: unknown) => { phases[action] = phase })
+  const onSuccess = vi.fn()
+  const lc = makeActionLifecycle(RPC_URL, { setPhase, onSuccess })
+  function getPhase(action = 'contribute') { return phases[action] as { phase: string } | undefined }
+  return { lc, setPhase, onSuccess, getPhase }
+}
 
-  it('RL1-FAST: repriced fast-RPC — B confirms, isSuccess(A) discarded', async () => {
+// ─── RL1 — per-submission lifecycle ──────────────────────────────────────────
+describe('RL1 — per-submission id prevents isSuccess from discarding repriced validation', () => {
+
+  it('RL1-FAST: repriced B confirms; isSuccess(A) fired after is discarded', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
     const HASH_B = '0x' + 'b'.repeat(64)
-    const onSuccess = vi.fn()
-
-    // A has no event (would return replaced), B has valid receipt
     stubFetchMap(new Map([
-      [HASH_A, { status: '0x1', to: CONTRACT, logs: [] }],
-      [HASH_B, validReceipt],
+      [HASH_A, { status: '0x1', to: CONTRACT, logs: [] }], // A: no event → replaced
+      [HASH_B, validReceiptFor()],                          // B: confirms
     ]))
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
 
-    const h = makeHarness(RPC_URL, onSuccess)
-    h.newSubmission(baseSnap)
-
-    // onReplaced fires first: repriced → starts B validation with current submissionId
-    h.onReplacedHandler('repriced', HASH_A, HASH_B, 'contribute')
+    // onReplaced(repriced) fires first; starts B
+    lc.makeOnReplaced(ctx)({ reason: 'repriced', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
 
     // Wait for B to confirm
-    await waitForPhase(h, p => p.phase === 'confirmed')
+    await waitFor(() => getPhase()?.phase === 'confirmed')
 
-    // Now isSuccess fires for A (simulates delayed hook callback)
-    h.isSuccessEffect(HASH_A, 'contribute')
-    await new Promise(r => setTimeout(r, 30))
+    // Now isSuccess fires for A — it should be silently discarded
+    await lc.runReceiptValidation(HASH_A, ctx)
 
-    // B confirmed; A was already marked consumed by repriced handler
     expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith(HASH_B)
-    const phase = h.getPhase()
-    expect(phase.phase).toBe('confirmed')
-    if (phase.phase === 'confirmed') expect(phase.txHash).toBe(HASH_B)
+    expect(onSuccess).toHaveBeenCalledWith(HASH_B, 'contribute')
+    expect(getPhase()?.phase).toBe('confirmed')
   })
 
-  it('RL1-SLOW: isSuccess(A) starts before onReplaced fires — B wins on repricing', async () => {
+  it('RL1-SLOW: isSuccess(A) starts first; onReplaced fires while A is in-flight; B wins', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
     const HASH_B = '0x' + 'b'.repeat(64)
-    const onSuccess = vi.fn()
-
-    // Controlled fetch: A returns replaced (no event), B is slow then confirmed
     let resolveB!: () => void
-    const bReady = new Promise<void>(r => { resolveB = r })
-
     vi.stubGlobal('fetch', vi.fn(async (_url: string, opts?: { body?: string }) => {
       let hash = ''
       try { hash = (JSON.parse(opts?.body ?? '{}') as { params?: string[] }).params?.[0] ?? '' } catch {}
-      if (hash === HASH_A) {
-        // A: returns quickly, but has no matching event → 'replaced'
-        return { ok: true, json: async () => ({ result: { status: '0x1', to: CONTRACT, logs: [] } }) } as Response
-      }
-      // B: slow
-      await bReady
-      return { ok: true, json: async () => ({ result: validReceipt }) } as Response
+      if (hash === HASH_A) return { ok: true, json: async () => ({ result: { status: '0x1', to: CONTRACT, logs: [] } }) } as Response
+      await new Promise<void>(r => { resolveB = r })
+      return { ok: true, json: async () => ({ result: validReceiptFor() }) } as Response
     }))
 
-    const h = makeHarness(RPC_URL, onSuccess)
-    h.newSubmission(baseSnap)
-    const sid = h.submissionIdRef.current
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
 
     // isSuccess fires for A first
-    h.isSuccessEffect(HASH_A, 'contribute')
-
-    // Let A start processing (not yet done if sync path, but yield)
+    void lc.runReceiptValidation(HASH_A, ctx)
     await new Promise(r => setTimeout(r, 5))
 
-    // onReplaced fires: marks A consumed, starts B with same submissionId
-    h.onReplacedHandler('repriced', HASH_A, HASH_B, 'contribute')
-
-    // Resolve B's fetch
+    // onReplaced fires before A resolves: marks A consumed, starts B
+    lc.makeOnReplaced(ctx)({ reason: 'repriced', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
     resolveB()
 
-    // B confirms (A's result should be either ignored because A is consumed, or replaces to replaced)
-    await waitForPhase(h, p => p.phase === 'confirmed' || (p.phase === 'error'), 500)
-
-    // If A resolved as 'replaced' before onReplaced ran: that's fine, then B confirms.
-    // If B confirms, that's the correct RL1 behavior.
-    // Key invariant: onSuccess called exactly once, with HASH_B.
-    await waitForPhase(h, p => p.phase === 'confirmed', 500)
-
+    await waitFor(() => getPhase()?.phase === 'confirmed', 500)
     expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith(HASH_B)
-    expect(h.submissionIdRef.current).toBe(sid)
+    expect(onSuccess).toHaveBeenCalledWith(HASH_B, 'contribute')
   })
 
-  it('RL1-DUP: both isSuccess(A) and onReplaced(repriced) resolve — onSuccess called exactly once', async () => {
+  it('RL1-DUP: isSuccess(A) and onReplaced(repriced) both complete; onSuccess called once', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
     const HASH_B = '0x' + 'b'.repeat(64)
-    const onSuccess = vi.fn()
-
-    // Both A and B return valid receipts
     stubFetchMap(new Map([
-      [HASH_A, validReceipt],
-      [HASH_B, validReceipt],
+      [HASH_A, validReceiptFor()],
+      [HASH_B, validReceiptFor()],
     ]))
-
-    const h = makeHarness(RPC_URL, onSuccess)
-    h.newSubmission(baseSnap)
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
 
     // Fire both concurrently
-    h.onReplacedHandler('repriced', HASH_A, HASH_B, 'contribute')
-    h.isSuccessEffect(HASH_A, 'contribute')
+    lc.makeOnReplaced(ctx)({ reason: 'repriced', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
+    void lc.runReceiptValidation(HASH_A, ctx)
 
-    // Wait for settlement
-    await waitForPhase(h, p => p.phase === 'confirmed' || p.phase === 'replaced', 500)
-    await new Promise(r => setTimeout(r, 30))
+    await waitFor(() => getPhase()?.phase === 'confirmed' || getPhase()?.phase === 'replaced', 500)
+    await new Promise(r => setTimeout(r, 20))
 
-    // Exactly one onSuccess call regardless of racing outcome
     expect(onSuccess).toHaveBeenCalledTimes(1)
   })
 
-  it('RL1-NEWSUB: second submission after confirmed starts independent lifecycle', async () => {
+  it('RL1-NEWSUB: second submission starts fresh; both onSuccess calls fire independently', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
     const HASH_C = '0x' + 'c'.repeat(64)
-    const onSuccess = vi.fn()
-
     stubFetchMap(new Map([
-      [HASH_A, validReceipt],
-      [HASH_C, validReceipt],
+      [HASH_A, validReceiptFor()],
+      [HASH_C, validReceiptFor()],
     ]))
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
 
-    const h = makeHarness(RPC_URL, onSuccess)
-
-    // First submission
-    h.newSubmission(baseSnap)
-    h.isSuccessEffect(HASH_A, 'contribute')
-    await waitForPhase(h, p => p.phase === 'confirmed', 500)
+    const ctx1 = lc.beginSubmission(baseSnap)
+    await lc.runReceiptValidation(HASH_A, ctx1)
     expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith(HASH_A)
+    expect(onSuccess).toHaveBeenCalledWith(HASH_A, 'contribute')
 
-    // Second submission
-    h.newSubmission(baseSnap)
-    h.isSuccessEffect(HASH_C, 'contribute')
-    await waitForPhase(h, p => p.phase === 'confirmed' && p.txHash === HASH_C, 500)
-
+    const ctx2 = lc.beginSubmission(baseSnap)
+    await lc.runReceiptValidation(HASH_C, ctx2)
+    await waitFor(() => getPhase()?.phase === 'confirmed', 200)
     expect(onSuccess).toHaveBeenCalledTimes(2)
-    expect(onSuccess).toHaveBeenNthCalledWith(2, HASH_C)
+    expect(onSuccess).toHaveBeenNthCalledWith(2, HASH_C, 'contribute')
   })
 
 })
 
-// ─── RL2 tests ────────────────────────────────────────────────────────────────
-describe('RL2 — cancelled/replaced mined hash in phase', () => {
+// ─── SC1 — Late callback binding ──────────────────────────────────────────────
+describe('SC1 — late callbacks adopt the current submission context', () => {
 
-  it('RL2-CANCEL: cancelled phase carries both originalHash and minedHash', () => {
+  it('SC1-POST-UNMOUNT: onReplaced(repriced) callback arriving after clear() is rejected before starting work', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
     const HASH_B = '0x' + 'b'.repeat(64)
-    const h = makeHarness(RPC_URL, vi.fn())
-    h.newSubmission(baseSnap)
+    const fetchSpy = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ result: validReceiptFor() }) })
+    vi.stubGlobal('fetch', fetchSpy)
 
-    h.onReplacedHandler('cancelled', HASH_A, HASH_B, 'contribute')
+    const { lc, onSuccess } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
 
-    const phase = h.getPhase()
-    expect(phase.phase).toBe('cancelled')
-    if (phase.phase === 'cancelled') {
-      expect(phase.minedHash).toBe(HASH_B)
-      expect(phase.originalHash).toBe(HASH_A)
-    }
+    // Unmount (simulates component teardown)
+    lc.clear()
+
+    // Old repriced callback arrives after unmount — must be rejected at entry
+    lc.makeOnReplaced(ctx)({ reason: 'repriced', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
+    await new Promise(r => setTimeout(r, 30))
+
+    // No fetch started, no onSuccess called
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(onSuccess).not.toHaveBeenCalled()
   })
 
-  it('RL2-REPLACED: non-repriced replaced phase carries minedHash', () => {
+  it('SC1-POST-NEWSUB: old onReplaced(repriced) callback arriving after new submission is rejected', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
     const HASH_B = '0x' + 'b'.repeat(64)
-    const h = makeHarness(RPC_URL, vi.fn())
-    h.newSubmission(baseSnap)
+    const HASH_C = '0x' + 'c'.repeat(64)
+    stubFetchMap(new Map([
+      [HASH_B, validReceiptFor()], // old repriced hash — should not be fetched
+      [HASH_C, validReceiptFor()], // new submission hash
+    ]))
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
 
-    h.onReplacedHandler('replaced', HASH_A, HASH_B, 'payout')
+    // First submission
+    const ctx1 = lc.beginSubmission(baseSnap)
 
-    const phase = h.getPhase()
-    expect(phase.phase).toBe('replaced')
-    if (phase.phase === 'replaced') {
-      expect(phase.minedHash).toBe(HASH_B)
-      expect(phase.txHash).toBe(HASH_A)
-    }
+    // Second submission starts before old callback arrives
+    const ctx2 = lc.beginSubmission(baseSnap)
+    void lc.runReceiptValidation(HASH_C, ctx2)
+
+    // Old callback arrives for ctx1 — must be rejected at entry before starting any validation
+    lc.makeOnReplaced(ctx1)({ reason: 'repriced', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
+
+    await waitFor(() => getPhase()?.phase === 'confirmed', 500)
+
+    // onSuccess called only once, for HASH_C (second submission)
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(onSuccess).toHaveBeenCalledWith(HASH_C, 'contribute')
   })
 
-  it('RL2-BANNER-STRUCT: Pool.tsx replaced banner uses phase.minedHash ?? phase.txHash', async () => {
+  it('SC1-POST-UNMOUNT-SUCCESS: isSuccess RPC resolves after clear(); onSuccess not called', async () => {
+    const HASH_A = '0x' + 'a'.repeat(64)
+    let resolveFetch!: () => void
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      await new Promise<void>(r => { resolveFetch = r })
+      return { ok: true, json: async () => ({ result: validReceiptFor() }) } as Response
+    }))
+
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
+
+    // Start validation, wait for 'checking' phase
+    void lc.runReceiptValidation(HASH_A, ctx)
+    await waitFor(() => getPhase()?.phase === 'checking', 200)
+
+    // Unmount — advances epoch
+    lc.clear()
+
+    // RPC resolves after unmount
+    resolveFetch()
+    await new Promise(r => setTimeout(r, 30))
+
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+})
+
+// ─── RL2 — mined hash in phase ────────────────────────────────────────────────
+describe('RL2 — cancelled/replaced phases carry minedHash', () => {
+
+  it('RL2-CANCEL: cancelled phase has both originalHash and minedHash', () => {
+    const HASH_A = '0x' + 'a'.repeat(64)
+    const HASH_B = '0x' + 'b'.repeat(64)
+    const phases: Record<string, unknown> = {}
+    const lc = makeActionLifecycle(RPC_URL, {
+      setPhase: (action, phase) => { phases[action] = phase },
+      onSuccess: vi.fn(),
+    })
+    const ctx = lc.beginSubmission(baseSnap)
+
+    lc.makeOnReplaced(ctx)({ reason: 'cancelled', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
+
+    const p = phases['contribute'] as { phase: string; originalHash: string; minedHash?: string }
+    expect(p.phase).toBe('cancelled')
+    expect(p.originalHash).toBe(HASH_A)
+    expect(p.minedHash).toBe(HASH_B)
+  })
+
+  it('RL2-REPLACED: replaced (non-repriced) phase has txHash=originalHash and minedHash=minedHash', () => {
+    const HASH_A = '0x' + 'a'.repeat(64)
+    const HASH_B = '0x' + 'b'.repeat(64)
+    const phases: Record<string, unknown> = {}
+    const lc = makeActionLifecycle(RPC_URL, {
+      setPhase: (action, phase) => { phases[action] = phase },
+      onSuccess: vi.fn(),
+    })
+    // Use payout snap (action !== contribute so 'replaced' branch hits)
+    const payoutSnap = { ...baseSnap, action: 'payout' as const }
+    const ctx = lc.beginSubmission(payoutSnap)
+
+    lc.makeOnReplaced(ctx)({ reason: 'replaced', transaction: { hash: HASH_B }, replacedTransaction: { hash: HASH_A } })
+
+    const p = phases['payout'] as { phase: string; txHash: string; minedHash?: string }
+    expect(p.phase).toBe('replaced')
+    expect(p.txHash).toBe(HASH_A)
+    expect(p.minedHash).toBe(HASH_B)
+  })
+
+  it('RL2-STRUCT: Pool.tsx replaced banner uses phase.minedHash ?? phase.txHash', async () => {
     const { default: src } = await import('../../pages/Pool.tsx?raw')
     expect(src).toContain('phase.minedHash ?? phase.txHash')
   })
 
-  it('RL2-CANCEL-STRUCT: Pool.tsx cancelled banner conditionally links to minedHash', async () => {
+  it('RL2-STRUCT: Pool.tsx cancelled banner conditionally links to phase.minedHash', async () => {
     const { default: src } = await import('../../pages/Pool.tsx?raw')
     expect(src).toContain('phase.minedHash &&')
     expect(src).toContain('View cancellation tx')
@@ -360,85 +311,112 @@ describe('RL2 — cancelled/replaced mined hash in phase', () => {
 
 })
 
-// ─── RL3 tests ────────────────────────────────────────────────────────────────
-describe('RL3 — unmount invalidates in-flight validation', () => {
+// ─── RL3 — unmount cleanup ───────────────────────────────────────────────────
+describe('RL3 — clear() on unmount invalidates in-flight validation', () => {
 
-  it('RL3-UNMOUNT: onSuccess not called when RPC resolves after unmount', async () => {
+  it('RL3-UNMOUNT: onSuccess not called when RPC resolves after clear()', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
-    const onSuccess = vi.fn()
-
     let resolveFetch!: () => void
     vi.stubGlobal('fetch', vi.fn(async () => {
       await new Promise<void>(r => { resolveFetch = r })
-      return { ok: true, json: async () => ({ result: validReceipt }) } as Response
+      return { ok: true, json: async () => ({ result: validReceiptFor() }) } as Response
     }))
 
-    const h = makeHarness(RPC_URL, onSuccess)
-    h.newSubmission(baseSnap)
-    h.isSuccessEffect(HASH_A, 'contribute')
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
+    void lc.runReceiptValidation(HASH_A, ctx)
+    await waitFor(() => getPhase()?.phase === 'checking', 200)
 
-    // Let the validation start (checking phase)
-    await waitForPhase(h, p => p.phase === 'checking', 200)
-
-    // Unmount — invalidates current submissionId
-    h.unmount()
-
-    // Resolve the fetch after unmount
+    lc.clear()
     resolveFetch()
     await new Promise(r => setTimeout(r, 30))
 
     expect(onSuccess).not.toHaveBeenCalled()
   })
 
-  it('RL3-STRUCT: Pool.tsx cleanup increments submissionIdRef on unmount', async () => {
+  it('RL3-STRUCT: Pool.tsx useEffect cleanup calls lifecycle.clear()', async () => {
     const { default: src } = await import('../../pages/Pool.tsx?raw')
-    expect(src).toContain('submissionIdRef.current++')
-    // Cleanup pattern: return () => { ... submissionIdRef.current++ ... }
-    expect(src).toMatch(/return\s*\(\s*\)\s*=>\s*\{[\s\S]{0,300}submissionIdRef\.current\+\+/)
+    // cleanup returns () => { lifecycle.clear() }
+    expect(src).toMatch(/return\s*\(\s*\)\s*=>\s*\{[^}]*lifecycle\.clear\(\)/)
   })
 
-  it('RL3-STRUCT: Pool.tsx resets activeValidationRef in both confirmAction and cleanup', async () => {
-    const { default: src } = await import('../../pages/Pool.tsx?raw')
-    const matches = src.match(/activeValidationRef\.current\s*=\s*null/g) ?? []
-    expect(matches.length).toBeGreaterThanOrEqual(2)
+  it('RL3-STRUCT: actionLifecycle.ts clear() advances epoch and resets activeSlot', async () => {
+    const { default: src } = await import('../actionLifecycle.ts?raw')
+    expect(src).toContain('function clear()')
+    expect(src).toContain('epoch++')
+    expect(src).toContain('activeSlot = null')
   })
 
 })
 
-// ─── Accepted: transient HTTP retry still works ────────────────────────────────
-describe('Accepted: transient HTTP retry not broken by RL1 changes', () => {
+// ─── Account/pool/chain scope ────────────────────────────────────────────────
+describe('account/pool/chain scope — wrong context rejected by validateReceipt', () => {
 
-  it('error does not add to notifiedRef — same submissionId retry succeeds', async () => {
+  it('wrong account → replaced (not confirmed)', async () => {
+    const HASH = '0x' + 'd'.repeat(64)
+    stubFetchMap(new Map([
+      [HASH, validReceiptFor(ACCOUNT_B)], // receipt has different contributor
+    ]))
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap) // accountAddress = ACCOUNT_A
+    await lc.runReceiptValidation(HASH, ctx)
+    expect(getPhase()?.phase).toBe('replaced')
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('wrong pool → replaced (not confirmed)', async () => {
+    const HASH = '0x' + 'e'.repeat(64)
+    // Receipt has pool 99 but snap has pool 42
+    const wrongPoolLog = makeContribLog('99', ACCOUNT_A, AMOUNT)
+    stubFetchMap(new Map([
+      [HASH, { status: '0x1', to: CONTRACT, logs: [wrongPoolLog] }],
+    ]))
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
+    await lc.runReceiptValidation(HASH, ctx)
+    expect(getPhase()?.phase).toBe('replaced')
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('wrong amount → replaced (not confirmed)', async () => {
+    const HASH = '0x' + 'f'.repeat(64)
+    stubFetchMap(new Map([
+      [HASH, validReceiptFor(ACCOUNT_A, AMOUNT * 2n)], // double amount
+    ]))
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
+    await lc.runReceiptValidation(HASH, ctx)
+    expect(getPhase()?.phase).toBe('replaced')
+    expect(onSuccess).not.toHaveBeenCalled()
+  })
+
+})
+
+// ─── Accepted: transient retry ───────────────────────────────────────────────
+describe('Accepted: transient HTTP error allows retry within same submission', () => {
+
+  it('error does not mark notifiedSet — retry with same submissionId succeeds', async () => {
     const HASH_A = '0x' + 'a'.repeat(64)
-    const onSuccess = vi.fn()
     let callCount = 0
-
     vi.stubGlobal('fetch', vi.fn(async () => {
       callCount++
-      if (callCount === 1) {
-        return { ok: false, status: 500, json: async () => ({}) } as Response
-      }
-      return { ok: true, json: async () => ({ result: validReceipt }) } as Response
+      if (callCount === 1) return { ok: false, status: 500, json: async () => ({}) } as Response
+      return { ok: true, json: async () => ({ result: validReceiptFor() }) } as Response
     }))
 
-    const h = makeHarness(RPC_URL, onSuccess)
-    h.newSubmission(baseSnap)
-    h.isSuccessEffect(HASH_A, 'contribute')
+    const { lc, onSuccess, getPhase } = makeTestLifecycle()
+    const ctx = lc.beginSubmission(baseSnap)
 
-    // First attempt fails → error phase
-    await waitForPhase(h, p => p.phase === 'error', 500)
+    // First attempt → error
+    await lc.runReceiptValidation(HASH_A, ctx)
+    expect(getPhase()?.phase).toBe('error')
     expect(onSuccess).not.toHaveBeenCalled()
 
-    // Retry: clear notifiedRef key for same submissionId and re-run
-    const sid = h.submissionIdRef.current
-    const key = `${sid}:${HASH_A}`
-    h.notifiedRef.current.delete(key)
-    h.isSuccessEffect(HASH_A, 'contribute')
-
-    // Second attempt succeeds
-    await waitForPhase(h, p => p.phase === 'confirmed', 500)
+    // Retry with same ctx → success
+    await lc.runReceiptValidation(HASH_A, ctx)
+    expect(getPhase()?.phase).toBe('confirmed')
     expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith(HASH_A)
+    expect(onSuccess).toHaveBeenCalledWith(HASH_A, 'contribute')
   })
 
 })

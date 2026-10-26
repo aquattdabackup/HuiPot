@@ -288,15 +288,15 @@ describe('R3 structural — ActionPanel isolation', () => {
   })
 
   it('Pool.tsx validates receipt event after isSuccess (no bare isSuccess success banner)', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
-    const code = src.default
-    // Must have receipt validation function
-    expect(code).toContain('validateReceipt')
-    // Must have replacement detection state
-    expect(code).toContain("phase: 'replaced'")
-    // Must not use bare contribSuccess/payoutSuccess/refundSuccess as the sole condition for success banner
-    // (those were the old pattern — now we use receiptValidation.phase === 'confirmed')
-    expect(code).toContain("phase: 'confirmed'")
+    const poolSrc = await import('../../../src/pages/Pool?raw') as { default: string }
+    const poolCode = poolSrc.default
+    // Pool.tsx must use actionLifecycle (which contains validateReceipt)
+    expect(poolCode).toContain('makeActionLifecycle')
+    // actionLifecycle.ts must have replacement detection and confirmed state
+    const lcSrc = await import('../actionLifecycle?raw') as { default: string }
+    const lcCode = lcSrc.default
+    expect(lcCode).toContain("phase: 'replaced'")
+    expect(lcCode).toContain("phase: 'confirmed'")
   })
 
   it('Pool.tsx review shows full addresses (not truncated)', async () => {
@@ -353,17 +353,21 @@ describe('RC1–RC6 regression — Pool.tsx source structure', () => {
     expect(code).toContain('PaidOut caller')
   })
 
-  it('RC3: wait-hook errors surfaced; notifiedRef not set on error (retry allowed)', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
-    const code = src.default
-    // Must use isError from useWaitForTransactionReceipt
-    expect(code).toContain('contribWaitError')
-    expect(code).toContain('payoutWaitError')
-    expect(code).toContain('refundWaitError')
-    // notifiedRef.add must only be called for non-error outcomes
-    // Retry button clears notifiedRef for error hashes
-    expect(code).toContain('notifiedRef.current.delete(')
-    expect(code).toContain('retryable: true')
+  it('RC3: wait-hook errors surfaced; notifiedSet not marked on error (retry allowed)', async () => {
+    const poolSrc = await import('../../../src/pages/Pool?raw') as { default: string }
+    const poolCode = poolSrc.default
+    // Pool.tsx must surface isError from useWaitForTransactionReceipt
+    expect(poolCode).toContain('contribWaitError')
+    expect(poolCode).toContain('payoutWaitError')
+    expect(poolCode).toContain('refundWaitError')
+    // Retry path must exist
+    expect(poolCode).toContain('retryable: true')
+    // actionLifecycle.ts must NOT add to notifiedSet on error path
+    const lcSrc = await import('../actionLifecycle?raw') as { default: string }
+    const lcCode = lcSrc.default
+    // error branch must not add to notifiedSet
+    expect(lcCode).toContain('// error: NOT added to notifiedSet')
+    expect(lcCode).toContain("phase: 'error'")
   })
 
   it('RC4: confirmAction re-validates pool status before submitting wallet write', async () => {

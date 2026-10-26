@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { ConnectKitButton } from 'connectkit'
@@ -8,40 +8,31 @@ import { TARGET_CHAIN_ID, arcTestnet, parseProductAmount, formatNativeAmount, ex
 import { CommitmentNotice } from '../components/CommitmentNotice'
 import { formatDeadline, statusLabel, statusColor, parseOnchainError, STATUS } from '../lib/utils'
 import { buildShareLink } from '../lib/share'
-import { validateReceipt } from '../lib/validateReceipt'
+import {
+  makeActionLifecycle,
+  type ActionType,
+  type ReceiptPhase,
+  type SubmissionContext,
+  type OnReplacedArg,
+} from '../lib/actionLifecycle'
 
 const RPC_URL = arcTestnet.rpcUrls.default.http[0]
 
 const DEPLOYED = DEPLOYMENT_CONFIGURED
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type ActionType = 'contribute' | 'payout' | 'refund'
-
-// State of receipt validation after a confirmed transaction
-// RL2: replaced/cancelled both carry optional minedHash for correct explorer link
-type ReceiptPhase =
-  | { phase: 'idle' }
-  | { phase: 'checking' }
-  | { phase: 'confirmed'; txHash: string; action: ActionType }
-  | { phase: 'replaced'; txHash: string; minedHash?: string; note: string }
-  | { phase: 'repriced'; originalHash: string; minedHash: string; note: string }
-  | { phase: 'cancelled'; originalHash: string; minedHash?: string; note: string }
-  | { phase: 'error'; txHash: string; message: string; retryable: true }
-
+// ─── ReviewSnapshot ────────────────────────────────────────────────────────────
+// Full snapshot captured at review-open time (extends ReceiptSnapshot with pool state).
 interface ReviewSnapshot {
   action: ActionType
-  amount: bigint          // native 18-dec
-  recipient: string       // for payout: fixed recipient; for refund/contribute: caller wallet
+  amount: bigint
+  recipient: string
   poolId: string
   contractAddress: string
   accountAddress: string
-  // Live pool state at review-open time — used in confirmAction re-validation (RC4)
   statusAtReview: number | undefined
   remainingAtReview: bigint
   claimableAtReview: bigint
 }
-
-// validateReceipt is imported from ../lib/validateReceipt
 
 // ─── ActionPanel ──────────────────────────────────────────────────────────────
 interface ActionPanelProps {
@@ -56,7 +47,7 @@ interface ActionPanelProps {
   myClaimableLoading: boolean
   myClaimableError: boolean
   isConnected: boolean
-  currentChainId: number | undefined   // live wallet chain, passed from Pool (RC: live check)
+  currentChainId: number | undefined
   accountAddress: string
   rpcUrl: string
   onSuccess: (txHash: string, action: ActionType) => void
@@ -77,185 +68,89 @@ function ActionPanel({
   const [amountError, setAmountError] = useState('')
   const [reviewSnapshot, setReviewSnapshot] = useState<ReviewSnapshot | null>(null)
 
-  // RC1: receipt state is keyed by action so a confirmed contribution does not
-  // disable the payout button. Each action has its own phase slot.
+  // RC1: receipt state keyed by action
   const [receiptByAction, setReceiptByAction] = useState<Partial<Record<ActionType, ReceiptPhase>>>({})
 
-  // RC6: confirmed tx hash persisted so ReceiptBanner remains available after
-  // pool state transitions away from ACTIVE/FUNDED/REFUNDING
+  // RC6: persist confirmed tx so banner survives pool state transitions
   const confirmedTxRef = useRef<{ txHash: string; action: ActionType } | null>(null)
 
   function getPhase(action: ActionType): ReceiptPhase {
     return receiptByAction[action] ?? { phase: 'idle' }
   }
   function setPhase(action: ActionType, phase: ReceiptPhase) {
+    if (phase.phase === 'confirmed') {
+      confirmedTxRef.current = { txHash: phase.txHash, action: phase.action }
+    }
     setReceiptByAction((prev) => ({ ...prev, [action]: phase }))
   }
 
-  // RL1: per-submission snapshot — one entry per confirmAction call.
-  // Keyed by submissionId so onReplaced and isSuccess effects share the same slot
-  // and cannot overwrite each other's generation guard.
-  const pendingSnapRef = useRef<ReviewSnapshot | null>(null)
+  // Stable callbacks ref — updated every render so lifecycle closures stay current.
+  const callbacksRef = useRef({ setPhase, onSuccess })
+  callbacksRef.current = { setPhase, onSuccess }
 
-  // RL1: submissionId — incremented on each confirmAction and on unmount.
-  // runReceiptValidation captures its submissionId at call time; the stale check
-  // compares the stored value at resolution time, not a shared mutable gen.
-  // This prevents the RL1 race: isSuccess cannot advance the id while onReplaced's
-  // validation for the same submission is still in flight.
-  const submissionIdRef = useRef(0)
+  // Lifecycle manager — stable for the lifetime of this ActionPanel instance.
+  // SC1: makeActionLifecycle is created once; all epoch management is inside it.
+  const lifecycle = useMemo(() => makeActionLifecycle(rpcUrl, {
+    setPhase: (action, phase) => callbacksRef.current.setPhase(action, phase),
+    onSuccess: (txHash, action) => callbacksRef.current.onSuccess(txHash, action),
+  }), [rpcUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // RC3 / RL1: notifiedRef prevents re-entry for confirmed/replaced outcomes per
-  // submission id. Keyed by `${submissionId}:${txHash}` so the same hash submitted
-  // twice (e.g. after a retry on a new submission) is treated independently.
-  const notifiedRef = useRef<Set<string>>(new Set())
-
-  // RL1: stable key for current in-flight validation slot.
-  // One active validation per submission — if both isSuccess and onReplaced(repriced)
-  // fire for the same submission, only one wins the notifiedRef guard.
-  const activeValidationRef = useRef<{ submissionId: number; txHash: string } | null>(null)
-
-  const runReceiptValidation = useCallback(async (
-    txHash: string,
-    snap: ReviewSnapshot,
-    submissionId: number,
-  ) => {
-    const key = `${submissionId}:${txHash}`
-    // Guard: only skip if we already got a non-error outcome for this hash+submission
-    if (notifiedRef.current.has(key)) return
-
-    // RL1: claim this slot — if another call already claimed it for this submission,
-    // the second caller backs off. This prevents duplicate success for repriced+isSuccess.
-    const existingSlot = activeValidationRef.current
-    if (existingSlot && existingSlot.submissionId === submissionId && existingSlot.txHash !== txHash) {
-      // Different hash for the same submission = repriced; the new hash wins.
-      // Invalidate old hash so its completion is ignored.
-      notifiedRef.current.add(`${submissionId}:${existingSlot.txHash}`)
-    }
-    activeValidationRef.current = { submissionId, txHash }
-
-    setPhase(snap.action, { phase: 'checking' })
-    const result = await validateReceipt(txHash, snap, rpcUrl)
-
-    // RL1: stale check — discard if a newer submission has started, or if this slot
-    // was claimed by a different hash (repriced scenario) after we began.
-    if (submissionIdRef.current !== submissionId) return
-    if (activeValidationRef.current?.txHash !== txHash) return
-    // Also discard if another call already resolved this slot
-    if (notifiedRef.current.has(key)) return
-
-    if (result.outcome === 'confirmed') {
-      notifiedRef.current.add(key)
-      setPhase(snap.action, { phase: 'confirmed', txHash, action: snap.action })
-      // RC6: persist so banner survives pool state transitions
-      confirmedTxRef.current = { txHash, action: snap.action }
-      onSuccess(txHash, snap.action)
-    } else if (result.outcome === 'replaced') {
-      notifiedRef.current.add(key)
-      setPhase(snap.action, { phase: 'replaced', txHash, note: result.note })
-    } else {
-      // RC3: error is NOT added to notifiedRef — user can retry via the banner button
-      setPhase(snap.action, { phase: 'error', txHash, message: result.note, retryable: true })
-    }
-  }, [rpcUrl, onSuccess])
-
-  // RL3: on unmount, invalidate the current submission so any in-flight validation
-  // cannot call onSuccess or mutate state after the component is gone.
+  // RL3: clear lifecycle on unmount — advances epoch so in-flight validations
+  // and late callbacks are rejected.
   useEffect(() => {
-    return () => {
-      submissionIdRef.current++
-      activeValidationRef.current = null
-    }
-  }, [])
+    return () => { lifecycle.clear() }
+  }, [lifecycle])
 
-  // RC3: stable refs so onReplaced callbacks can safely close over latest values.
-  // Updated every render so closures stay current without changing hook identity.
-  const runReceiptValidationRef = useRef(runReceiptValidation)
-  runReceiptValidationRef.current = runReceiptValidation
-  const pendingSnapRefLocal = pendingSnapRef
-  const submissionIdRefLocal = submissionIdRef
-  const notifiedRefLocal = notifiedRef
-  const setPhaseLocal = setPhase
+  // SC1: current submission context — set atomically in confirmAction.
+  // onReplaced handlers are created from this context so they carry immutable identity.
+  const currentCtxRef = useRef<SubmissionContext | null>(null)
 
-  // RC3: onReplaced type (wagmi 2.19.5 WaitForTransactionReceiptOptions)
-  type OnReplacedArg = {
-    reason: 'repriced' | 'cancelled' | 'replaced'
-    transaction: { hash: `0x${string}` }
-    replacedTransaction: { hash: `0x${string}` }
-  }
+  // SC1: per-submission onReplaced handlers stored in refs so they can be passed
+  // to useWaitForTransactionReceipt before confirmAction runs.
+  // The ref always holds the handler for the most-recently-started submission.
+  const onContribReplacedRef = useRef<(r: OnReplacedArg) => void>(() => {/* no submission yet */})
+  const onPayoutReplacedRef  = useRef<(r: OnReplacedArg) => void>(() => {/* no submission yet */})
+  const onRefundReplacedRef  = useRef<(r: OnReplacedArg) => void>(() => {/* no submission yet */})
 
-  // RC3 / RL1: onReplaced handlers — one per action, stable identity via useCallback.
-  // RL1: reuse current submissionId (same submission as the original tx A).
-  // RL2: pass minedHash for correct explorer link in replaced/cancelled banners.
-  const onContribReplaced = useCallback((r: OnReplacedArg) => {
-    const originalHash = r.replacedTransaction.hash as string
-    const minedHash = r.transaction.hash as string
-    const submissionId = submissionIdRefLocal.current
-    // Mark original hash consumed for this submission
-    notifiedRefLocal.current.add(`${submissionId}:${originalHash}`)
-    if (r.reason === 'cancelled') {
-      setPhaseLocal('contribute', { phase: 'cancelled', originalHash, minedHash, note: `Transaction was cancelled. Mined: ${minedHash.slice(0, 10)}…` })
-    } else if (r.reason === 'repriced' && pendingSnapRefLocal.current?.action === 'contribute') {
-      // RL1: same submissionId — isSuccess for A will find its key already in notifiedRef
-      void runReceiptValidationRef.current(minedHash, pendingSnapRefLocal.current, submissionId)
-    } else {
-      // RL2: replaced — link to minedHash
-      setPhaseLocal('contribute', { phase: 'replaced', txHash: originalHash, minedHash, note: `Transaction was replaced (${r.reason}). Mined: ${minedHash.slice(0, 10)}…` })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onPayoutReplaced = useCallback((r: OnReplacedArg) => {
-    const originalHash = r.replacedTransaction.hash as string
-    const minedHash = r.transaction.hash as string
-    const submissionId = submissionIdRefLocal.current
-    notifiedRefLocal.current.add(`${submissionId}:${originalHash}`)
-    if (r.reason === 'cancelled') {
-      setPhaseLocal('payout', { phase: 'cancelled', originalHash, minedHash, note: `Transaction was cancelled. Mined: ${minedHash.slice(0, 10)}…` })
-    } else if (r.reason === 'repriced' && pendingSnapRefLocal.current?.action === 'payout') {
-      void runReceiptValidationRef.current(minedHash, pendingSnapRefLocal.current, submissionId)
-    } else {
-      setPhaseLocal('payout', { phase: 'replaced', txHash: originalHash, minedHash, note: `Transaction was replaced (${r.reason}). Mined: ${minedHash.slice(0, 10)}…` })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onRefundReplaced = useCallback((r: OnReplacedArg) => {
-    const originalHash = r.replacedTransaction.hash as string
-    const minedHash = r.transaction.hash as string
-    const submissionId = submissionIdRefLocal.current
-    notifiedRefLocal.current.add(`${submissionId}:${originalHash}`)
-    if (r.reason === 'cancelled') {
-      setPhaseLocal('refund', { phase: 'cancelled', originalHash, minedHash, note: `Transaction was cancelled. Mined: ${minedHash.slice(0, 10)}…` })
-    } else if (r.reason === 'repriced' && pendingSnapRefLocal.current?.action === 'refund') {
-      void runReceiptValidationRef.current(minedHash, pendingSnapRefLocal.current, submissionId)
-    } else {
-      setPhaseLocal('refund', { phase: 'replaced', txHash: originalHash, minedHash, note: `Transaction was replaced (${r.reason}). Mined: ${minedHash.slice(0, 10)}…` })
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // Stable wrappers: wagmi's useWaitForTransactionReceipt holds onReplaced by
+  // identity; we give it a stable wrapper that delegates to the current ref.
+  // This avoids re-creating the hook on every confirmAction while still dispatching
+  // to the context-bound handler.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onContribReplaced = useMemo(() => (r: OnReplacedArg) => onContribReplacedRef.current(r), [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onPayoutReplaced  = useMemo(() => (r: OnReplacedArg) => onPayoutReplacedRef.current(r),  [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onRefundReplaced  = useMemo(() => (r: OnReplacedArg) => onRefundReplacedRef.current(r),  [])
 
   // Write hooks
+  // wagmi onReplaced expects its own ReplacementReturnType shape; our OnReplacedArg is
+  // structurally compatible (same fields) so we cast at the call site.
+  type WagmiOnReplaced = NonNullable<Parameters<typeof useWaitForTransactionReceipt>[0]>['onReplaced']
+
   const { writeContract: doContribute, data: contribHash, isPending: contribPending, isError: contribIsError, error: contribErr, reset: resetContrib } = useWriteContract()
   const { isLoading: contribConfirming, isSuccess: contribSuccess, isError: contribWaitError, error: contribWaitErr } = useWaitForTransactionReceipt({
     hash: contribHash, chainId: TARGET_CHAIN_ID,
-    onReplaced: onContribReplaced,
+    onReplaced: onContribReplaced as WagmiOnReplaced,
   })
 
   const { writeContract: doPayout, data: payoutHash, isPending: payoutPending, isError: payoutIsError, error: payoutErr, reset: resetPayout } = useWriteContract()
   const { isLoading: payoutConfirming, isSuccess: payoutSuccess, isError: payoutWaitError, error: payoutWaitErr } = useWaitForTransactionReceipt({
     hash: payoutHash, chainId: TARGET_CHAIN_ID,
-    onReplaced: onPayoutReplaced,
+    onReplaced: onPayoutReplaced as WagmiOnReplaced,
   })
 
   const { writeContract: doRefund, data: refundHash, isPending: refundPending, isError: refundIsError, error: refundErr, reset: resetRefund } = useWriteContract()
   const { isLoading: refundConfirming, isSuccess: refundSuccess, isError: refundWaitError, error: refundWaitErr } = useWaitForTransactionReceipt({
     hash: refundHash, chainId: TARGET_CHAIN_ID,
-    onReplaced: onRefundReplaced,
+    onReplaced: onRefundReplaced as WagmiOnReplaced,
   })
 
-  // RC3: surface wait-hook errors (revert path — wagmi throws on revert)
+  // RC3: surface wait-hook errors (revert path)
   useEffect(() => {
-    if (contribWaitError && contribHash && pendingSnapRef.current?.action === 'contribute') {
+    if (contribWaitError && contribHash && currentCtxRef.current?.snap.action === 'contribute') {
       setPhase('contribute', {
-        phase: 'error',
-        txHash: contribHash,
+        phase: 'error', txHash: contribHash,
         message: contribWaitErr instanceof Error ? contribWaitErr.message : 'Transaction reverted or could not be confirmed.',
         retryable: true,
       })
@@ -263,10 +158,9 @@ function ActionPanel({
   }, [contribWaitError, contribHash, contribWaitErr])
 
   useEffect(() => {
-    if (payoutWaitError && payoutHash && pendingSnapRef.current?.action === 'payout') {
+    if (payoutWaitError && payoutHash && currentCtxRef.current?.snap.action === 'payout') {
       setPhase('payout', {
-        phase: 'error',
-        txHash: payoutHash,
+        phase: 'error', txHash: payoutHash,
         message: payoutWaitErr instanceof Error ? payoutWaitErr.message : 'Transaction reverted or could not be confirmed.',
         retryable: true,
       })
@@ -274,36 +168,37 @@ function ActionPanel({
   }, [payoutWaitError, payoutHash, payoutWaitErr])
 
   useEffect(() => {
-    if (refundWaitError && refundHash && pendingSnapRef.current?.action === 'refund') {
+    if (refundWaitError && refundHash && currentCtxRef.current?.snap.action === 'refund') {
       setPhase('refund', {
-        phase: 'error',
-        txHash: refundHash,
+        phase: 'error', txHash: refundHash,
         message: refundWaitErr instanceof Error ? refundWaitErr.message : 'Transaction reverted or could not be confirmed.',
         retryable: true,
       })
     }
   }, [refundWaitError, refundHash, refundWaitErr])
 
+  // SC1/RL1: isSuccess effects — pass current context, not just current submissionId.
+  // If currentCtxRef.current is stale (new submission started or unmounted),
+  // lifecycle.runReceiptValidation will reject via epoch check.
   useEffect(() => {
-    // RL1: read submissionId without incrementing — same submission as onReplaced
-    if (contribSuccess && contribHash && pendingSnapRef.current?.action === 'contribute') {
-      void runReceiptValidation(contribHash, pendingSnapRef.current, submissionIdRef.current)
+    if (contribSuccess && contribHash && currentCtxRef.current?.snap.action === 'contribute') {
+      void lifecycle.runReceiptValidation(contribHash, currentCtxRef.current)
     }
-  }, [contribSuccess, contribHash, runReceiptValidation])
+  }, [contribSuccess, contribHash, lifecycle])
 
   useEffect(() => {
-    if (payoutSuccess && payoutHash && pendingSnapRef.current?.action === 'payout') {
-      void runReceiptValidation(payoutHash, pendingSnapRef.current, submissionIdRef.current)
+    if (payoutSuccess && payoutHash && currentCtxRef.current?.snap.action === 'payout') {
+      void lifecycle.runReceiptValidation(payoutHash, currentCtxRef.current)
     }
-  }, [payoutSuccess, payoutHash, runReceiptValidation])
+  }, [payoutSuccess, payoutHash, lifecycle])
 
   useEffect(() => {
-    if (refundSuccess && refundHash && pendingSnapRef.current?.action === 'refund') {
-      void runReceiptValidation(refundHash, pendingSnapRef.current, submissionIdRef.current)
+    if (refundSuccess && refundHash && currentCtxRef.current?.snap.action === 'refund') {
+      void lifecycle.runReceiptValidation(refundHash, currentCtxRef.current)
     }
-  }, [refundSuccess, refundHash, runReceiptValidation])
+  }, [refundSuccess, refundHash, lifecycle])
 
-  // ── Review helpers ────────────────────────────────────────────────────────
+  // ── Review helpers ─────────────────────────────────────────────────────────
   function openContributeReview(e: React.FormEvent) {
     e.preventDefault()
     setAmountError('')
@@ -350,33 +245,46 @@ function ActionPanel({
   function confirmAction() {
     if (!reviewSnapshot) return
 
-    // RC: live chain (not stored snapshot chain)
+    // RC: live chain and account checks
     if (currentChainId !== TARGET_CHAIN_ID) { cancelReview(); return }
     if (reviewSnapshot.accountAddress !== accountAddress) { cancelReview(); return }
     if (reviewSnapshot.contractAddress !== HUIPOT_ADDRESS) { cancelReview(); return }
     if (reviewSnapshot.poolId !== poolId) { cancelReview(); return }
 
-    // RC4: re-validate pool state at confirm time (not just at review-open time)
+    // RC4: re-validate pool state at confirm time
     if (reviewSnapshot.action === 'contribute') {
-      // Pool must still be ACTIVE and have enough remaining capacity
       if (status !== STATUS.ACTIVE) { cancelReview(); return }
       if (reviewSnapshot.amount > remaining) { cancelReview(); return }
     } else if (reviewSnapshot.action === 'payout') {
-      // Pool must still be FUNDED
       if (status !== STATUS.FUNDED) { cancelReview(); return }
     } else if (reviewSnapshot.action === 'refund') {
-      // Pool must still be REFUNDING and claimable amount must still be valid
       if (status !== STATUS.REFUNDING) { cancelReview(); return }
       if (!myClaimable || myClaimable <= 0n) { cancelReview(); return }
     }
 
-    const snap = reviewSnapshot
+    // Build the ReceiptSnapshot (subset of ReviewSnapshot for validateReceipt)
+    const snap = {
+      action: reviewSnapshot.action,
+      amount: reviewSnapshot.amount,
+      recipient: reviewSnapshot.recipient,
+      poolId: reviewSnapshot.poolId,
+      contractAddress: reviewSnapshot.contractAddress,
+      accountAddress: reviewSnapshot.accountAddress,
+    }
+
     setReviewSnapshot(null)
-    pendingSnapRef.current = snap
-    // RL1/RL3: new submission — increment id so all in-flight validations from prior
-    // submissions are discarded, and so onReplaced + isSuccess share the new slot.
-    submissionIdRef.current++
-    activeValidationRef.current = null
+
+    // SC1: capture immutable submission context — submissionId is advanced inside
+    // beginSubmission(). All callbacks receive this ctx, not mutable refs.
+    const ctx = lifecycle.beginSubmission(snap)
+    currentCtxRef.current = ctx
+
+    // SC1: create context-bound onReplaced handlers for this submission.
+    // Update the per-action refs so the stable wrappers dispatch to the new handlers.
+    const handler = lifecycle.makeOnReplaced(ctx)
+    if (snap.action === 'contribute') onContribReplacedRef.current = handler
+    else if (snap.action === 'payout') onPayoutReplacedRef.current = handler
+    else if (snap.action === 'refund') onRefundReplacedRef.current = handler
 
     if (snap.action === 'contribute') {
       resetContrib()
@@ -396,7 +304,6 @@ function ActionPanel({
     const chainValid = currentChainId === TARGET_CHAIN_ID
     const accountValid = snap.accountAddress === accountAddress
 
-    // RC4: detect live pool state changes while review is open
     let poolStateStale = false
     if (snap.action === 'contribute' && (status !== STATUS.ACTIVE || snap.amount > remaining)) poolStateStale = true
     if (snap.action === 'payout' && status !== STATUS.FUNDED) poolStateStale = true
@@ -408,7 +315,6 @@ function ActionPanel({
       <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <h3 className="font-semibold" style={{ color: 'var(--ink)' }}>Review before signing</h3>
 
-        {/* Context warnings if state drifted after review opened */}
         {(!chainValid || !accountValid || poolStateStale) && (
           <div className="flex items-start gap-2 rounded-xl p-3 text-xs" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -433,8 +339,6 @@ function ActionPanel({
               : snap.action === 'refund'
                 ? ['To (your wallet)', snap.recipient]
                 : ['To (contract)', snap.recipient],
-            // RC5: honest gas string — does not claim estimation requires signing;
-            // wallet provides the exact fee before the user signs.
             ['Network fee', 'The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC).'],
             snap.action === 'contribute'
               ? ['Commitment', 'Contributions are irrevocable until the pool expires underfunded']
@@ -473,14 +377,11 @@ function ActionPanel({
     )
   }
 
-  // ── Receipt validation banner ─────────────────────────────────────────────
-  // RC6: also show for confirmedTxRef if the current action's phase is idle
-  // (pool may have transitioned to PAID/CLOSED and remounted ActionPanel)
+  // ── Receipt validation banner ────────────────────────────────────────────
   function ReceiptBanner({ action }: { action: ActionType }) {
     const phase = getPhase(action)
 
-    // RC6: if this action has no active phase but we have a confirmed tx for it,
-    // show the persistent confirmed banner
+    // RC6: persistent confirmed banner when phase is idle but confirmedTxRef has evidence
     if (phase.phase === 'idle' && confirmedTxRef.current?.action === action) {
       const { txHash } = confirmedTxRef.current
       return (
@@ -516,7 +417,7 @@ function ActionPanel({
       )
     }
     if (phase.phase === 'replaced') {
-      // RL2: link to minedHash (the actual mined replacement) when available, else originalHash
+      // RL2: link to minedHash when available
       const linkHash = phase.minedHash ?? phase.txHash
       return (
         <div className="rounded-xl p-3 text-sm mb-3 flex items-start gap-2" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
@@ -529,7 +430,6 @@ function ActionPanel({
         </div>
       )
     }
-    // RC3: repriced — sped-up tx with same intent; re-validated
     if (phase.phase === 'repriced') {
       return (
         <div className="rounded-xl p-3 text-sm mb-3 flex items-start gap-2" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
@@ -542,7 +442,6 @@ function ActionPanel({
         </div>
       )
     }
-    // RC3 / RL2: cancelled — link to minedHash (the cancellation tx) when available
     if (phase.phase === 'cancelled') {
       return (
         <div className="rounded-xl p-3 text-sm mb-3 flex items-start gap-2" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
@@ -567,17 +466,13 @@ function ActionPanel({
               <><a href={explorerTxUrl(phase.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View on explorer</a>.{' '}</>
             )}
             {phase.message}
-            {/* RC3: allow retry for transient errors */}
-            {phase.retryable && pendingSnapRef.current?.action === action && phase.txHash && (
+            {phase.retryable && currentCtxRef.current?.snap.action === action && phase.txHash && (
               <button
                 className="ml-2 underline font-semibold"
                 onClick={() => {
-                  if (pendingSnapRef.current) {
-                    // RL1: retry uses current submissionId — do not increment (same attempt)
-                    const sid = submissionIdRef.current
-                    const key = `${sid}:${phase.txHash}`
-                    notifiedRef.current.delete(key)
-                    void runReceiptValidation(phase.txHash, pendingSnapRef.current, sid)
+                  const ctx = currentCtxRef.current
+                  if (ctx) {
+                    void lifecycle.runReceiptValidation(phase.txHash, ctx)
                   }
                 }}
               >
@@ -591,15 +486,10 @@ function ActionPanel({
     return null
   }
 
-  // RC1: action-scoped disable.
-  // For payout/refund: disable while checking or already confirmed (one-shot actions).
-  // For contribute: disable only while checking — confirmed contribution does NOT permanently
-  // lock the form; the user may contribute again if capacity remains (repeated contributions).
+  // RC1: action-scoped disable
   function isActionBusy(action: ActionType): boolean {
     const p = getPhase(action)
-    if (action === 'contribute') {
-      return p.phase === 'checking'
-    }
+    if (action === 'contribute') return p.phase === 'checking'
     return p.phase === 'confirmed' || p.phase === 'checking'
   }
 
@@ -660,7 +550,7 @@ function ActionPanel({
         </div>
       )}
 
-      {/* RC6: contribution evidence — shown at FUNDED (transition from ACTIVE) so banner is not lost */}
+      {/* RC6: contribution evidence at FUNDED */}
       {status === STATUS.FUNDED && isConnected && (
         <ReceiptBanner action="contribute" />
       )}
@@ -685,7 +575,6 @@ function ActionPanel({
               Switch to Arc Testnet
             </button>
           ) : (
-            // RC1: disable only when payout action's phase is confirmed/checking
             <button
               onClick={openPayoutReview}
               disabled={payoutPending || payoutConfirming || isActionBusy('payout')}
@@ -706,7 +595,6 @@ function ActionPanel({
           <p className="font-semibold text-sm" style={{ color: 'var(--success-text)' }}>
             Payout complete. {formatNativeAmount(target)} USDC was sent to the fixed recipient.
           </p>
-          {/* RC6: show confirmedTxRef if payout was confirmed this session */}
           {confirmedTxRef.current?.action === 'payout' && (
             <p className="mt-2 text-xs" style={{ color: 'var(--success-text)' }}>
               <a href={explorerTxUrl(confirmedTxRef.current.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View confirmed tx</a>
@@ -746,7 +634,6 @@ function ActionPanel({
                   Switch to Arc Testnet
                 </button>
               ) : (
-                // RC1: disable only when refund action's phase is confirmed/checking
                 <button
                   onClick={openRefundReview}
                   disabled={refundPending || refundConfirming || isActionBusy('refund')}
@@ -761,7 +648,7 @@ function ActionPanel({
             </>
           ) : myClaimable !== undefined && myClaimable === 0n ? (
             <>
-              {/* RC6: show refund evidence even after myClaimable drops to 0 (refund just claimed) */}
+              {/* RC6: show refund evidence even after myClaimable drops to 0 */}
               <ReceiptBanner action="refund" />
               <p className="text-sm" style={{ color: 'var(--muted)' }}>
                 {getPhase('refund').phase === 'confirmed' || confirmedTxRef.current?.action === 'refund'
