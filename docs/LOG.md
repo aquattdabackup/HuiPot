@@ -1,5 +1,13 @@
 # Project log
 
+## October 26, 2026 — f00c80d review and actual public walkthrough
+
+- Pulled first; local/GitHub HEAD f00c80da0168afacd136b1c8f0cf44e077952888. Read all six requested files in full. Source unchanged.
+- Forge 120/0/0, Vitest 92/0/0, check exit 0; additional build exit 0 with large-chunk warnings. Independent prior cases: 31 receipt/action + 14 lifecycle all pass.
+- Two late-callback cases remain: callback after unmount and old callback after new same-action submission both adopt current refs and confirm. Studio's new lifecycle tests mirror logic (8 model checks + 4 source checks), not production ActionPanel execution. See docs/STUDIO_SUBMISSION_CONTEXT_RECHECK.md and evidence/recheck-f00c80d.
+- Actually ran public landing payout/refund illustrations in the in-app browser; both passed, no funds moved. All four direct app routes render, but /pools/1 explicitly reports VITE_HUIPOT_ADDRESS build configuration missing/invalid. Other real screens are gated. Public deployed SHA unknown. Screenshots saved.
+- docs/DEMO_RUNBOOK.md gives host-side configuration, completion gates and human testnet script. No wallet connected, no signatures, no hosting changes, no force push. Testnet/mainnet acceptance still open.
+
 ## October 26, 2026 — Replacement lifecycle recheck of 68fa8be
 
 - Pulled main first; local/GitHub input HEAD 68fa8be1a5a121686afda3290abbeff711d14df6. Read all seven requested files in full.

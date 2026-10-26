@@ -1,0 +1,113 @@
+{
+  "inputHead": "f00c80da0168afacd136b1c8f0cf44e077952888",
+  "date": "2026-10-26",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "environment": "Exact Git archive, Windows, existing cache with matching package.json and bun.lock",
+  "versions": {
+    "node": "24.19.0",
+    "bun": "1.3.14",
+    "forge": "1.7.1",
+    "solc": "0.8.28"
+  },
+  "forge": {
+    "passed": 120,
+    "failed": 0,
+    "skipped": 0
+  },
+  "vitest": {
+    "passed": 92,
+    "failed": 0,
+    "skipped": 0,
+    "files": 4,
+    "reportedSeconds": 8.2,
+    "counts": [
+      35,
+      17,
+      28,
+      12
+    ]
+  },
+  "receiptProbes": {
+    "passed": 31,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "lifecycleProbes": {
+    "priorCasesPassed": 14,
+    "priorCasesFailed": 0,
+    "extendedTotalPassed": 14,
+    "extendedTotalFailed": 2,
+    "exitCode": 1
+  },
+  "browser": {
+    "url": "https://hui-pot.vercel.app",
+    "deployedSha": "unknown",
+    "viewport": "narrow in-app browser",
+    "walkthroughPayout": "passed (illustration only)",
+    "walkthroughRefund": "passed (illustration only)",
+    "directRoutes": [
+      "/pools",
+      "/create",
+      "/pools/1",
+      "/pools/1/proof"
+    ],
+    "routesLoad": true,
+    "realFlows": "blocked by deployment configuration gate"
+  },
+  "integrity": [
+    {
+      "file": "AGENTS.md",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "b5b72ce84f43727569ff1657b9964e24a50ee56ca59daf44bed4fb27b5b75212"
+    },
+    {
+      "file": "docs/STUDIO_REPLACEMENT_RECHECK.md",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "9412e59e0608cb04beea0661c396960bb64916a2e2b0293cf405c59134ed1c1a"
+    },
+    {
+      "file": "docs/STUDIO_FUNCTIONAL_FIX_REPORT.md",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "1ce24bc073be3c3c47560b751fe715ffd4385d7501e5b97e97da1eab8f52265a"
+    },
+    {
+      "file": "src/pages/Pool.tsx",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "3b91d77cf80a8120d7ca3b51704411df2d2099ffb714b11d45ff07a8144ad214"
+    },
+    {
+      "file": "src/lib/__tests__/lifecycle.test.ts",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "a12ebaf6b6d732f4c1771f44c27672b28cd354d9f1466be863e9c84bc696bea3"
+    },
+    {
+      "file": "src/lib/__tests__/validateReceipt.test.ts",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "5e3114764a2bb73e08099ca9491435aa86dd7fed0496f8533e53eea172e180d7"
+    },
+    {
+      "file": "src/lib/validateReceipt.ts",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "9d5f7d4e213166a3abfbbc266148db9ff7ba07398ae6969c1c0bacca08dc7501"
+    },
+    {
+      "file": "package.json",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "1d3eca51e8e790d2f41ae05ff4fc4c6b45e1958a4aee2f1f713bc3b3ef007628"
+    },
+    {
+      "file": "bun.lock",
+      "matchesReviewedCommit": true,
+      "sha256LFNormalized": "15b658453e87b6de37019e4321cb144081166d4da8f5dfaabe093a0f97cc4618"
+    }
+  ],
+  "notRun": [
+    "wallet signing",
+    "AC12 testnet transactions",
+    "live replacement",
+    "WalletConnect mobile",
+    "cross-session evidence",
+    "mainnet",
+    "submission"
+  ]
+}
