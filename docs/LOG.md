@@ -1,5 +1,14 @@
 # Project log
 
+## October 26, 2026 — Receipt/action validation of 9d75573
+
+- Pulled main first; GitHub/local input HEAD 9d755735f35a59d8874d453f31fa30b57a0340fd. Read all four requested inputs in full.
+- Forge initial compile failed because the sandbox denied the dependency junction; existing dependency link restored, then 120/0/0 pass. Vitest 46/0/0 first attempt, no R3 timeout. Requested Linux Studio helper absent (exit 127); bun run check fallback exit 0.
+- Unchanged receipt function and ActionPanel synthetic probes: 12 pass/5 fail. See docs/STUDIO_RECEIPT_RECHECK.md RC1-RC6 and exact browser prompt. Source/contracts/tests untouched.
+- Topic hashes match ABI and constants in explorer-returned deployed bytecode; executable runtime matches after metadata removal. Explorer source unverified and logs empty; no actual emitted event observed. Direct RPC returned 403.
+- No browser render, wallet signatures, hosting changes, build rerun, mainnet or submission. All captured evidence under docs/evidence/recheck-9d75573.
+
+
 ## October 26, 2026 — Independent Proof recheck of f83a442
 
 - Confirmed GitHub/local input HEAD f83a442756d62f8477a5199f5732400976609ab8 and read all four requested inputs in full.

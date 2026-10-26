@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://explorer.testnet.arc.io/address/0x81a139599d252eb2dc2bbb6c267e911a21264288",
+    "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+  },
+  {
+    "url": "https://viem.sh/docs/actions/public/estimateGas",
+    "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+  },
+  {
+    "method": "eth_chainId",
+    "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+  },
+  {
+    "method": "eth_getCode",
+    "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+  },
+  {
+    "method": "eth_getTransactionReceipt",
+    "error": "<urlopen error [Errno 11001] getaddrinfo failed>"
+  }
+]

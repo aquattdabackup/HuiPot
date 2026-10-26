@@ -1,0 +1,123 @@
+{
+  "sourceRevision": "9d755735f35a59d8874d453f31fa30b57a0340fd",
+  "scope": "Unchanged validateReceipt and ActionPanel executed with synthetic inputs; no network/browser/wallet",
+  "passed": 12,
+  "failed": 5,
+  "results": [
+    {
+      "name": "valid contribute",
+      "expected": "confirmed",
+      "actual": "confirmed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "name": "valid payout",
+      "expected": "confirmed",
+      "actual": "confirmed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "name": "valid refund",
+      "expected": "confirmed",
+      "actual": "confirmed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "name": "contribution wrong contributor",
+      "expected": "replaced",
+      "actual": "confirmed",
+      "pass": false,
+      "note": ""
+    },
+    {
+      "name": "payout wrong submitting caller",
+      "expected": "replaced",
+      "actual": "confirmed",
+      "pass": false,
+      "note": ""
+    },
+    {
+      "name": "refund wrong contributor",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Refunded contributor (0x3333333333333333333333333333333333333333) does not match submitting wallet (0x2222222222222222222222222222222222222222)."
+    },
+    {
+      "name": "contribution wrong amount",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Contributed amount (1) does not match review amount (400000000000000000)."
+    },
+    {
+      "name": "different target",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Transaction reached a different contract (0x3333333333333333333333333333333333333333) — not this deployment."
+    },
+    {
+      "name": "no action event",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "No Contributed event from this contract — transaction may have been replaced or cancelled."
+    },
+    {
+      "name": "reverted receipt",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "Transaction reverted (status 0x0)."
+    },
+    {
+      "name": "missing receipt",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "Receipt not found — transaction may still be pending."
+    },
+    {
+      "name": "RPC failure",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "RPC error: fixture network failure"
+    },
+    {
+      "name": "HTTP 500 with receipt-shaped body",
+      "expected": "error",
+      "actual": "confirmed",
+      "pass": false,
+      "note": ""
+    },
+    {
+      "name": "payout initially enabled",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "payout enabled after final contribution confirmed",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "confirm blocks live wrong chain",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks contribution after capacity/state changed",
+      "expectedWrites": 0,
+      "actualWrites": 1,
+      "pass": false
+    }
+  ]
+}

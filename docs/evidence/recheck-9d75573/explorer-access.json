@@ -1,0 +1,57 @@
+[
+  {
+    "url": "https://explorer.testnet.arc.io/api/v2/addresses/0x81a139599d252eb2dc2bbb6c267e911a21264288",
+    "status": 200,
+    "keys": [
+      "block_number_balance_updated_at",
+      "coin_balance",
+      "creation_status",
+      "creation_transaction_hash",
+      "creator_address_hash",
+      "ens_domain_name",
+      "exchange_rate",
+      "has_beacon_chain_withdrawals",
+      "has_logs",
+      "has_token_transfers",
+      "has_tokens",
+      "has_validated_blocks",
+      "hash",
+      "implementations",
+      "is_contract",
+      "is_scam",
+      "is_verified",
+      "metadata",
+      "name",
+      "private_tags",
+      "proxy_type",
+      "public_tags",
+      "reputation",
+      "token",
+      "watchlist_address_id",
+      "watchlist_names"
+    ],
+    "items": 0
+  },
+  {
+    "url": "https://explorer.testnet.arc.io/api/v2/smart-contracts/0x81a139599d252eb2dc2bbb6c267e911a21264288",
+    "status": 200,
+    "keys": [
+      "conflicting_implementations",
+      "creation_bytecode",
+      "creation_status",
+      "deployed_bytecode",
+      "implementations",
+      "proxy_type"
+    ],
+    "items": 0
+  },
+  {
+    "url": "https://explorer.testnet.arc.io/api/v2/addresses/0x81a139599d252eb2dc2bbb6c267e911a21264288/logs",
+    "status": 200,
+    "keys": [
+      "items",
+      "next_page_params"
+    ],
+    "items": 0
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "address": "0x81a139599D252Eb2DC2bbb6c267e911a21264288",
+  "explorerIsVerified": false,
+  "explorerHasLogs": false,
+  "creationTransaction": "0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486",
+  "deployedBytes": 4134,
+  "compiledBytes": 4134,
+  "fullBytecodeEqual": false,
+  "executableEqualIgnoringMetadata": true,
+  "deployedRuntimeSHA256": "e8c03720f077cae25c1f562c16660d3a4c00d1a63b085b99b03d09100983c657",
+  "topics": {
+    "contribute": {
+      "signature": "Contributed(uint256,address,uint256,uint256)",
+      "expected": "0xdcfa71ee125a676f843733d9d39dce2c918ecf9e92f96db4f24bdb5244ed68a0",
+      "actual": "0xdcfa71ee125a676f843733d9d39dce2c918ecf9e92f96db4f24bdb5244ed68a0",
+      "matches": true,
+      "presentInDeployedRuntime": true
+    },
+    "payout": {
+      "signature": "PaidOut(uint256,address,address,uint256)",
+      "expected": "0x648ae074e8c7e2b5c75fc82672c363a1b0fa293a1ce08cba5e9dbeec37eb8ae8",
+      "actual": "0x648ae074e8c7e2b5c75fc82672c363a1b0fa293a1ce08cba5e9dbeec37eb8ae8",
+      "matches": true,
+      "presentInDeployedRuntime": true
+    },
+    "refund": {
+      "signature": "Refunded(uint256,address,uint256)",
+      "expected": "0x7ca5472b7ea78c2c0141c5a12ee6d170cf4ce8ed06be3d22c8252ddfc7a6a2c4",
+      "actual": "0x7ca5472b7ea78c2c0141c5a12ee6d170cf4ce8ed06be3d22c8252ddfc7a6a2c4",
+      "matches": true,
+      "presentInDeployedRuntime": true
+    }
+  },
+  "emittedLogsObserved": 0
+}

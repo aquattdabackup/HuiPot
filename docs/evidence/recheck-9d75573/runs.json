@@ -1,0 +1,32 @@
+[
+  {
+    "command": "forge test --summary --fuzz-seed 1",
+    "exit": 1,
+    "seconds": 3.05,
+    "log": "forge.log"
+  },
+  {
+    "command": "forge test --summary --fuzz-seed 1",
+    "exit": 0,
+    "seconds": 74.92,
+    "log": "forge-retry.log"
+  },
+  {
+    "command": "bun run test",
+    "exit": 0,
+    "seconds": 13.62,
+    "log": "vitest.log"
+  },
+  {
+    "command": "bash /home/user/arc-studio-helpers/check.sh",
+    "exit": 127,
+    "seconds": 0.58,
+    "log": "studio-check.log"
+  },
+  {
+    "command": "bun run check",
+    "exit": 0,
+    "seconds": 13.61,
+    "log": "check.log"
+  }
+]

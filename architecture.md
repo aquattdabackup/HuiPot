@@ -24,7 +24,8 @@
 | `docs/STUDIO_PROMPTS.md` | Prepared, unexecuted A-D browser prompts and required exports |
 | `docs/STUDIO_GITHUB_START.md` | Approved repo-based A entry prompt with full-file access checks |
 | `src/lib/verifyTxLogic.ts` | Shared production verdict and VerifyResult used by Proof and unit tests; f83a442 rejects zero amounts and mismatched contribution senders |
-| `docs/STUDIO_PROOF_RECHECK.md` | Independent f83a442 validation: specific Proof repairs accepted; full-suite import timeout and other functional acceptance items remain open |
+| `docs/STUDIO_PROOF_RECHECK.md` | Independent f83a442 validation: specific Proof repairs accepted; historical import timeout resolved at 9d75573, other functional acceptance items remain open |
+| `docs/STUDIO_RECEIPT_RECHECK.md` | Latest 9d75573 review: 46 tests pass, live chain check repaired; receipt identity/lifecycle and action-transition findings RC1-RC6 remain |
 | `docs/LOG.md` | Decisions and actual execution evidence |
 | `docs/STUDIO_HANDOFF.md` | Approved browser workflow for later Studio work |
 

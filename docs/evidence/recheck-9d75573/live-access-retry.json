@@ -1,0 +1,24 @@
+[
+  {
+    "url": "https://explorer.testnet.arc.io/address/0x81a139599d252eb2dc2bbb6c267e911a21264288",
+    "status": 200,
+    "bytes": 93833
+  },
+  {
+    "url": "https://viem.sh/docs/actions/public/estimateGas",
+    "status": 200,
+    "bytes": 265000
+  },
+  {
+    "method": "eth_chainId",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "method": "eth_getCode",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "method": "eth_getTransactionReceipt",
+    "error": "HTTP Error 403: Forbidden"
+  }
+]

@@ -1,0 +1,15 @@
+2026-10-26T01:46:12.429713Z ERROR foundry_compilers_artifacts_solc::sources: error="C:/Users/luong/HuiPot/.review/recheck-9d75573/snapshot/node_modules/@openzeppelin/contracts\utils/ReentrancyGuard.sol": The system cannot find the path specified. (os error 3)
+Unable to resolve imports:
+      "@openzeppelin/contracts/utils/ReentrancyGuard.sol" in "C:/Users/luong/HuiPot/.review/recheck-9d75573/snapshot/contracts\HuiPotGoalPool.sol"
+with remappings:
+      @openzeppelin/contracts/=C:/Users/luong/HuiPot/.review/recheck-9d75573/snapshot/node_modules/@openzeppelin/contracts/
+      forge-std/=C:/Users/luong/HuiPot/.review/recheck-9d75573/snapshot/lib/forge-std/src/
+Compiling 29 files with Solc 0.8.28
+Solc 0.8.28 finished in 376.51ms
+Error: Compiler run failed:
+Error (6275): Source "node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol" not found: File not found. Searched the following locations: "/Users/luong/HuiPot/.review/recheck-9d75573/snapshot".
+ParserError: Source "node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol" not found: File not found. Searched the following locations: "/Users/luong/HuiPot/.review/recheck-9d75573/snapshot".
+ --> contracts/HuiPotGoalPool.sol:4:1:
+  |
+4 | import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
