@@ -1,5 +1,13 @@
 # Project log
 
+## October 26, 2026 — Replacement lifecycle recheck of 68fa8be
+
+- Pulled main first; local/GitHub input HEAD 68fa8be1a5a121686afda3290abbeff711d14df6. Read all seven requested files in full.
+- Forge 120/0/0; Vitest 80/0/0 (35 verifyTx + 17 parser + 28 receipt, of which 22 behavioral/6 structural); check exit 0. All passed first attempt, no import timeout. Build not rerun.
+- Original legacy probe exited 1 before any cases due to module extraction. Adapted review harness preserves all 31 expectations: 31/0. All five prior failing cases repaired.
+- Additional production-callback/effect probes: 8/6. Slow repricing validation races hook success for all three actions; cancellation/replacement links omit mined hash; pending completion still notifies after unmount. See RL1–RL3 in docs/STUDIO_REPLACEMENT_RECHECK.md, evidence and prepared Studio prompt.
+- Documentation/evidence only. No application/contracts/Studio tests changed; no browser/testnet wallet, hosting, mainnet, signatures or force push.
+
 ## October 26, 2026 — Independent RC1–RC6 recheck of 7467d1b
 
 - Pulled main first; local and GitHub HEAD 7467d1b51fc89c18e68c49ad57d6394153aad029. Read all five requested files in full.

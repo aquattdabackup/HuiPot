@@ -26,7 +26,9 @@
 | `src/lib/verifyTxLogic.ts` | Shared production verdict and VerifyResult used by Proof and unit tests; f83a442 rejects zero amounts and mismatched contribution senders |
 | `docs/STUDIO_PROOF_RECHECK.md` | Independent f83a442 validation: specific Proof repairs accepted; historical import timeout resolved at 9d75573, other functional acceptance items remain open |
 | `docs/STUDIO_RECEIPT_RECHECK.md` | Historical 9d75573 review and RC1-RC6 definitions; topic/bytecode evidence |
-| `docs/STUDIO_RC_RECHECK.md` | Latest 7467d1b review: 120 Forge / 52 Vitest / check pass; 26/31 independent probes pass, remaining action/receipt lifecycle findings and Studio handoff |
+| `docs/STUDIO_RC_RECHECK.md` | Historical 7467d1b review and follow-up definitions; its five failing cases pass at 68fa8be |
+| `src/lib/validateReceipt.ts` | Shared RPC receipt/action/identity validation extracted at 68fa8be, imported by Pool and validator tests |
+| `docs/STUDIO_REPLACEMENT_RECHECK.md` | Latest 68fa8be review: 120 Forge / 80 Vitest / check pass; 31 legacy cases pass; RL1–RL3 replacement ordering, evidence and context lifecycle findings remain |
 | `docs/LOG.md` | Decisions and actual execution evidence |
 | `docs/STUDIO_HANDOFF.md` | Approved browser workflow for later Studio work |
 

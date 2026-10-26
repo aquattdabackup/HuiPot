@@ -1,0 +1,17 @@
+Installed viem 2.57.10; read 2026-10-26.
+Source: node_modules/viem/actions/public/waitForTransactionReceipt.ts
+Callback is emitted before resolving the receipt promise.
+
+383:
+384:                 done(() => {
+385:                   emit.onReplaced?.({
+386:                     reason,
+387:                     replacedTransaction: replacedTransaction! as any,
+388:                     transaction: replacementTransaction,
+389:                     transactionReceipt: receipt!,
+390:                   })
+391:                   emit.resolve(receipt!)
+392:                 })
+393:               } catch (err_) {
+394:                 done(() => emit.reject(err_))
+395:               }

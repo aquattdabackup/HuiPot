@@ -1,0 +1,107 @@
+{
+  "sourceRevision": "68fa8be1a5a121686afda3290abbeff711d14df6",
+  "scope": "Production callbacks/effects and shared validator with synthetic hooks and controlled asynchronous RPC; no browser/wallet/network",
+  "passed": 8,
+  "failed": 6,
+  "results": [
+    {
+      "name": "contribute: ordinary mined receipt confirms",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "payout: ordinary mined receipt confirms",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "refund: ordinary mined receipt confirms",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "contribute: repriced receipt survives wait-hook success before RPC resolution",
+      "pass": false,
+      "expected": "confirmed replacement hash",
+      "phase": "checking",
+      "successCalls": 0,
+      "requestedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "generation": 2
+    },
+    {
+      "name": "payout: repriced receipt survives wait-hook success before RPC resolution",
+      "pass": false,
+      "expected": "confirmed replacement hash",
+      "phase": "checking",
+      "successCalls": 0,
+      "requestedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "generation": 2
+    },
+    {
+      "name": "refund: repriced receipt survives wait-hook success before RPC resolution",
+      "pass": false,
+      "expected": "confirmed replacement hash",
+      "phase": "checking",
+      "successCalls": 0,
+      "requestedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "generation": 2
+    },
+    {
+      "name": "contribute: fast replacement RPC positive control",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "payout: fast replacement RPC positive control",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "refund: fast replacement RPC positive control",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "cancelled: evidence links to actual mined replacement",
+      "pass": false,
+      "phase": "cancelled",
+      "successCalls": 0,
+      "expectedMinedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "links": []
+    },
+    {
+      "name": "replaced: evidence links to actual mined replacement",
+      "pass": false,
+      "phase": "replaced",
+      "successCalls": 0,
+      "expectedMinedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "links": [
+        "fixture://explorer/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "name": "unmounted wallet/pool context discards pending validation",
+      "pass": false,
+      "expectedSuccessCalls": 0,
+      "actualSuccessCalls": 1
+    },
+    {
+      "name": "new submission invalidates prior pending validation control",
+      "pass": true,
+      "writes": 1,
+      "successCalls": 0
+    },
+    {
+      "name": "transient HTTP failure can retry same receipt",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    }
+  ]
+}
