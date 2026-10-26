@@ -253,10 +253,18 @@ describe('overallValid — additional negatives', () => {
 
 describe('R3 structural — ActionPanel isolation', () => {
 
-  it('Pool.tsx does NOT export ActionPanel (it is a local function only)', async () => {
-    const mod = await import('../../../src/pages/Pool') as Record<string, unknown>
-    expect(typeof mod['ActionPanel']).toBe('undefined')
-    expect(typeof mod['Pool']).toBe('function')
+  // Use raw source import rather than a module import to avoid the 5000ms
+  // timeout caused by wagmi hooks running in a node environment without a provider.
+  it('Pool.tsx does NOT export ActionPanel (it is a local function only — raw source check)', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // ActionPanel must NOT appear in an export statement
+    expect(code).not.toMatch(/export\s+(function|const|class)\s+ActionPanel/)
+    expect(code).not.toMatch(/export\s*\{[^}]*ActionPanel[^}]*\}/)
+    // Pool must be exported
+    expect(code).toContain('export function Pool(')
+    // ActionPanel must still be defined (local)
+    expect(code).toContain('function ActionPanel(')
   })
 
   it('Landing page does NOT import useWriteContract (no write hooks in landing)', async () => {
@@ -268,6 +276,45 @@ describe('R3 structural — ActionPanel isolation', () => {
 
   it('verifyTxLogic exports computeOverallValid as a function (production path confirmed)', () => {
     expect(typeof computeOverallValid).toBe('function')
+  })
+
+  it('Pool.tsx uses currentChainId prop (not stored snapshot chainId) for pre-confirm validation', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must compare currentChainId (live from useAccount) against TARGET_CHAIN_ID
+    expect(code).toContain('currentChainId !== TARGET_CHAIN_ID')
+    // Must NOT compare a stored snapshot.chainId (that was always TARGET_CHAIN_ID — never caught wrong chain)
+    expect(code).not.toContain('reviewSnapshot.chainId')
+  })
+
+  it('Pool.tsx validates receipt event after isSuccess (no bare isSuccess success banner)', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must have receipt validation function
+    expect(code).toContain('validateReceipt')
+    // Must have replacement detection state
+    expect(code).toContain("phase: 'replaced'")
+    // Must not use bare contribSuccess/payoutSuccess/refundSuccess as the sole condition for success banner
+    // (those were the old pattern — now we use receiptValidation.phase === 'confirmed')
+    expect(code).toContain("phase: 'confirmed'")
+  })
+
+  it('Pool.tsx review shows full addresses (not truncated)', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must NOT use .slice(0,6) truncation in review rows
+    // (old: snap.contractAddress.slice(0, 6); new: full snap.contractAddress)
+    expect(code).not.toContain("snap.contractAddress.slice(0, 6)")
+    expect(code).not.toContain("snap.recipient.slice(0, 6)")
+  })
+
+  it('Pool.tsx gas estimate is honest unavailable state (not a hardcoded fixed string)', async () => {
+    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+    const code = src.default
+    // Must say gas is not estimable before signing (honest)
+    expect(code).toContain('Not estimable before signing')
+    // Must NOT have a fixed hardcoded gas string as the sole display
+    expect(code).not.toContain('Full target amount to recipient; you pay Arc gas (~<0.01 USDC)')
   })
 
 })
