@@ -1,5 +1,7 @@
 # Independent validation of Studio revision 2ae2f71
 
+Historical findings at 2ae2f71. The shared-predicate and two Proof-verdict fixes are verified at f83a442 in [STUDIO_PROOF_RECHECK.md](STUDIO_PROOF_RECHECK.md); other acceptance items remain open.
+
 Date: October 25, 2026 (Asia/Ho_Chi_Minh).
 Input HEAD: `2ae2f71b6814a7b57e0ff0bd5903f1f1f6c031c3`, independently confirmed as GitHub main and clean local HEAD. Read AGENTS.md and docs/STUDIO_FIX_REPORT.md in full before validation. Application source, contracts and tests were not modified.
 

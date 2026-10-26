@@ -1,0 +1,173 @@
+{
+  "sourceRevision": "f83a442756d62f8477a5199f5732400976609ab8",
+  "scope": "Unchanged production verifier with synthetic receipts; no network or wallet",
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "name": "valid payout",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "amountInLog": "1000000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout missing movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "1000000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout wrong transfer destination",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "1000000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "Arc Transfer destination (0x3333333333333333333333333333333333333333) does not match PaidOut recipient (0x1111111111111111111111111111111111111111).",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout unrelated transfer sender",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "1000000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "No Arc system Transfer from this contract found. A payout should produce a Transfer from the contract to the recipient. Verify independently on ArcScan.",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout transfer amount 1 base unit",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "1000000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "Arc Transfer amount (1) does not match event amount (1000000000000000000).",
+        "Payout amount in event: 1000000000000000000 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "payout event and transfer 1 base unit versus 1 USDC target",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "1",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "PaidOut event amount (1) does not match pool target (1000000000000000000).",
+        "Payout amount in event: 1 native base units (18 dec)."
+      ]
+    },
+    {
+      "name": "valid refund",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "amountInLog": "400000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": []
+    },
+    {
+      "name": "refund unrelated movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "400000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "No Arc system Transfer from this contract found. A refund should produce a Transfer from the contract to the contributor. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "valid contribution with matching inbound movement",
+      "expected": true,
+      "actual": true,
+      "pass": true,
+      "amountInLog": "400000000000000000",
+      "arcTransferFromMatchesContributor": true,
+      "notes": []
+    },
+    {
+      "name": "contribution without inbound evidence",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "400000000000000000",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "No Arc system inbound Transfer to this contract found. A contribution should produce a Transfer to the contract. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution with wrong inbound amount",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "400000000000000000",
+      "arcTransferFromMatchesContributor": true,
+      "notes": [
+        "Arc Transfer amount (1) does not match event amount (400000000000000000)."
+      ]
+    },
+    {
+      "name": "contribution with zero event amount",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "0",
+      "arcTransferFromMatchesContributor": null,
+      "notes": [
+        "No Arc system inbound Transfer to this contract found. A contribution should produce a Transfer to the contract. Verify independently on ArcScan."
+      ]
+    },
+    {
+      "name": "contribution zero event AND zero inbound movement",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "0",
+      "arcTransferFromMatchesContributor": true,
+      "notes": []
+    },
+    {
+      "name": "contribution inbound sender differs from event contributor",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "amountInLog": "400000000000000000",
+      "arcTransferFromMatchesContributor": false,
+      "notes": [
+        "Arc Transfer sender (0x3333333333333333333333333333333333333333) does not match contributor (0x2222222222222222222222222222222222222222)."
+      ]
+    },
+    {
+      "name": "shared predicate: amountInLog zero",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "shared predicate: sender flag false",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    }
+  ]
+}

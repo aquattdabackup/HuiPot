@@ -23,6 +23,8 @@
 | `docs/evidence/functionality-37ee96c/`, `docs/review-tools/functionality-probes.cjs` | Independent suite logs, public HTTP/RPC/build-config evidence and synthetic execution of unchanged production functions; distinct from Studio tests |
 | `docs/STUDIO_PROMPTS.md` | Prepared, unexecuted A-D browser prompts and required exports |
 | `docs/STUDIO_GITHUB_START.md` | Approved repo-based A entry prompt with full-file access checks |
+| `src/lib/verifyTxLogic.ts` | Shared production verdict and VerifyResult used by Proof and unit tests; f83a442 rejects zero amounts and mismatched contribution senders |
+| `docs/STUDIO_PROOF_RECHECK.md` | Independent f83a442 validation: specific Proof repairs accepted; full-suite import timeout and other functional acceptance items remain open |
 | `docs/LOG.md` | Decisions and actual execution evidence |
 | `docs/STUDIO_HANDOFF.md` | Approved browser workflow for later Studio work |
 
@@ -39,4 +41,4 @@
 - Competition live page is unverified; supplied text is the provisional planning source.
 - Public root https://hui-pot.vercel.app responded HTTP 200, but direct app paths returned 404 and the served JS compiled the write/read contract address to zero. Landing's separate nonzero fallback does not configure the app. Deployed commit/rendered behavior remain unverified. Mainnet evidence remains separately gated.
 
-Last updated: October 25, 2026 (Asia/Ho_Chi_Minh).
+Last updated: October 26, 2026 (Asia/Ho_Chi_Minh).

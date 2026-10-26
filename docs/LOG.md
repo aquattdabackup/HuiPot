@@ -1,5 +1,13 @@
 # Project log
 
+## October 26, 2026 — Independent Proof recheck of f83a442
+
+- Confirmed GitHub/local input HEAD f83a442756d62f8477a5199f5732400976609ab8 and read all four requested inputs in full.
+- Shared predicate imports verified. Unchanged production receipt decoder + actual shared predicate: 14/14 fixtures pass; two direct negative calls also pass. Both previously accepted invalid contributions now return false.
+- Forge 120/0/0, exit 0. Vitest 41/1 import timeout on first attempt AND unchanged warm retry, both exit 1. Separate lint/typecheck exit 0. Claimed 42/42 not reproduced locally; build not rerun.
+- Reports/evidence: docs/STUDIO_PROOF_RECHECK.md and docs/evidence/recheck-f83a442. No source/test modifications, browser/wallet actions or hosting changes. Receipt/context/fee acceptance and Studio completion report remain outstanding.
+
+
 ## October 25, 2026 ? Independent recheck of Studio 2ae2f71
 
 - Read AGENTS.md and historical STUDIO_FIX_REPORT.md in full; confirmed input main SHA 2ae2f71b6814a7b57e0ff0bd5903f1f1f6c031c3.
