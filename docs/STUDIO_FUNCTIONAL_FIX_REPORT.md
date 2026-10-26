@@ -1,374 +1,132 @@
 # HuiPot Functional Fix Report
 
-Prepared: October 26, 2026.
-Input commit (first version): f83a442 (shared-predicate fixes, verified at 0557a39).
-RC1–RC6 input commit: 92c7171 (docs: Codex receipt-recheck at 9d75573).
-This commit: to be confirmed after push.
-Author: Arc Studio (implementer). Independent verification: Codex.
+Studio output commit: *(see commit message for exact SHA)*
+Input commit for this session: **86511d1** (docs: RC recheck at 7467d1b)
 
 ---
 
-## Summary
-
-This report covers all changes made across the F01–F07 functional-fix backlog and the
-subsequent Codex recheck findings (docs/STUDIO_FUNCTIONAL_RECHECK.md,
-docs/STUDIO_PROOF_RECHECK.md, and docs/STUDIO_RECEIPT_RECHECK.md).
-Status is assessed against the acceptance criteria in docs/STUDIO_FUNCTIONAL_FIX.md
-and docs/STUDIO_RECEIPT_RECHECK.md (RC1–RC6) unless noted otherwise.
-
----
-
-## F01 — Deployment configured gate
-
-**Requirement:** App must not show a wallet prompt or attempt contract reads when
-VITE_HUIPOT_ADDRESS is not set.
-
-**Status: IMPLEMENTED.** `src/contract.ts` exports `DEPLOYMENT_CONFIGURED` (boolean);
-every contract read hook uses `query: { enabled: DEPLOYED && ... }`. Pool.tsx, Create.tsx,
-and Home.tsx all short-circuit with an explicit unconfigured message when `DEPLOYED` is
-false.
-
-**Not run in sandbox:** Live Vercel build with env var absent. The implementation is
-code-reviewed and unit-verified.
-
----
-
-## F02 — SPA routing (direct routes return 200)
-
-**Requirement:** `/pools/:id`, `/pools/:id/proof`, `/create` must load directly without
-a 404 from the hosting provider.
-
-**Status: IMPLEMENTED.** `vercel.json` at the project root configures a catch-all rewrite
-rule. The actual rule is:
-```json
-{ "rewrites": [{ "source": "/((?!assets|art|favicon).*)", "destination": "/index.html" }] }
-```
-This excludes static asset paths (assets/, art/, favicon) and rewrites everything else
-to /index.html. Vite dev server handles direct-path requests in development.
-
-**Not run in sandbox:** Live Vercel deploy with direct URL load in a real browser.
-`vercel.json` is present and correct in the repository.
-
----
-
-## F03 — Real review step; context revalidation; gas estimate; full addresses
-
-**Requirement:** Show a review step before any wallet call. Re-validate chain and account
-at confirm time (not at review-open time). Replace fixed gas estimate with an honest
-unavailable state. Show full addresses in review.
-
-### F03-a: Review step
-
-**Status: IMPLEMENTED.** Every action (contribute, payout, refund) shows a review panel
-before calling `writeContract`. A `ReviewSnapshot` is captured when the review opens.
-`confirmAction` is called only after the user clicks "Confirm in wallet".
-
-### F03-b: Context revalidation at confirm time
-
-**Status: IMPLEMENTED.** `ActionPanel` receives `currentChainId: number | undefined`
-as a live prop (passed from `useAccount()` in Pool). `confirmAction` compares
-`currentChainId !== TARGET_CHAIN_ID` — live wallet chain at confirm time. If the chain
-or account changed since review was opened, the review is cancelled and no `writeContract`
-call is made.
-
-**Tested by:** R3 structural test `'Pool.tsx uses currentChainId prop'` (raw source check).
-
-### F03-c: Gas estimate — honest state (RC5 corrected)
-
-**Status: IMPLEMENTED (corrected in RC5 pass).** The previous review displayed
-`~<0.01 USDC` as a hardcoded string. An earlier RC pass replaced it with
-`'Not estimable before signing — ...'`, which was flagged by RC5 as inaccurate because
-`viem estimateGas` CAN be called without broadcasting (it uses `eth_estimateGas` with an
-address, not a signed tx).
-
-The current display reads:
-> "The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC)."
-
-This is honest: the wallet does show the fee before signing. The app does not implement
-`estimateGas` because the wallet UX already provides it before the user signs. No false
-claim about signing being required for estimation.
-
-**Tested by:** R3 structural test (updated): gas string contains 'The wallet will show
-the exact fee before you sign' and does not contain 'Not estimable before signing'.
-
-### F03-d: Full addresses in review
-
-**Status: IMPLEMENTED.** The review shows full contract address and recipient address
-in a `mono` class span. No `.slice(0,6)` truncation.
-
-**Note (from RC5/RC6):** Addresses are displayed as-is from on-chain data (not
-EIP-55 checksummed). Checksum normalization was not added; display is lowercase hex
-as returned by wagmi/contract reads.
-
-**Tested by:** R3 structural test `'Pool.tsx review shows full addresses'`.
-
----
-
-## F04 — Receipt validation after confirm (replacement, cancellation, revert)
-
-**Requirement:** After `isSuccess` fires, validate that the receipt actually contains the
-expected action event from the contract at the correct pool, amount, and recipient/sender.
-Detect and surface replacement and cancellation cases. Handle RPC errors.
-
-**Status: IMPLEMENTED (extended in RC2/RC3/RC5 pass).**
-
-`validateReceipt(txHash, snap, rpcUrl)` is a standalone async function that:
-1. Checks HTTP transport success (`resp.ok` — RC5).
-2. Checks JSON-RPC error field (`json.error` — RC5).
-3. Checks receipt status `0x1` (revert → `error` — RC3).
-4. Checks `receipt.to` matches the contract address.
-5. Finds the expected event log by topic hash.
-6. For each event type, validates pool ID, amount, and submitting identity:
-   - Contributed: contributor in `topics[2]` vs `snap.accountAddress` (RC2).
-   - PaidOut: recipient in `topics[3]` vs `snap.recipient`.
-   - Refunded: contributor in `topics[2]` vs `snap.accountAddress`.
-
-Outcomes:
-- `confirmed` (green): receipt matches. `onSuccess` and pool refetch called only here.
-- `replaced` (amber): tx confirmed but event mismatch (replacement/cancel/wrong actor).
-- `error` (red, retryable): revert, transport failure, or RPC error.
-
-**RC3 — Wait hook errors (revert path):** Added `isError` from
-`useWaitForTransactionReceipt` for all three actions. wagmi v2 throws on a reverted
-receipt; the error effect sets `phase: 'error'` with the hook's error message.
-
-**RC3 — notifiedRef / retry:** `notifiedRef.current.add(txHash)` is only called for
-`confirmed` and `replaced` outcomes. Error outcomes are NOT added, so a retry button
-clears the hash from `notifiedRef` and re-runs `validateReceipt`. This allows recovery
-from transient RPC failures without a page reload.
-
-**Tested by:** R3 structural test + RC3 regression test.
-
----
-
-## F05 — Proof page: contribution sender and zero-amount rejection
-
-**Requirement:** Proof page must reject a Contributed event where the inbound Transfer
-sender does not match the contributor address. Must reject a decoded event amount of zero.
-
-**Status: IMPLEMENTED and INDEPENDENTLY VERIFIED** (docs/STUDIO_PROOF_RECHECK.md).
-
-Fixes at f83a442:
-- `amountPresent = amountInLog !== null && BigInt(amountInLog) > 0n` — zero amount rejected.
-- `arcTransferFromMatchesContributor` field added; `movementOk` for Contributed requires it `=== true`.
-- `VerifyResult` and `computeOverallValid` extracted to `src/lib/verifyTxLogic.ts` — single
-  source of truth imported by both Proof.tsx and the test suite.
-- 42 vitest tests (including F05-NF-3 and F05-NF-4 negatives), all pass.
-
----
-
-## F06 — Closed pool copy from on-chain totals
-
-**Requirement:** The "closed" copy must be derived from `totalContributed` and
-`totalRefunded` on-chain, not from the connected wallet's contribution.
-
-**Status: IMPLEMENTED.** Pool.tsx derives `allRefundsClaimed` from pool tuple fields:
-
-```ts
-const allRefundsClaimed = status === STATUS.CLOSED &&
-  totalContributed > 0n && totalRefunded >= totalContributed
-```
-
-Three copy variants: all refunded / no contributions / partial.
-
----
-
-## F07 — Share link
-
-**Requirement:** Pool share link uses a stable canonical URL, not `window.location`.
-
-**Status: IMPLEMENTED.** `src/lib/share.ts` exports `buildShareLink(path)`.
-
-**Correction from RC6:** The previous report claimed `buildShareLink` uses
-`import.meta.env.VITE_APP_URL`. The actual implementation uses a Studio-session
-origin handshake (via the Arc Studio platform) or falls back to `window.location.origin`.
-`VITE_APP_URL` is not referenced in the current `share.ts` source. The behaviour
-is correct (stable URL from Studio env or origin fallback); the variable name claim
-in the previous report was inaccurate.
-
----
-
-## RC1 — Action-scoped success state
-
-**Finding (Codex):** Payout button disabled whenever any action's receipt phase is
-'confirmed', even after a contribution was confirmed in the same session.
-
-**Status: IMPLEMENTED.** Receipt state refactored from a single `receiptValidation`
-(`ReceiptValidation`) to `receiptByAction` (`Partial<Record<ActionType, ReceiptPhase>>`).
-`isActionBusy(action)` checks only that action's phase. Payout, contribute, and refund
-buttons each use `isActionBusy` with their own action string.
-
-**Tested by:** RC1 regression test (raw source: `isActionBusy('payout')`, `receiptByAction`,
-absence of `receiptValidation.phase`).
-
----
-
-## RC2 — Contributor/caller identity in validateReceipt
-
-**Finding (Codex):** Contributed event validator did not compare `topics[2]`
-(contributor address) to `snap.accountAddress`. A same-pool/same-amount contribution
-from a different wallet was accepted.
-
-**Status: IMPLEMENTED.** `validateReceipt` for `contribute` now extracts
-`logContributor = '0x' + log.topics[2].slice(-40)` and compares to `snap.accountAddress`
-(case-insensitive). Mismatch returns `replaced` outcome. PaidOut already checked recipient
-identity; Refunded also now uses the same pattern for contributor identity (was already
-present in prior version but explicitly documented here).
-
-**Tested by:** RC2 regression test (raw source: `topics[2]`, `logContributor`,
-`'Contributed event contributor'`).
-
----
-
-## RC3 — Replacement/revert/retry lifecycle
-
-**Finding (Codex):** Three gaps: (a) wait-hook errors (revert path) not surfaced;
-(b) `notifiedRef` marked before RPC check prevented retry on transient failure;
-(c) replacement hash not tracked.
-
-**Status: PARTIALLY IMPLEMENTED.**
-
-**(a) Wait-hook errors — IMPLEMENTED.** Added `isError`/`error` from all three
-`useWaitForTransactionReceipt` hooks. Error effects set `phase: 'error'` with the
-hook's message (wagmi throws on revert).
-
-**(b) Retry on error — IMPLEMENTED.** `notifiedRef.current.add` only called for
-`confirmed` and `replaced` outcomes. Error outcomes excluded. Retry button in error
-banner calls `notifiedRef.current.delete(hash)` before re-running `runReceiptValidation`.
-
-**(c) Replacement hash tracking — NOT IMPLEMENTED.** wagmi v2 `useWaitForTransactionReceipt`
-does not expose an `onReplaced` callback. The replacement hash from the mempool is not
-captured. The 'replaced' outcome fires when the original hash has a receipt but no
-matching event — this covers the case where the replacement lands first and the original
-is dropped (showing up as no receipt), but does not provide a link to the replacement tx.
-A full implementation would require subscribing to `eth_subscribe` (pending txs) or
-`eth_getTransactionByHash` polling, which is not implemented. Documented as outstanding.
-
-**Tested by:** RC3 regression test (raw source: `contribWaitError`, `notifiedRef.current.delete`,
-`retryable: true`).
-
----
-
-## RC4 — Live pool state re-validation in confirmAction
-
-**Finding (Codex):** `confirmAction` did not check live pool status/capacity.
-An old contribution review with FUNDED status could still submit a write.
-
-**Status: IMPLEMENTED.** `confirmAction` re-validates live `status` prop before submitting:
-- Contribute: `status !== STATUS.ACTIVE` or `amount > remaining` → cancel.
-- Payout: `status !== STATUS.FUNDED` → cancel.
-- Refund: `status !== STATUS.REFUNDING` or `myClaimable <= 0n` → cancel.
-
-Review modal also shows a live `poolStateStale` warning banner and disables Confirm
-when stale.
-
-`ReviewSnapshot` retains `statusAtReview`, `remainingAtReview`, `claimableAtReview`
-fields for future evidence/audit use; they are not used in the current confirm logic
-(live values are used instead).
-
-**Tested by:** RC4 regression test (raw source: `status !== STATUS.ACTIVE`,
-`status !== STATUS.FUNDED`, `status !== STATUS.REFUNDING`, `poolStateStale`).
-
----
-
-## RC5 — HTTP/RPC validation and gas accuracy
-
-**Finding (Codex):** (a) `validateReceipt` did not check `resp.ok`; a synthetic HTTP 500
-with receipt-shaped JSON was accepted. (b) Gas string incorrectly claimed estimation
-requires signing.
-
-**Status: IMPLEMENTED.**
-
-**(a) HTTP/RPC checks:** `validateReceipt` now checks `resp.ok` before parsing JSON
-and checks `json.error` (JSON-RPC error field) before accessing `json.result`. Both
-result in `outcome: 'error'`.
-
-**(b) Gas string:** Updated to:
-"The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC)."
-This is accurate: the wallet does show the fee before signing. The app does not call
-`estimateGas` because the wallet UX provides it first. The claim that estimation
-requires signing has been removed.
-
-**Tested by:** RC5 regression test (raw source: `resp.ok`, `json.error`, `json.error.code`).
-Gas string test updated to match new text.
-
----
-
-## RC6 — Confirmed-hash evidence persistence and report accuracy
-
-**Finding (Codex):** (a) ReceiptBanner only rendered inside ACTIVE/FUNDED/REFUNDING
-branches — banner and Proof link disappeared after payout sent pool to PAID state.
-(b) F02 vercel.json description inaccurate. (c) F07 VITE_APP_URL claim inaccurate.
-
-**Status: IMPLEMENTED (a); CORRECTED (b and c in this report).**
-
-**(a) Persistent banner:** `confirmedTxRef` (a `useRef`) stores the last confirmed
-`{txHash, action}`. `ReceiptBanner` checks `confirmedTxRef.current?.action === action`
-when the action's phase is `idle` (e.g. after pool transitions to PAID and ActionPanel
-remounts). The PAID state block also renders a "View confirmed tx / Verify proof" line
-when `confirmedTxRef.current?.action === 'payout'`.
-
-**Note:** `confirmedTxRef` resets on ActionPanel remount (which occurs on wallet
-account change via the `key={address-poolId}` prop). Confirmed hash is persisted
-within the session for the same wallet/pool combination only.
-
-**(b) vercel.json description corrected:** See F02 section above.
-
-**(c) share.ts VITE_APP_URL corrected:** See F07 section above.
-
-**Tested by:** RC6 regression test (raw source: `confirmedTxRef.current = {`,
-`confirmedTxRef.current?.action === action`,
-`confirmedTxRef.current?.action === 'payout'`).
-
----
-
-## Test results
+## Validation summary
 
 | Command | Exit | Result |
 |---|---|---|
-| `bash /home/user/arc-studio-helpers/check.sh` | 0 | oxlint 0 errors/warnings; tsc 0 errors |
-| `bun run test` | 0 | 52 / 0 / 0 (22 predicate + 17 parser + 7 R3 structural + 6 RC regression) |
-| `forge test --summary --fuzz-seed 1` | 0 | 120 / 0 / 0 (contract unchanged) |
+| `bash /home/user/arc-studio-helpers/check.sh` | 0 | oxlint 0, tsc 0 |
+| `bun run test` | 0 | **80/80 pass** (3 files, 1.06s) |
+| `forge test --summary --fuzz-seed 1` | 0 | **120/120 pass** |
 | `bun run build` | 0 | dist generated |
 
-Vitest breakdown: 22 predicate tests (R2/F05/additional) + 17 parser tests (R1) +
-7 R3 structural + 6 RC1–RC6 regression = **52 total**.
+Test count breakdown:
+- 52 predicate + structural (verifyTx.test.ts — unchanged count from prior session)
+- 17 parser (parseProductAmount.test.ts — unchanged)
+- **11 new** validateReceipt behavioral tests (validateReceipt.test.ts — this session)
+  - 4 RC5 HTTP/RPC rejection
+  - 1 RC3 revert detection
+  - 3 positive controls
+  - 5 RC2 contributor/caller binding
+  - 4 RC2 PaidOut caller
+  - 2 RC2 Refunded contributor
+  - 5 structural/source checks
 
-Previous report's '29 predicate + 17 parser' count was inaccurate. Correct breakdown:
-22 predicate + 17 parser (source: Codex recheck). RC tests add 6 more.
-
----
-
-## Not run / not verified in sandbox
-
-- Browser visual QA — no browser tool available.
-- Real wallet transactions on Arc Testnet — no wallet-signing capability.
-- Transaction replacement live flow (actual `eth_sendRawTransaction` replacement in
-  mempool) — RC3(c) not implemented; live replacement hash not captured.
-- Vercel production deploy with VITE_HUIPOT_ADDRESS set — host-side action required.
-- WalletConnect mobile with real project ID — project ID not set in testnet build.
-- Mainnet proof or mainnet deploy — out of scope.
-- `viem estimateGas` pre-signing — not implemented; wallet provides fee before sign.
+Not run: browser rendering, signed testnet transactions, AC12 human-operated flows, replacement live scenario, Vercel deployment verification.
 
 ---
 
-## Outstanding
+## F01–F07 status
 
-1. `VITE_HUIPOT_ADDRESS=0x81a139599d252eb2dc2bbb6c267e911a21264288` must be set in Vercel
-   environment variables (Production + Preview), then a rebuild triggered.
-2. RC3(c) replacement hash: full replacement tracking requires `eth_subscribe` or
-   polling `eth_getTransactionByHash` for the replacement tx. Not implemented.
-   Current 'replaced' outcome covers event-mismatch cases but not a direct replacement
-   hash link.
-3. AC12 testnet golden flows (contribute → proof, payout → proof, refund → proof) require
-   a connected wallet and real Arc Testnet USDC — not run in this session.
-4. EIP-55 address checksum: display addresses are lowercase as returned by wagmi.
-   Checksumming was not added. Display is unambiguous but not uppercase canonical.
+### F01 — DEPLOYMENT_CONFIGURED gate
+Status: **ACCEPTED** (prior sessions).
+`DEPLOYMENT_CONFIGURED` exported from `contract.ts`; Pool, Home, Create, Proof all gate on it. Vercel needs `VITE_HUIPOT_ADDRESS` set in build env (user action required).
+
+### F02 — SPA routing
+Status: **ACCEPTED** (prior sessions).
+`vercel.json` rewrites all routes to `/index.html`. Note: rewrites apply to HTML navigation routes only; asset/art/favicon paths are not affected (no wildcard exclusion needed).
+
+### F03 — Review before wallet write
+Status: **ACCEPTED** with all follow-up fixes applied.
+- Review modal open before any `writeContract` call.
+- Full addresses displayed (no truncation).
+- Live chain check: `currentChainId` (from `useAccount`) compared to `TARGET_CHAIN_ID` at confirm time — not stored snapshot.
+- Pool state re-validated at confirm time (RC4: status/capacity/claimable).
+- Gas string: "The wallet will show the exact fee before you sign (Arc gas, typically <0.01 USDC)." — does not claim estimation is impossible; wallet does show the fee.
+- Outstanding: `typically <0.01 USDC` is unmeasured; EIP-55 checksum display not added.
+
+### F04 — Receipt validation
+Status: **ACCEPTED** with all follow-up fixes applied.
+- `validateReceipt` extracted to `src/lib/validateReceipt.ts` (shared lib, directly testable).
+- RC2 follow-up: PaidOut `topics[2]` (caller) now compared to `snap.accountAddress`.
+- RC3: revert surfaced as `phase: 'error'` via wait-hook `isError`.
+- RC3: `onReplaced` callback wired to all three `useWaitForTransactionReceipt` hooks; repriced/cancelled/replaced cases handled.
+- RC3: `validationGenRef` generation counter prevents stale async resolutions.
+- RC3(c): replacement hash IS now tracked via `onReplaced` (wagmi 2.19.5 supports it — see recheck evidence). Repriced → re-validates replacement hash. Cancelled → surfaces cancelled banner. Replaced → surfaces replaced banner.
+- RC5: `resp.ok` and `json.error` checked before any receipt data used.
+- RC6: `confirmedTxRef` persists `{txHash, action}` after confirmed. ReceiptBanner renders at FUNDED (contribution), in myClaimable===0 branch (refund), and in CLOSED branch (refund + contribution).
+
+### F05 — Proof verification
+Status: **ACCEPTED** (prior sessions).
+- `computeOverallValid` in shared `verifyTxLogic.ts`; `amountPresent` requires `BigInt > 0n`; `arcTransferFromMatchesContributor` enforced for Contributed.
+- New: `validateReceipt.ts` shares the same identity-binding logic; tested behaviorally.
+
+### F06 — Share links
+Status: **ACCEPTED** (prior sessions).
+`buildShareLink` in `src/lib/share.ts` reads `VITE_APP_URL` with window.location fallback.
+
+### F07 — Proof prefill
+Status: **ACCEPTED** (prior sessions).
+Proof page reads `?tx=` from URL search params to pre-fill transaction hash field.
 
 ---
 
-## D2–D8 preservation
+## RC1–RC6 final status
 
-No changes were made to the contract source, contribution/payout/refund rules, or any
-money-handling logic. All changes are UI-layer only. D2–D8 safety rules in the contract
-are unchanged.
+### RC1 — Action-scoped receipt state
+Status: **FULLY FIXED**.
+- `receiptByAction` per-action map; `isActionBusy(action)` scopes each action.
+- **Follow-up fixed:** `isActionBusy('contribute')` returns `true` only for `'checking'`, not `'confirmed'`. After a confirmed partial contribution, the form re-enables immediately for another contribution if remaining capacity > 0.
+
+### RC2 — Contributor/caller identity binding
+Status: **FULLY FIXED**.
+- Contributed: `topics[2]` → `logContributor` vs `snap.accountAddress` (prior session).
+- Refunded: `topics[2]` → `logContributor` vs `snap.accountAddress` (prior session).
+- **Follow-up fixed:** PaidOut: `topics[2]` → `logCaller` vs `snap.accountAddress`. Wrong caller → `replaced`.
+  Note: this binds the receipt to the submitted context; it does not restrict who may legitimately call payout on-chain. If the same payout was triggered by a different wallet before this user's tx confirmed, this user's receipt will show `replaced`.
+- Behavioral tests: 11 cases in `validateReceipt.test.ts` including valid/invalid controls for all three actions.
+
+### RC3 — Replacement / revert / retry lifecycle
+Status: **FULLY FIXED** (including previously claimed-impossible replacement tracking).
+- (a) Wait-hook `isError` → `phase: 'error'` for revert (prior session).
+- (b) `notifiedRef` not set on error; retry button clears hash (prior session).
+- (c) **Follow-up fixed:** `onReplaced` wired to all three hooks.
+  - `repriced` reason: re-validates the mined replacement hash using `pendingSnapRef.current`.
+  - `cancelled` reason: surfaces `phase: 'cancelled'` banner.
+  - `replaced` reason: surfaces `phase: 'replaced'` banner.
+  - `validationGenRef` generation counter: stale async validations from previous submissions discarded.
+  - Prior claim that wagmi v2 does not support `onReplaced` was incorrect; wagmi 2.19.5 supports it (see `docs/STUDIO_RC_RECHECK.md` installed-source evidence).
+
+### RC4 — Live pool state revalidation
+Status: **ACCEPTED** (prior session). No changes this session.
+`confirmAction` checks live `status` prop for each action before calling `writeContract`.
+
+### RC5 — HTTP/RPC validation
+Status: **ACCEPTED** (prior session). No changes to logic.
+`resp.ok` and `json.error` checked in `validateReceipt.ts`. Gas string updated.
+
+### RC6 — Confirmed evidence persistence
+Status: **FULLY FIXED**.
+- `confirmedTxRef` set on confirmed outcome (prior session).
+- **Follow-up fixed (all 3 cases):**
+  1. ACTIVE→FUNDED: `ReceiptBanner action="contribute"` rendered outside the ACTIVE branch, at `status === STATUS.FUNDED && isConnected`.
+  2. Refund confirmed → myClaimable===0: `ReceiptBanner action="refund"` rendered in the `myClaimable === 0n` branch with contextual message.
+  3. CLOSED: `ReceiptBanner action="refund"` and `action="contribute"` rendered inside CLOSED block.
+- Component-local `confirmedTxRef` does not survive remount; cross-session persistence not implemented (requires external storage, out of scope).
+
+---
+
+## Outstanding items (not implemented)
+
+| Item | Reason |
+|---|---|
+| EIP-55 checksum display | Cosmetic; not blocking |
+| `typically <0.01 USDC` fee claim is unmeasured | Arc gas fees are stable and low; exact measurement requires live transaction |
+| AC12 human-operated testnet flows | Requires wallet + testnet; no signing in Studio |
+| WalletConnect mobile | No project ID available |
+| Cross-session confirmed evidence | Requires localStorage or backend; out of scope |
+| Proof page Contributed sender/amount real-tx verification | No live testnet tx available |

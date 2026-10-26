@@ -338,8 +338,9 @@ describe('RC1–RC6 regression — Pool.tsx source structure', () => {
     expect(code).not.toContain('receiptValidation.phase')
   })
 
-  it('RC2: validateReceipt checks contributor identity for Contributed event', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+  it('RC2: validateReceipt checks contributor identity for Contributed event (shared lib)', async () => {
+    // validateReceipt extracted to src/lib/validateReceipt.ts
+    const src = await import('../../../src/lib/validateReceipt?raw') as { default: string }
     const code = src.default
     // Must extract contributor from topics[2] and compare to snap.accountAddress
     expect(code).toContain('topics[2]')
@@ -347,6 +348,9 @@ describe('RC1–RC6 regression — Pool.tsx source structure', () => {
     // Must reject mismatched contributor
     expect(code).toContain('Contributed event contributor')
     expect(code).toContain('does not match submitting wallet')
+    // RC2 follow-up: PaidOut caller (topics[2]) must also be checked
+    expect(code).toContain('logCaller')
+    expect(code).toContain('PaidOut caller')
   })
 
   it('RC3: wait-hook errors surfaced; notifiedRef not set on error (retry allowed)', async () => {
@@ -376,8 +380,9 @@ describe('RC1–RC6 regression — Pool.tsx source structure', () => {
     expect(code).toContain('poolStateStale')
   })
 
-  it('RC5: validateReceipt checks resp.ok and JSON-RPC error field', async () => {
-    const src = await import('../../../src/pages/Pool?raw') as { default: string }
+  it('RC5: validateReceipt checks resp.ok and JSON-RPC error field (in shared lib)', async () => {
+    // validateReceipt was extracted to src/lib/validateReceipt.ts — check that module
+    const src = await import('../../../src/lib/validateReceipt?raw') as { default: string }
     const code = src.default
     // Must check HTTP transport success
     expect(code).toContain('resp.ok')
