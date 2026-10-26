@@ -385,11 +385,12 @@ describe('RC1 structural — contribute re-enable after confirmed', () => {
     expect(code).toContain("r.reason === 'cancelled'")
   })
 
-  it('RC3: Pool.tsx increments validationGenRef before new write (stale context prevention)', async () => {
+  it('RC3/RL1: Pool.tsx uses submissionIdRef for stale context prevention', async () => {
     const src = await import('../../../src/pages/Pool?raw') as { default: string }
     const code = src.default
-    expect(code).toContain('validationGenRef')
-    expect(code).toContain('validationGenRef.current !== gen')
+    // RL1: replaced validationGenRef with per-submission submissionIdRef
+    expect(code).toContain('submissionIdRef')
+    expect(code).toContain('submissionIdRef.current !== submissionId')
   })
 
   it('RC6: Pool.tsx renders ReceiptBanner at FUNDED state (contribution evidence survives ACTIVE→FUNDED)', async () => {
