@@ -1,5 +1,13 @@
 # Project log
 
+## October 26, 2026 — Independent RC1–RC6 recheck of 7467d1b
+
+- Pulled main first; local and GitHub HEAD 7467d1b51fc89c18e68c49ad57d6394153aad029. Read all five requested files in full.
+- Requested suite passed on first attempt: Forge 120/0/0, Vitest 52/0/0 without import timeout, bun run check exit 0 (oxlint 0 warnings/errors; tsc 0 errors).
+- Independent unchanged-production probes: 26 pass / 5 fail. Payout after contribution, contributor identity, live action status and HTTP/RPC checks repaired. Repeated partial contribution, payout caller identity and three evidence transitions still fail. Replacement tracking absent; installed wagmi v2 does support onReplaced, contrary to Studio report.
+- See docs/STUDIO_RC_RECHECK.md for findings, exact Studio prompt and docs/evidence/recheck-7467d1b for all logs/reproduction. No application, contract or Studio test source changed.
+- Browser/testnet wallet/hosting/mainnet checks and build rerun not performed. Documentation/evidence delivery only; no signing or force push.
+
 ## October 26, 2026 — Receipt/action validation of 9d75573
 
 - Pulled main first; GitHub/local input HEAD 9d755735f35a59d8874d453f31fa30b57a0340fd. Read all four requested inputs in full.

@@ -1,0 +1,73 @@
+{
+  "reviewedHead": "7467d1b51fc89c18e68c49ad57d6394153aad029",
+  "date": "2026-10-26",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "environment": "Windows; exact git archive; cached node_modules junction; package.json and bun.lock matched cached snapshot",
+  "versions": {
+    "node": "24.19.0",
+    "bun": "1.3.14",
+    "forge": "1.7.1",
+    "solc": "0.8.28",
+    "wagmi": "2.19.5",
+    "@wagmi/core": "2.22.1"
+  },
+  "forgeTotals": {
+    "passed": 120,
+    "failed": 0,
+    "skipped": 0
+  },
+  "vitest": {
+    "passed": 52,
+    "failed": 0,
+    "skipped": 0,
+    "files": 2,
+    "reportedDurationSeconds": 12.49
+  },
+  "independentProbes": {
+    "passed": 26,
+    "failed": 5,
+    "exitCode": 1,
+    "browser": false,
+    "wallet": false
+  },
+  "integrityChecks": [
+    {
+      "file": "src/pages/Pool.tsx",
+      "sha256LFNormalized": "999ea51dc1afec689a326120a681195f9ee0b57960d58c99b5b5c48aa152f57c",
+      "snapshotAndWorkingMatchCommit": true
+    },
+    {
+      "file": "src/lib/__tests__/verifyTx.test.ts",
+      "sha256LFNormalized": "857a2300646bac2296ecf7cb0a6dbd5a81d10a731f5bb2984858a903fba12f03",
+      "snapshotAndWorkingMatchCommit": true
+    },
+    {
+      "file": "src/lib/verifyTxLogic.ts",
+      "sha256LFNormalized": "d1f4b466a7f76002663c7e5914d4110c59612eb3314908806d4a6610eeedb90e",
+      "snapshotAndWorkingMatchCommit": true
+    },
+    {
+      "file": "package.json",
+      "sha256LFNormalized": "1d3eca51e8e790d2f41ae05ff4fc4c6b45e1958a4aee2f1f713bc3b3ef007628",
+      "snapshotAndWorkingMatchCommit": true
+    },
+    {
+      "file": "bun.lock",
+      "sha256LFNormalized": "15b658453e87b6de37019e4321cb144081166d4da8f5dfaabe093a0f97cc4618",
+      "snapshotAndWorkingMatchCommit": true
+    },
+    {
+      "file": "foundry.toml",
+      "sha256LFNormalized": "7f4ce227290d282c094bb686e1651ccea25600a0c7805713740da34de7661d5a",
+      "snapshotAndWorkingMatchCommit": true
+    }
+  ],
+  "notRun": [
+    "browser rendering and navigation",
+    "AC12 human-operated testnet wallet flows",
+    "signed replacement/revert scenarios",
+    "Vercel deployed-build verification",
+    "mainnet",
+    "bun run build (Studio claim not independently rerun this turn)"
+  ]
+}

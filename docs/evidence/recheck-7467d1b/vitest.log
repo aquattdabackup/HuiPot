@@ -1,0 +1,62 @@
+$ vitest run --reporter=verbose
+
+ RUN  v2.1.9 C:/Users/luong/HuiPot/.review/recheck-7467d1b/snapshot
+
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-1: PaidOut event=1 base unit, Transfer=1 base unit, target=1e18 → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-2: PaidOut with missing Arc Transfer evidence → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-3: PaidOut with wrong Transfer destination → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-4: PaidOut with wrong Transfer amount vs event → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-5: Refunded without Arc Transfer evidence → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — positive controls > PC-1: valid PaidOut → true
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — positive controls > PC-2: valid Refunded with movement → true
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — positive controls > PC-3: valid Contributed with inbound Transfer from correct sender → true
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-1: Contributed with no inbound Transfer evidence → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-2: Contributed with wrong inbound Transfer amount → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-3: Contributed with zero event amount → false (BigInt("0") > 0n fails)
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-4: Contributed with inbound Transfer from WRONG sender → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > reverted receipt → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > wrong contract target → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > no event found → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > wrong pool ID in log → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > PaidOut wrong recipient in log → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > Refunded with wrong Transfer destination → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > Refunded with wrong Transfer amount → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > PaidOut with correct Transfer but wrong event amount vs target → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > PaidOut with amountInLog null → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > Contributed with amountInLog null → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx does NOT export ActionPanel (it is a local function only — raw source check)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Landing page does NOT import useWriteContract (no write hooks in landing)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > verifyTxLogic exports computeOverallValid as a function (production path confirmed)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx uses currentChainId prop (not stored snapshot chainId) for pre-confirm validation
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx validates receipt event after isSuccess (no bare isSuccess success banner)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx review shows full addresses (not truncated)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx gas estimate is honest: wallet provides fee, no false estimability claim
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC1: payout button disable uses isActionBusy("payout"), not global receiptValidation
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC2: validateReceipt checks contributor identity for Contributed event
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC3: wait-hook errors surfaced; notifiedRef not set on error (retry allowed)
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC4: confirmAction re-validates pool status before submitting wallet write
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC5: validateReceipt checks resp.ok and JSON-RPC error field
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC6: confirmedTxRef persists confirmed hash outside transient action states
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "0,4" — comma must not be silently stripped to produce 4 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "1e3" — scientific notation must not be silently stripped to produce 13 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "-0.4" — minus sign must not be silently stripped to produce 0.4 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "+1.5" — plus sign
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "  " (whitespace-only) returns 0n — caller rejects zero
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "" (empty string) returns 0n — caller rejects zero
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "1.2.3" — multiple dots
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects ".5" — leading dot (no integer part)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "0.0000001" — 7 decimal places (max is 6)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.000001" — exactly 6 decimal places → 1 quantum (10^12 native)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.000000" — 6 trailing zeros → 0n
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "1" — 1 USDC → 10^18 native
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.4" → 0.4 USDC in native units
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "1.5" → 1.5 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "100" → 100 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects uint256-overflowing value
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "  1.5  " — trims whitespace
+
+ Test Files  2 passed (2)
+      Tests  52 passed (52)
+   Start at  15:13:46
+   Duration  12.49s (transform 243ms, setup 0ms, collect 6.48s, tests 121ms, environment 1ms, prepare 3.10s)
+

@@ -1,0 +1,20 @@
+[
+  {
+    "command": "forge test --summary --fuzz-seed 1",
+    "exitCode": 0,
+    "seconds": 71.01,
+    "log": "forge.log"
+  },
+  {
+    "command": "bun run test",
+    "exitCode": 0,
+    "seconds": 17.56,
+    "log": "vitest.log"
+  },
+  {
+    "command": "bun run check",
+    "exitCode": 0,
+    "seconds": 15.05,
+    "log": "check.log"
+  }
+]
