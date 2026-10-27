@@ -8,6 +8,13 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
+## Latest Studio delivery — PF1 + PF2 (commit a7a681f, pushed from f445be9)
+
+- **PF1:** Pool.tsx + Proof.tsx now distinguish not-found (ID above a successfully loaded count, or InvalidPoolId revert) from genuine transport failure. Network-error branch shows honest "Could not reach the network" + Retry (refetches both pool and count). Not-found branch shows "Pool not found". Stale count alone does not override a successfully loaded pool.
+- **PF2:** Create.tsx connect button replaced with `ConnectKitButton.Custom` rendering a `type="button"` so clicking it inside the form does not trigger submission or validation. `handleSubmit` also returns early when `!isConnected` as a second guard.
+- Tests: 13 new vitest cases in `src/lib/__tests__/publicFlow.test.ts` (PF1 Pool x5, PF1 Proof x3, PF2 x5).
+- All checks: oxlint 0/0, tsc 0, vitest 125/125, forge 120/120, build exit 0.
+
 ## Arc Studio build — milestone A + B + C (Oct 24 2026)
 
 - Contract: `contracts/HuiPotGoalPool.sol` — multi-pool, native USDC (18-decimal), nonpayable createPool, payable contribute, payout, claimRefund, ReentrancyGuard, 5-state machine, events.
