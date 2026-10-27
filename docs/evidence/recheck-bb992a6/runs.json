@@ -1,0 +1,32 @@
+[
+  {
+    "command": "forge test --summary --fuzz-seed 1",
+    "exitCode": 0,
+    "seconds": 90.41,
+    "log": "forge.log"
+  },
+  {
+    "command": "bun run test",
+    "exitCode": 0,
+    "seconds": 19.12,
+    "log": "vitest.log"
+  },
+  {
+    "command": "bun run check",
+    "exitCode": 1,
+    "seconds": 1.11,
+    "log": "check.log"
+  },
+  {
+    "command": "bun run build",
+    "exitCode": 0,
+    "seconds": 47.11,
+    "log": "build.log"
+  },
+  {
+    "command": "bun run typecheck",
+    "exitCode": 0,
+    "seconds": 10.19,
+    "log": "typecheck.log"
+  }
+]

@@ -28,7 +28,8 @@
 | `docs/STUDIO_RECEIPT_RECHECK.md` | Historical 9d75573 review and RC1-RC6 definitions; topic/bytecode evidence |
 | `docs/STUDIO_RC_RECHECK.md` | Historical 7467d1b review and follow-up definitions; its five failing cases pass at 68fa8be |
 | `src/lib/validateReceipt.ts` | Shared RPC receipt/action/identity validation extracted at 68fa8be, imported by Pool and validator tests |
-| `src/lib/actionLifecycle.ts` | Production submission lifecycle extracted at 9965d37; direct-module stale-context guard works, but Pool's mutable wrapper still needs originating-hash/context binding |
+| `src/lib/actionLifecycle.ts` | Production lifecycle extracted at 9965d37; bb992a6 adds registered-hash dispatch for replacement/success/retry; Pool wait-error effects still bypass hash/epoch binding |
+| `docs/STUDIO_HASH_DISPATCH_RECHECK.md` | bb992a6: prior SC1-D cases accepted, check fails unused parameter; remaining stale wait-error UI finding and evidence |
 | `docs/STUDIO_CALLBACK_DISPATCH_RECHECK.md` | 9965d37 validation: 120 Forge / 98 Vitest after startup retry / check pass; SC1-D component dispatch gap remains, with reproducible evidence and Studio prompt |
 | `docs/STUDIO_REPLACEMENT_RECHECK.md` | Historical 68fa8be RL1–RL3 findings; its 14 lifecycle cases pass at f00c80d |
 | `docs/STUDIO_SUBMISSION_CONTEXT_RECHECK.md` | f00c80d review: 120 Forge / 92 Vitest / check / build pass, late callback binding still open; actual public browser checkpoint |

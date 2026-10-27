@@ -1,0 +1,17 @@
+$ bun run lint && bun run typecheck
+$ oxlint src --deny-warnings
+
+  ! eslint(no-unused-vars): Parameter 'opts' is declared but never used.
+     ,-[src\lib\__tests__\lifecycle.test.ts:297:55]
+ 296 |     let callCount = 0
+ 297 |     vi.stubGlobal('fetch', vi.fn(async (_url: string, opts?: { body?: string }) => {
+     :                                                       ^^|^^
+     :                                                         `-- 'opts' is declared here
+ 298 |       callCount++
+     `----
+  help: Consider removing this parameter.
+
+Finished in 25ms on 24 files with 96 rules using 8 threads.
+Found 1 warning and 0 errors.
+error: script "lint" exited with code 1
+error: script "check" exited with code 1

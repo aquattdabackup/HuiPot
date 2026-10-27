@@ -1,0 +1,159 @@
+{
+  "sourceRevision": "bb992a6dfe15b1838d7570067f4ce055fcbadd35",
+  "scope": "Production callbacks/effects and shared validator with synthetic hooks and controlled asynchronous RPC; no browser/wallet/network",
+  "passed": 21,
+  "failed": 0,
+  "results": [
+    {
+      "name": "contribute: ordinary mined receipt confirms",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "payout: ordinary mined receipt confirms",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "refund: ordinary mined receipt confirms",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "contribute: repriced receipt survives wait-hook success before RPC resolution",
+      "pass": true,
+      "expected": "confirmed replacement hash",
+      "phase": "confirmed",
+      "successCalls": 1,
+      "requestedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "name": "payout: repriced receipt survives wait-hook success before RPC resolution",
+      "pass": true,
+      "expected": "confirmed replacement hash",
+      "phase": "confirmed",
+      "successCalls": 1,
+      "requestedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "name": "refund: repriced receipt survives wait-hook success before RPC resolution",
+      "pass": true,
+      "expected": "confirmed replacement hash",
+      "phase": "confirmed",
+      "successCalls": 1,
+      "requestedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "name": "contribute: fast replacement RPC positive control",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "payout: fast replacement RPC positive control",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "refund: fast replacement RPC positive control",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "cancelled: evidence links to actual mined replacement",
+      "pass": true,
+      "phase": "cancelled",
+      "successCalls": 0,
+      "expectedMinedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "links": [
+        "fixture://explorer/0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "replaced: evidence links to actual mined replacement",
+      "pass": true,
+      "phase": "replaced",
+      "successCalls": 0,
+      "expectedMinedHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "links": [
+        "fixture://explorer/0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "unmounted wallet/pool context discards pending validation",
+      "pass": true,
+      "expectedSuccessCalls": 0,
+      "actualSuccessCalls": 0
+    },
+    {
+      "name": "new submission invalidates prior pending validation control",
+      "pass": true,
+      "writes": 2,
+      "successCalls": 0
+    },
+    {
+      "name": "transient HTTP failure can retry same receipt",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "replacement callback delivered after unmount is ignored",
+      "pass": true,
+      "expectedRpcCalls": 0,
+      "startedRpc": 0,
+      "successCalls": 0
+    },
+    {
+      "name": "contribute: old stable wrapper after new submission rejected",
+      "pass": true,
+      "startedRpc": 0,
+      "successCalls": 0,
+      "phase": "idle"
+    },
+    {
+      "name": "payout: old stable wrapper after new submission rejected",
+      "pass": true,
+      "startedRpc": 0,
+      "successCalls": 0,
+      "phase": "idle"
+    },
+    {
+      "name": "refund: old stable wrapper after new submission rejected",
+      "pass": true,
+      "startedRpc": 0,
+      "successCalls": 0,
+      "phase": "idle"
+    },
+    {
+      "name": "old success effect cannot validate with latest context",
+      "pass": true,
+      "startedRpc": 0,
+      "successCalls": 0,
+      "phase": "idle"
+    },
+    {
+      "name": "direct production module: old context rejected after unmount",
+      "pass": true,
+      "oldFetches": 0,
+      "fetched": [],
+      "success": []
+    },
+    {
+      "name": "direct production module: old context rejected after new submission",
+      "pass": true,
+      "oldFetches": 0,
+      "fetched": [
+        "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ],
+      "success": [
+        "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ]
+    }
+  ]
+}

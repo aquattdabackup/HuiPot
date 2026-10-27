@@ -1,5 +1,13 @@
 # Project log
 
+## October 27, 2026 — bb992a6 hash dispatch validation
+
+- Pulled first; local/GitHub input HEAD bb992a6dfe15b1838d7570067f4ce055fcbadd35. Studio input was 139ed88; prior reviewed application was 9965d37. Read all six requested files in full.
+- Forge 120/0/0 exit 0; Vitest 105/0/0 exit 0; bun run check exit 1 (one unused opts parameter warning, --deny-warnings; chained typecheck not reached). Build exit 0 with chunk warnings; standalone bun run typecheck exit 0. No source changes or suppressed checks.
+- Prior independent probes now all pass: 31/31 receipt/action and 21/21 lifecycle, including four formerly failing SC1-D cases. Additional late wait-error probes: 3 pass / 3 fail; stale errors bypass hash/epoch dispatch and display an obsolete hash with an ineffective Retry button. Current errors remain retryable.
+- F02/F06/RC6 report descriptions corrected. Coverage is 21 behavioral module/dispatch-API tests + 4 structural, not mounted component coverage. Report/evidence/focused CK1 + SC1-E Studio handoff: docs/STUDIO_HASH_DISPATCH_RECHECK.md.
+- Only review documents/evidence and memory changed. Browser, testnet wallet, live replacement, mainnet, deployment and hosting changes not performed. No Studio job started.
+
 ## October 27, 2026 — 9965d37 callback dispatch validation
 
 - Pulled main first; local/GitHub input SHA 9965d379518c86fd2a1c7350aa47e19ff575ec9f. Read all six requested files in full. No source, contracts, dependencies or Studio tests changed.

@@ -1,0 +1,181 @@
+{
+  "inputSha": "bb992a6dfe15b1838d7570067f4ce055fcbadd35",
+  "sourceUnmodified": true,
+  "snapshotGeneratedBuildMetadataExcluded": [
+    "tsconfig.tsbuildinfo"
+  ],
+  "files": [
+    {
+      "path": "bun.lock",
+      "sha256GitBlob": "15b658453e87b6de37019e4321cb144081166d4da8f5dfaabe093a0f97cc4618"
+    },
+    {
+      "path": "contracts/HuiPotGoalPool.sol",
+      "sha256GitBlob": "ec2a7328725b14d4bb8ba9bb3c3a8e25ebba2fc846a365af014996765f963a25"
+    },
+    {
+      "path": "contracts/contract-metadata/HuiPotGoalPool.json",
+      "sha256GitBlob": "35284cedaaaeda0bb3e71ff993b765cd38f3cc23ab491db87090c6ddadfde065"
+    },
+    {
+      "path": "contracts/foundry.toml",
+      "sha256GitBlob": "24459ce5af7bbb9d6aa7270053f8e6b17630fe0f1e42dc5b93e5bcb254d6662a"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC01.t.sol",
+      "sha256GitBlob": "66b7549810c6082a9c9d1812846adc9e5111906d047ed620a0d2399010ebb945"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC02.t.sol",
+      "sha256GitBlob": "18ab3f657444c3e6ff2d3e1a939decbf3caaf45721cf5149ff58e5e68fbca883"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0304.t.sol",
+      "sha256GitBlob": "c99c14688ff108112febb79ebb6624b8aed4e9df17270c64df42f26d31a6a3b7"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0506.t.sol",
+      "sha256GitBlob": "7b144b73cd40c68da25a6b37221ef81185233aa0461ffbc7acded9ac44e4bd46"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC07.t.sol",
+      "sha256GitBlob": "0caae5e56c3653f8af0effc2d1086623e341778454b349ee33e1fe59de3d9dfd"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0809.t.sol",
+      "sha256GitBlob": "ea9ab647ac2f8c4e5220e0d2384ff114cafb17539e618d5e50cbefa9a1632cae"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.Base.t.sol",
+      "sha256GitBlob": "e09addfabc17fca0df89035df45efb0b3015ad022835e5037af1f55af0153620"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol",
+      "sha256GitBlob": "7aed50faaee46585241c538c68ccc185d09880975757227c0416a4d498eca98b"
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.R6.t.sol",
+      "sha256GitBlob": "f29fb205278702a944a0334363023d2cba4584abafb28e3be1e748ecc0f30747"
+    },
+    {
+      "path": "foundry.toml",
+      "sha256GitBlob": "7f4ce227290d282c094bb686e1651ccea25600a0c7805713740da34de7661d5a"
+    },
+    {
+      "path": "package.json",
+      "sha256GitBlob": "1d3eca51e8e790d2f41ae05ff4fc4c6b45e1958a4aee2f1f713bc3b3ef007628"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256GitBlob": "a1a353cc9ac56832533f62499854a76194d71cab0cf0465e9de291423b8177e2"
+    },
+    {
+      "path": "src/components/AppHeader.tsx",
+      "sha256GitBlob": "183570cd87bbab878395d3e8b6094f57b2ae6e42319eb2512e755fd3a3da56c9"
+    },
+    {
+      "path": "src/components/CommitmentNotice.tsx",
+      "sha256GitBlob": "504743cea8a4c41781c36e4927ce4b01ace11b7baf26611f5bb0b013b31a6208"
+    },
+    {
+      "path": "src/components/PoolCard.tsx",
+      "sha256GitBlob": "0bb7fa3e4e60b0fcb912e6e29b780ea5ca68c872a41f1527fceac12ffb1fdb4c"
+    },
+    {
+      "path": "src/components/WrongChainBanner.tsx",
+      "sha256GitBlob": "d0e15ba4dec0cbaf8673c1b7a09f08d2c784079698f7d7a5e54978f314d3a124"
+    },
+    {
+      "path": "src/config.ts",
+      "sha256GitBlob": "4a7708262ad7096e4aed58bdd232ec0595c03e62f22c4b094b746b1df0411578"
+    },
+    {
+      "path": "src/contract.ts",
+      "sha256GitBlob": "cf7153720c7eb6d05d760efceed13f1b4cb5cd56a9685c356a07ea86e4ee0ed0"
+    },
+    {
+      "path": "src/index.css",
+      "sha256GitBlob": "aec6e06fc3216c26c3b292b233d298a23be5cba1543895feed78b8912d04f55f"
+    },
+    {
+      "path": "src/lib/__tests__/lifecycle.test.ts",
+      "sha256GitBlob": "ddd48ce8f79f8fd0cd8d21ca34b92f4c0ea7332a08cb02252896cb2204245f4f"
+    },
+    {
+      "path": "src/lib/__tests__/parseProductAmount.test.ts",
+      "sha256GitBlob": "5d50a7aea97da3bfe15e39fbf740e7ad37eafce5ff8385e40612851687fbdc87"
+    },
+    {
+      "path": "src/lib/__tests__/validateReceipt.test.ts",
+      "sha256GitBlob": "6cdcd343295fd4c3f59bdde450f06acfa231cdb877affdcc050c801922fa5f66"
+    },
+    {
+      "path": "src/lib/__tests__/verifyTx.test.ts",
+      "sha256GitBlob": "536d94e06f3b7daeb1298423033c343e4786570aa1f792890118ee9c06463ed5"
+    },
+    {
+      "path": "src/lib/actionLifecycle.ts",
+      "sha256GitBlob": "cad6d70919ab099eb9eb3346d366385d66b94826d2d59c8fce43a1abb44e7083"
+    },
+    {
+      "path": "src/lib/share.ts",
+      "sha256GitBlob": "2e0133dfcbbd834a84f7f95a0af3c86ac42a40aafba2df32147e0881cb9fddee"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "sha256GitBlob": "758c2e28cee66f9c17082b075b7dce0affa5f4fb8e650254ab5e758e2b73e6f2"
+    },
+    {
+      "path": "src/lib/validateReceipt.ts",
+      "sha256GitBlob": "9d5f7d4e213166a3abfbbc266148db9ff7ba07398ae6969c1c0bacca08dc7501"
+    },
+    {
+      "path": "src/lib/verifyTxLogic.ts",
+      "sha256GitBlob": "d1f4b466a7f76002663c7e5914d4110c59612eb3314908806d4a6610eeedb90e"
+    },
+    {
+      "path": "src/main.tsx",
+      "sha256GitBlob": "3541f656d54f1de1d267f2959bc26abad17a40d18f15e759cff96ffee314a356"
+    },
+    {
+      "path": "src/pages/Create.tsx",
+      "sha256GitBlob": "7a056e17cbdd981508cf2140998482e542e3f10de5d92b0c192e88b13737e379"
+    },
+    {
+      "path": "src/pages/Explore.tsx",
+      "sha256GitBlob": "09259764a80acd896a315f688c73f8abb806c01f0d38861f738f82ed0a574647"
+    },
+    {
+      "path": "src/pages/Home.tsx",
+      "sha256GitBlob": "4482ebe78ecc21e992eac226645aceb9a3fc6c5a0af995b875db67458b252e04"
+    },
+    {
+      "path": "src/pages/Landing.tsx",
+      "sha256GitBlob": "82df0c7109f9c6a02b818ec97cdf3760c76d5d5de5cd3bdef991e4a7e0a91c0b"
+    },
+    {
+      "path": "src/pages/Pool.tsx",
+      "sha256GitBlob": "863456f34fad4ff2f7bff6221b6de66a6feeea5ee0dbacc72f09997fe36917fd"
+    },
+    {
+      "path": "src/pages/Proof.tsx",
+      "sha256GitBlob": "cdb1dfc386f6dea1acb9c72f2a8bb68dd94f08875377fdb365a3ec35b94cd600"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "sha256GitBlob": "f42f70b09f5616c722cfa8b6f3067a35cce4855a1c68531fa7a1679667d89e2c"
+    },
+    {
+      "path": "tsconfig.tsbuildinfo",
+      "sha256GitBlob": "9294f1906c58343769e4feede887151a5c6a00b93aca08a244d4d8a59d07e7af"
+    },
+    {
+      "path": "vercel.json",
+      "sha256GitBlob": "1959e2225107860b90cce8790ddee2a269b6eed676a3f9b2a8f22376be03bc86"
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256GitBlob": "bbbea4007879e616e9ab74982541c3deec9cb70366fde37f5fe5199f7d5d9b19"
+    }
+  ]
+}

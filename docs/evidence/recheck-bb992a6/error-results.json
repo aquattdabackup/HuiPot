@@ -1,0 +1,53 @@
+{
+  "sourceRevision": "bb992a6dfe15b1838d7570067f4ce055fcbadd35",
+  "scope": "Additional late-error component probes with synthetic hooks/RPC; not browser/mempool evidence",
+  "passed": 3,
+  "failed": 3,
+  "results": [
+    {
+      "name": "contribute: obsolete wait error leaves current phase unchanged",
+      "pass": false,
+      "before": "idle",
+      "after": "error",
+      "displayedHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "retryPresent": true,
+      "retryRpcCalls": 0
+    },
+    {
+      "name": "payout: obsolete wait error leaves current phase unchanged",
+      "pass": false,
+      "before": "idle",
+      "after": "error",
+      "displayedHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "retryPresent": true,
+      "retryRpcCalls": 0
+    },
+    {
+      "name": "refund: obsolete wait error leaves current phase unchanged",
+      "pass": false,
+      "before": "idle",
+      "after": "error",
+      "displayedHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "retryPresent": true,
+      "retryRpcCalls": 0
+    },
+    {
+      "name": "contribute: current wait error remains retryable",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "payout: current wait error remains retryable",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    },
+    {
+      "name": "refund: current wait error remains retryable",
+      "pass": true,
+      "phase": "confirmed",
+      "successCalls": 1
+    }
+  ]
+}
