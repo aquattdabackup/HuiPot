@@ -1,0 +1,129 @@
+{
+  "scope": "Real installed viem readContract with deterministic local transport; production ABI and classifier. No RPC or wallet used.",
+  "passed": 1,
+  "failed": 7,
+  "results": [
+    {
+      "name": "actual application ABI + actual viem readContract InvalidPoolId + unavailable count",
+      "expected": "not-found",
+      "actual": "network",
+      "pass": false,
+      "errorChain": [
+        {
+          "name": "ContractFunctionExecutionError"
+        },
+        {
+          "name": "ContractFunctionRevertedError",
+          "signature": "0x0afa7ee8",
+          "raw": "0x0afa7ee8"
+        },
+        {
+          "name": "AbiErrorSignatureNotFoundError",
+          "signature": "0x0afa7ee8"
+        },
+        {
+          "name": "CallExecutionError"
+        },
+        {
+          "name": "ExecutionRevertedError"
+        },
+        {
+          "name": "RpcRequestError"
+        },
+        {}
+      ],
+      "revertData": "0x0afa7ee8",
+      "abiHasError": false
+    },
+    {
+      "name": "probe-only positive control adding contract artifact error ABI",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true,
+      "errorChain": [
+        {
+          "name": "ContractFunctionExecutionError"
+        },
+        {
+          "name": "ContractFunctionRevertedError",
+          "errorName": "InvalidPoolId",
+          "raw": "0x0afa7ee8"
+        },
+        {
+          "name": "CallExecutionError"
+        },
+        {
+          "name": "ExecutionRevertedError"
+        },
+        {
+          "name": "RpcRequestError"
+        },
+        {}
+      ]
+    },
+    {
+      "name": "stale cached count zero refetching; requested pool still loading",
+      "expected": "loading",
+      "actual": "not-found",
+      "pass": false
+    },
+    {
+      "name": "stale cached count zero refetching; requested pool transport failure",
+      "expected": "network",
+      "actual": "not-found",
+      "pass": false
+    },
+    {
+      "name": "Pool: real viem error through production page",
+      "expected": "not-found",
+      "actual": "network",
+      "pass": false
+    },
+    {
+      "name": "Pool: real TanStack stale refetch state through production page",
+      "expected": "loading",
+      "actual": "not-found",
+      "pass": false,
+      "queryEvidence": {
+        "count": {
+          "data": "0",
+          "status": "success",
+          "isStale": true,
+          "isError": false,
+          "fetchStatus": "fetching"
+        },
+        "pool": {
+          "status": "pending",
+          "isLoading": true,
+          "fetchStatus": "fetching"
+        }
+      }
+    },
+    {
+      "name": "Proof: real viem error through production page",
+      "expected": "not-found",
+      "actual": "network",
+      "pass": false
+    },
+    {
+      "name": "Proof: real TanStack stale refetch state through production page",
+      "expected": "loading",
+      "actual": "not-found",
+      "pass": false,
+      "queryEvidence": {
+        "count": {
+          "data": "0",
+          "status": "success",
+          "isStale": true,
+          "isError": false,
+          "fetchStatus": "fetching"
+        },
+        "pool": {
+          "status": "pending",
+          "isLoading": true,
+          "fetchStatus": "fetching"
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,14 @@
 # Project log
 
+## October 28, 2026 — 41c68bd integration recheck and Studio handoff
+
+- Input 4bdbe60a8f0189c6f753d383dd2d3000708ac973; reviewed Studio output/local/GitHub main 41c68bd59b608e47d8185235b0b16c1a0e11070a. Pulled again before documentation delivery: already current.
+- Independent archived-source validation: Forge 120/0/0, Vitest 151/0/0, check/build exit 0. Both 29-case probe runs pass with unchanged expectations. 45-file source identity manifest retained.
+- Real viem + actual frontend ABI and real TanStack query-state probes reveal two remaining P2 gaps: undecoded InvalidPoolId without count and stale zero during refetch treated as current absence. Eight added assertions yield 1 pass / 7 fail across these two defects and a positive control.
+- PF1-A and PF2 remain accepted within tested scope. publicFlow.test.ts count corrected to 39 (29 classifier/smoke + 10 structural). Mounted DOM and live wallet checks not performed.
+- User requested proceeding: prepared STUDIO_PF1_INTEGRATION_RECHECK.md, STUDIO_PF1_INTEGRATION_FIX.md and evidence/recheck-41c68bd for existing-repository delivery. Portable probe copies rerun against reviewed source; no repeat full suite for docs-only edits.
+- No Studio job started or new project URL available. Continue the selected user-operated browser handoff; no token/setup repetition. No app/contract code edits, deployment, hosting changes or signatures.
+
 ## October 28, 2026 — a7a681f PF1/PF2 recheck and focused follow-up
 
 - Pulled first: 67ac7ea445fcaaa2a7c9cb41ea3ab8c7acc2946f; application fix a7a681f6025e1ca432cf7ea6f57e82f5574d60f3 follows f445be9. HEAD's additional change is AGENTS.md only.

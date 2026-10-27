@@ -8,17 +8,15 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — PF1 follow-up (input 4bdbe60, output TBD after push)
+## Latest independent checkpoint — 41c68bd PF1 follow-up
 
-- **PF1-A:** `classifyPoolQuery()` in `src/lib/poolQueryState.ts` — successfully loaded pool data always wins over any stale/failed count. A pool that loaded with valid data is never classified absent.
-- **PF1-B:** Count evidence accepted only when `countIsError=false` and `countFetchStatus!='paused'`. Retained-after-refetch-error zero is never treated as current absence proof.
-- **PF1-C:** `isInvalidPoolIdError()` traverses the viem/wagmi cause chain (up to 5 levels) looking for `.errorName='InvalidPoolId'` (synthetic probe format) or `.data.errorName='InvalidPoolId'` (real viem `ContractFunctionRevertedError`). Only `InvalidPoolId` triggers absence; all other reverts/transport failures remain retryable.
-- **PF1-D:** `poolFetchStatus='paused'` (TanStack offline/paused state) returns `'loading'`, not absent. The unreachable `!pool` fallback is replaced by explicit `if (!pool) return null` guard after `poolKind==='content'`.
-- Both Pool.tsx and Proof.tsx now import and call `classifyPoolQuery()` and branch on `poolKind`.
-- Adapted probe: `pf1-probe-adapted.cjs` at root — runs all 29 original cases with real `classifyPoolQuery` injected as module mock. Exit 0, 29/29 pass.
-- Tests: 43 new vitest cases in `src/lib/__tests__/publicFlow.test.ts` (PF1-A×3, PF1-B×5, PF1-C×7, PF1-D×3, acceptance matrix×10, source structure×7) + 5 PF2 preserved.
-- All checks: oxlint 0/0, tsc 0, vitest 151/151 pass, forge 120/120 pass, build exit 0.
-- PF2 (Create.tsx ConnectKitButton.Custom) unchanged and confirmed passing.
+- Input: `4bdbe60a8f0189c6f753d383dd2d3000708ac973`; Studio output: `41c68bd59b608e47d8185235b0b16c1a0e11070a`.
+- Independent validation: Forge 120/120, Vitest 151/151, check/build exit 0; both original/adapted page probes 29/29.
+- PF1-A is accepted at source/synthetic-page scope. Failed-refetch cached-zero, paused reads, Retry/recovery and invalid-ID cases pass. PF2 is unchanged and its five handler probes pass. Mounted browser/wallet acceptance remains open.
+- PF1 is NOT fully accepted: actual viem + frontend ABI cannot decode InvalidPoolId without count; stale zero count during an in-flight refetch still produces premature not-found on both pages. Additional probes: 1 pass / 7 fail across these two defects and a positive control.
+- publicFlow.test.ts contains 39 tests (29 production-classifier calls including smoke, 10 raw-source checks). Breakdown: A3/B5/C7/D3/matrix10/source-group6/PF2-5. It replaces 13 prior cases; 112 other cases + 39 = 151 total.
+- Studio's adapted instrument also adds default fetchStatus='fetching'; an independent import-only adaptation still passes all 29 unchanged expectations.
+- Read `docs/STUDIO_PF1_INTEGRATION_RECHECK.md`, then execute `docs/STUDIO_PF1_INTEGRATION_FIX.md` in Studio. Handoff prepared; not yet executed. Preserve all unrelated contract, lifecycle, receipt, hosting and wallet boundaries.
 
 ## Previous Studio delivery — PF1 + PF2 initial (commit a7a681f, pushed from f445be9)
 
