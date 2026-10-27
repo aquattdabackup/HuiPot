@@ -1,0 +1,16 @@
+Browser tab: 1, Title: "HuiPot — Goal Pool", URL: "https://hui-pot.vercel.app/pools/1/proof".
+1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/pools/1/proof
+	2 container root
+		3 container
+			4 link Description: HuiPot, Value: hui-pot.vercel.app/
+			5 text Arc Testnet
+			6 button (collapsed) Description: Open menu, Secondary Actions: Expand
+				7 image
+		8 container main-content
+			9 link Description: Back, Value: hui-pot.vercel.app/
+			10 heading Proof, Value: 1
+				11 text Proof
+			12 text Contract not deployed.
+		13 container Notifications alt+T
+
+The focused UI element is 1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/pools/1/proof

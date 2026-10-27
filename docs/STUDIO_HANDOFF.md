@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Current priority — October 27, 2026:** use [STUDIO_PUBLIC_FLOW_FIX.md](STUDIO_PUBLIC_FLOW_FIX.md) for PF1/PF2. The user redeployed; the public configuration warning is gone. Fix inconsistent absent-pool/RPC states and the confirmed Create wallet-button form submission. c3ae551 lifecycle checks are accepted; do not repeat setup or reopen those historical fixes. The available Studio browser is signed out; this exact request is prepared but not executed. All older milestone/visual status below is historical.
+
 **Current priority — October 25, 2026 functional completion:** user redirected work to competition fit and reliable functionality after the artwork integration at `37ee96c`. Follow [STUDIO_FUNCTIONAL_FIX.md](STUDIO_FUNCTIONAL_FIX.md) and [FUNCTIONAL_READINESS.md](FUNCTIONAL_READINESS.md). Fix public configuration/direct routes, real review steps, receipt/proof correctness and data recovery. Preserve the existing art; do not restart the visual work or setup. Mainnet and hosting-account actions retain their separate gates.
 
 **Latest visual task — October 25, 2026:** after the SVG revision `ffc04fb`, the user requested actual backgrounds matching the original concept. Read [STUDIO_ASSET_INTEGRATION.md](STUDIO_ASSET_INTEGRATION.md) and [production art inputs](design/assets/README.md) for the supplied assets and exact next execution prompt. Codex prepared artwork/documents only; Studio source integration is pending. Earlier task descriptions are history. Do not repeat setup or token requests.

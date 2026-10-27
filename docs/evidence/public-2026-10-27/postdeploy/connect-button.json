@@ -1,0 +1,8 @@
+{
+  "typeAttribute": null,
+  "effectiveType": "submit",
+  "insideForm": true,
+  "tag": "BUTTON",
+  "source": "Live DOM: Connect wallet to create on /create",
+  "observed": "Chooser opens and six validation errors appear on an empty disconnected form"
+}

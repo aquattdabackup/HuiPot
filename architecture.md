@@ -36,6 +36,7 @@
 | `docs/STUDIO_SUBMISSION_CONTEXT_RECHECK.md` | f00c80d review: 120 Forge / 92 Vitest / check / build pass, late callback binding still open; actual public browser checkpoint |
 | `docs/DEMO_RUNBOOK.md` | Demo steps, build-configuration prerequisite, human testnet flow and finish/submission gates |
 | `docs/LOG.md` | Decisions and actual execution evidence |
+| `docs/STUDIO_PUBLIC_FLOW_FIX.md` | PF1 pool read-error classification and PF2 Create wallet-button form submission; exact Studio fix/acceptance handoff |
 | `docs/STUDIO_HANDOFF.md` | Approved browser workflow for later Studio work |
 
 ## Invariants
@@ -49,6 +50,7 @@
 ## External Integrations and Unknowns
 - Arc Studio browser route and repo handoff are approved. Delivered source and logs are in GitHub; source/exports were independently reviewed. The real app-specific Studio permalink remains missing. See `docs/STUDIO_FIX_RECHECK.md` for current findings and evidence; do not treat test passes as app acceptance.
 - Competition live page is unverified; supplied text is the provisional planning source.
-- October 26 browser checkpoint: public landing payout/refund illustrations run, and /pools, /create, /pools/1, /pools/1/proof render (historical 404 no longer reproduced). Real flows remain gated; /pools/1 says VITE_HUIPOT_ADDRESS is not configured in the build. Public deployed SHA and Vercel settings unknown. See DEMO_RUNBOOK.md. No wallet/mainnet proof from this review.
+- October 27 post-deploy checkpoint: configuration warning absent on /create; direct routes render. Explore reports no pools, Pool #1 reports network error and Proof reports not found. Actual deployed SHA/env value and real wallet flows unverified. See PUBLIC_POSTDEPLOY_RECHECK.md and STUDIO_PUBLIC_FLOW_FIX.md.
+- Read-state caveat: getPool/getStatus reject nonexistent IDs via InvalidPoolId. Query error is not synonymous with network outage or absence. Create's ConnectKit button is inside a form; public DOM confirmed its implicit submit type causes validation on connection click (PF2).
 
 Last updated: October 27, 2026 (Asia/Ho_Chi_Minh).

@@ -1,0 +1,79 @@
+Browser tab: 1, Title: "HuiPot — Goal Pool", URL: "https://hui-pot.vercel.app/create".
+1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/create
+	2 container
+		3 container root
+			4 container
+				5 link Description: HuiPot, Value: hui-pot.vercel.app/
+				6 container App navigation
+					7 link Description: Explore pools, Value: hui-pot.vercel.app/pools
+					8 link Description: Create a pool, Value: hui-pot.vercel.app/create
+				9 text Arc Testnet
+				10 button Connect Wallet
+					11 text Connect Wallet
+			12 container main-content
+				13 link Description: Back to pools, Value: hui-pot.vercel.app/pools
+				14 heading Create a pool, Value: 1
+					15 text Create a pool
+				16 text Set a fixed goal, recipient, and deadline. Terms cannot be changed after creation.
+				17 container
+					18 heading Pool details, Value: 2
+						19 text Pool details
+					20 text Title
+					21 text field (settable) Title, ID: title
+					22 image
+					23 text Title is required. 0 /80 bytes Purpose
+					24 text entry area (settable) Purpose, ID: purpose
+					25 image
+					26 text Purpose is required. 0 /280 bytes Funding goal (USDC)
+					27 text field (settable) Funding goal (USDC), ID: target
+					28 text USDC
+					29 image
+					30 text Target amount is required. Fixed recipient address
+					31 text field (settable) Fixed recipient address, ID: recipient
+					32 image
+					33 text Recipient address is required. The full target will go to this address on successful payout. This cannot be changed later. Deadline (your local time)
+					34 date field (settable) Deadline date
+						35 container
+							36 stepper
+							37 stepper
+							38 stepper
+						39 pop up button Show date picker Show date picker
+					40 time field (settable) Description: Deadline time, Value: 12:00
+						41 container
+							42 stepper
+							43 stepper
+							44 stepper
+						45 pop up button Show time picker Show time picker
+					46 image
+					47 text Deadline date is required. Deadline must be 1 minute – 30 days from now.
+					48 image
+					49 text Contributions are locked. If the goal is reached before the deadline, anyone can send the full pool to the fixed recipient immediately. If the goal is not reached, you can claim your deposit after the deadline. Network fees are not refunded. The pool does not guarantee delivery of the stated purpose. If the fixed recipient cannot accept native USDC transfers, payout may fail and funds may be locked indefinitely. Verify the recipient address before contributing.
+					50 checkbox (settable, integer) Description: I acknowledge the terms, Value: 0
+					51 text I understand that pool terms and recipient cannot be changed after creation, and the pool cannot be cancelled.
+					52 image
+					53 text Please acknowledge the terms before creating.
+					54 button Connect wallet to create
+						55 text Connect wallet to create
+			56 container Notifications alt+T
+		57 container
+			58 container
+				59 container
+					60 button Close
+						61 image
+					62 button More Information
+					63 text Connect Wallet
+					64 container
+						65 button Continue with Aave
+							66 text Continue with Aave
+						67 text or select a wallet from the list below
+						68 container
+							69 button MetaMask
+								70 text MetaMask
+							71 button Coinbase Wallet
+								72 text Coinbase Wallet
+						73 container
+							74 image
+							75 text More Available
+						76 button I don’t have a wallet
+
+The focused UI element is 57 container

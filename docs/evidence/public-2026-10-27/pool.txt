@@ -1,0 +1,14 @@
+Browser tab: 1, Title: "HuiPot — Goal Pool", URL: "https://hui-pot.vercel.app/pools/1".
+1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/pools/1
+	2 container root
+		3 container
+			4 link Description: HuiPot, Value: hui-pot.vercel.app/
+			5 text Arc Testnet
+			6 button (collapsed) Description: Open menu, Secondary Actions: Expand
+				7 image
+		8 container main-content
+			9 text Deployment not configured — set VITE_HUIPOT_ADDRESS in the build environment.
+			10 link Description: Back to pools, Value: hui-pot.vercel.app/pools
+		11 container Notifications alt+T
+
+The focused UI element is 1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/pools/1

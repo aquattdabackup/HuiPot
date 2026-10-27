@@ -1,0 +1,50 @@
+Browser tab: 1, Title: "HuiPot — Goal Pool", URL: "https://hui-pot.vercel.app/create".
+1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/create
+	2 container root
+		3 container
+			4 link Description: HuiPot, Value: hui-pot.vercel.app/
+			5 container App navigation
+				6 link Description: Explore pools, Value: hui-pot.vercel.app/pools
+				7 link Description: Create a pool, Value: hui-pot.vercel.app/create
+			8 text Arc Testnet
+			9 button Connect Wallet
+				10 text Connect Wallet
+		11 container main-content
+			12 link Description: Back to pools, Value: hui-pot.vercel.app/pools
+			13 heading Create a pool, Value: 1
+				14 text Create a pool
+			15 text Set a fixed goal, recipient, and deadline. Terms cannot be changed after creation.
+			16 container
+				17 heading Pool details, Value: 2
+					18 text Pool details
+				19 text Title
+				20 text field (settable) Title, ID: title
+				21 text 0 /80 bytes Purpose
+				22 text entry area (settable) Purpose, ID: purpose
+				23 text 0 /280 bytes Funding goal (USDC)
+				24 text field (settable) Funding goal (USDC), ID: target
+				25 text USDC Fixed recipient address
+				26 text field (settable) Fixed recipient address, ID: recipient
+				27 text The full target will go to this address on successful payout. This cannot be changed later. Deadline (your local time)
+				28 date field (settable) Deadline date
+					29 container
+						30 stepper
+						31 stepper
+						32 stepper
+					33 pop up button Show date picker Show date picker
+				34 time field (settable) Description: Deadline time, Value: 12:00
+					35 container
+						36 stepper
+						37 stepper
+						38 stepper
+					39 pop up button Show time picker Show time picker
+				40 text Deadline must be 1 minute – 30 days from now.
+				41 image
+				42 text Contributions are locked. If the goal is reached before the deadline, anyone can send the full pool to the fixed recipient immediately. If the goal is not reached, you can claim your deposit after the deadline. Network fees are not refunded. The pool does not guarantee delivery of the stated purpose. If the fixed recipient cannot accept native USDC transfers, payout may fail and funds may be locked indefinitely. Verify the recipient address before contributing.
+				43 checkbox (settable, integer) Description: I acknowledge the terms, Value: 0
+				44 text I understand that pool terms and recipient cannot be changed after creation, and the pool cannot be cancelled.
+				45 button Connect wallet to create
+					46 text Connect wallet to create
+		47 container Notifications alt+T
+
+The focused UI element is 1 AXWebArea HuiPot — Goal Pool, URL: hui-pot.vercel.app/create

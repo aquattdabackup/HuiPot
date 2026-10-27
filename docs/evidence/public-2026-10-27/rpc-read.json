@@ -1,0 +1,8 @@
+{
+  "checkedAtUTC": "2026-10-27T06:42:15.294429+00:00",
+  "rpc": "https://rpc.testnet.arc.io",
+  "contract": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+  "readOnly": true,
+  "priorRestrictedAttempt": "DNS resolution failed",
+  "error": "HTTP Error 403: Forbidden"
+}

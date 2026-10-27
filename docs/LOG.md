@@ -1,5 +1,12 @@
 # Project log
 
+## October 27, 2026 — public configuration gate cleared; PF1/PF2 handoff
+
+- User reported redeployment. Public /create no longer shows the configuration warning; direct routes render. Actual deployed SHA/env value remain unverified. See PUBLIC_POSTDEPLOY_RECHECK.md (80d4778).
+- Pulled main before follow-up; input 80d4778f2da5144d060d51e6f163dcf75c9ae8e6. Confirmed Create's wallet connection button has no type attribute, effective type submit, and belongs to the form. Clicking it on a fresh disconnected form opens the chooser and triggers six validation messages. No wallet selected or transaction submitted.
+- PF1: Pool and Proof classify missing-pool/query failures inconsistently; contract uses InvalidPoolId. PF2: connection control and disconnected submit boundary need correction. Exact Studio prompt and acceptance cases: STUDIO_PUBLIC_FLOW_FIX.md.
+- Studio browser session shows Sign in/Sign up; no project accessible and no job started. Continue the selected manual browser handoff without setup/token repetition. Codex changed documentation/evidence only; prior automated results are not new test runs.
+
 ## October 27, 2026 — c3ae551 CK1 / SC1-E accepted
 
 - Pulled first; local/GitHub HEAD c3ae551f1ca541de415b75e4d2718b5b3cc73781. Studio input was 9aecf5739f67b05223809f23e4e1f74dc2ca626c. Read AGENTS.md and the Studio fix report in full and inspected all changed source/test sections.

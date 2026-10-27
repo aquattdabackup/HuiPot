@@ -1,6 +1,6 @@
 # HuiPot demo and finish checklist
 
-Status checked October 26, 2026 (Asia/Ho_Chi_Minh). Source reviewed: f00c80da0168afacd136b1c8f0cf44e077952888. See [current review](STUDIO_SUBMISSION_CONTEXT_RECHECK.md).
+Updated October 27, 2026 (Asia/Ho_Chi_Minh). Validated source: c3ae551f1ca541de415b75e4d2718b5b3cc73781; public follow-up input: 80d4778f2da5144d060d51e6f163dcf75c9ae8e6. See [source review](STUDIO_ERROR_DISPATCH_RECHECK.md), [public observations](PUBLIC_POSTDEPLOY_RECHECK.md) and [PF1/PF2 Studio handoff](STUDIO_PUBLIC_FLOW_FIX.md). Actual public deployment SHA remains unverified.
 
 ## What works and what “finished” means
 
@@ -9,19 +9,19 @@ HuiPot pools native USDC for a fixed goal, deadline and recipient. Reaching the 
 | Level | Current status | Finish condition |
 | --- | --- | --- |
 | Illustrative presentation | Both landing walkthroughs run successfully | Can explain payout/refund without a wallet; explicitly label all receipts illustrative |
-| Automated source validation | 120 Forge / 92 Vitest / check / build pass; 45 prior independent cases pass | Studio fixes the two late-callback cases and adds production-path coverage |
-| Public testnet demo | Blocked by VITE_HUIPOT_ADDRESS build configuration gate | Correct public build, working reads, human-signed golden flow/refund/Proof and recorded receipts |
+| Automated source validation | 120 Forge / 112 Vitest / check / build pass; independent 31 receipt + 21 lifecycle + 6 error cases pass | Accepted lifecycle cases preserved; new PF1/PF2 fixes independently reviewed |
+| Public testnet demo | Configuration warning gone after user redeployment; form and wallet chooser open; no signed flows verified | Correct read/error states, human-signed golden flow/refund/Proof and recorded receipts |
 | Competition submission | Not complete | Live requirements/eligibility confirmation, Studio project provenance, required mainnet USDC proof, video and submission artifacts; human approval for funds and submission |
 
 The supplied competition text requires mainnet USDC evidence. A testnet demo does not satisfy that requirement. Current mainnet availability, rules and eligibility must be reconfirmed before that separate phase; do not reuse the testnet address on another chain.
 
 Planning estimate after the code/configuration blockers are actually resolved: allow **30–60 minutes for one guided testnet acceptance session**, including preparing the failed-goal pool first so its deadline runs while testing the successful goal. This is a scheduling allowance, not a completion promise. Wallet/network delays and fixes can extend it. No reliable final submission date can be given before the remaining gates are checked.
 
-## Fix the public build configuration first
+## Public configuration checkpoint
 
-The observed public app is https://hui-pot.vercel.app. `/pools`, `/create`, `/pools/1` and `/pools/1/proof` now render, but real functionality is gated. Do not redeploy a contract merely because the UI says “Contract not deployed.”
+The public app is https://hui-pot.vercel.app. After user-reported redeployment on October 27, /create no longer shows the configuration warning. Direct routes render; the wallet chooser opens. Do not repeat configuration or redeploy a contract merely because older evidence says it was missing. Exact Vercel revision/value are still unverified. PF1/PF2 are separately open.
 
-The hosting account owner should configure the HuiPot Vercel project's build environment with:
+If the configuration gate returns, the expected public build variable is:
 
 ```text
 VITE_HUIPOT_ADDRESS=0x81a139599d252eb2dc2bbb6c267e911a21264288
@@ -64,8 +64,8 @@ Record a concise walkthrough: product problem → fixed terms → contribution �
 
 ## Remaining gates
 
-- Studio: SC1 callback binding and production-path regressions; preserve accepted fixes.
-- Hosting owner: build-time address and fresh deployment; verify deployed revision and routes.
+- Studio: PF1 read-error/nonexistence classification and PF2 connection-button/disconnected-submit behavior, with production-path regressions; preserve accepted lifecycle fixes.
+- Hosting: configuration gate is visibly cleared; still record exact deployed revision/address and verify a real pool read. No repeat redeployment is required solely by this checklist.
 - Human + reviewer: testnet signing session, receipts/Proof, multi-wallet and deadline behavior, measured fees; WalletConnect mobile only when configured.
 - Submission phase: confirm current program requirements, funding eligibility, authentic Studio project URL, mainnet route/budget/signatures, public builder profile, final video and submission approval.
 
