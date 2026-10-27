@@ -94,6 +94,14 @@ export interface ActionLifecycle {
   dispatchRetry: (txHash: string) => void
 
   /**
+   * SC1-E: stable dispatch for wait-hook errors.
+   * Looks up the context registered for txHash and checks epoch before
+   * calling setPhase(error). Rejects stale hashes silently.
+   * Called by Pool.tsx wait-error useEffects instead of setPhase directly.
+   */
+  dispatchError: (txHash: string, message: string) => void
+
+  /**
    * Build onReplaced handler bound to a specific context.
    * Used internally by dispatchOnReplaced; also exported for direct-module tests.
    */
@@ -233,6 +241,16 @@ export function makeActionLifecycle(
     void runReceiptValidation(txHash, ctx)
   }
 
+  function dispatchError(txHash: string, message: string): void {
+    // SC1-E: guard — only update state if hash belongs to the current epoch
+    const ctx = hashToCtx.get(txHash)
+    if (!ctx) return
+    if (epoch !== ctx.submissionId) return
+    callbacks.setPhase(ctx.snap.action, {
+      phase: 'error', txHash, message, retryable: true,
+    })
+  }
+
   return {
     beginSubmission,
     registerHash,
@@ -241,6 +259,7 @@ export function makeActionLifecycle(
     dispatchOnReplaced,
     dispatchSuccess,
     dispatchRetry,
+    dispatchError,
     makeOnReplaced,
   }
 }

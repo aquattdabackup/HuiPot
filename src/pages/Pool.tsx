@@ -137,36 +137,35 @@ function ActionPanel({
     onReplaced: onRefundReplaced as WagmiOnReplaced,
   })
 
-  // RC3: surface wait-hook errors (revert path)
+  // RC3/SC1-E: surface wait-hook errors (revert path).
+  // Route through lifecycle.dispatchError so the hash/epoch guard rejects
+  // late error signals from a prior submission before they update state.
   useEffect(() => {
-    if (contribWaitError && contribHash && currentCtxRef.current?.snap.action === 'contribute') {
-      setPhase('contribute', {
-        phase: 'error', txHash: contribHash,
-        message: contribWaitErr instanceof Error ? contribWaitErr.message : 'Transaction reverted or could not be confirmed.',
-        retryable: true,
-      })
+    if (contribWaitError && contribHash) {
+      lifecycle.dispatchError(
+        contribHash,
+        contribWaitErr instanceof Error ? contribWaitErr.message : 'Transaction reverted or could not be confirmed.',
+      )
     }
-  }, [contribWaitError, contribHash, contribWaitErr])
+  }, [contribWaitError, contribHash, contribWaitErr, lifecycle])
 
   useEffect(() => {
-    if (payoutWaitError && payoutHash && currentCtxRef.current?.snap.action === 'payout') {
-      setPhase('payout', {
-        phase: 'error', txHash: payoutHash,
-        message: payoutWaitErr instanceof Error ? payoutWaitErr.message : 'Transaction reverted or could not be confirmed.',
-        retryable: true,
-      })
+    if (payoutWaitError && payoutHash) {
+      lifecycle.dispatchError(
+        payoutHash,
+        payoutWaitErr instanceof Error ? payoutWaitErr.message : 'Transaction reverted or could not be confirmed.',
+      )
     }
-  }, [payoutWaitError, payoutHash, payoutWaitErr])
+  }, [payoutWaitError, payoutHash, payoutWaitErr, lifecycle])
 
   useEffect(() => {
-    if (refundWaitError && refundHash && currentCtxRef.current?.snap.action === 'refund') {
-      setPhase('refund', {
-        phase: 'error', txHash: refundHash,
-        message: refundWaitErr instanceof Error ? refundWaitErr.message : 'Transaction reverted or could not be confirmed.',
-        retryable: true,
-      })
+    if (refundWaitError && refundHash) {
+      lifecycle.dispatchError(
+        refundHash,
+        refundWaitErr instanceof Error ? refundWaitErr.message : 'Transaction reverted or could not be confirmed.',
+      )
     }
-  }, [refundWaitError, refundHash, refundWaitErr])
+  }, [refundWaitError, refundHash, refundWaitErr, lifecycle])
 
   // SC1-D: register hash → ctx when the write hash first becomes available.
   // This must happen before isSuccess fires so dispatchSuccess can route by hash.

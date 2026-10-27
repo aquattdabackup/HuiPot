@@ -1,7 +1,7 @@
 # HuiPot Functional Fix Report
 
 Studio output commit: *(see commit message for exact SHA)*
-Input commit for this session: **139ed88** (docs: verify 9965d37 and isolate stale callback dispatch)
+Input commit for this session: **9aecf57** (docs: recheck bb992a6 hash dispatch and add error probe evidence)
 
 ---
 
@@ -9,8 +9,8 @@ Input commit for this session: **139ed88** (docs: verify 9965d37 and isolate sta
 
 | Command | Exit | Result |
 |---|---|---|
-| `bash /home/user/arc-studio-helpers/check.sh` | 0 | oxlint 0, tsc 0 |
-| `bun run test` | 0 | **105/105 pass** (4 files, ~1.6s) |
+| `bash /home/user/arc-studio-helpers/check.sh` | 0 | oxlint 0/0, tsc 0 |
+| `bun run test` | 0 | **112/112 pass** (4 files) |
 | `forge test --summary --fuzz-seed 1` | 0 | **120/120 pass** |
 | `bun run build` | 0 | dist generated |
 
@@ -20,9 +20,9 @@ Test count breakdown:
 |---|---|---|
 | `verifyTx.test.ts` | 35 | Predicate + structural |
 | `parseProductAmount.test.ts` | 17 | Parser regressions |
-| `validateReceipt.test.ts` | 28 | Behavioral receipt validation (22 behavioral + 6 structural) |
-| `lifecycle.test.ts` | 25 | RL1×4 + SC1-D×7 + SC1×3 + RL2×4 + RL3×3 + scope×3 + retry×1 |
-| **Total** | **105** | |
+| `validateReceipt.test.ts` | 28 | 22 behavioral + 6 structural. Note: the Codex review instruments have 31 separate receipt-probe cases; that count refers to those probes, not to this file. |
+| `lifecycle.test.ts` | 32 | RL1×4 + SC1-D×7 + SC1-E×7 + SC1×3 + RL2×4 + RL3×3 + scope×3 + retry×1 |
+| **Total** | **112** | |
 
 Not run: browser rendering, signed testnet transactions, AC12 human-operated flows,
 live replacement scenario, Vercel deployment verification, multi-wallet/mobile.
@@ -53,8 +53,8 @@ Status: **ACCEPTED** with all follow-up fixes applied.
   `typically <0.01 USDC` is unmeasured; EIP-55 display not added.
 
 ### F04 — Receipt validation
-Status: **ACCEPTED** with all follow-up fixes applied (including RC1–RC6, RL1–RL3, SC1, SC1-D).
-See RC3/SC1/SC1-D sections below.
+Status: **ACCEPTED** with all follow-up fixes applied (including RC1–RC6, RL1–RL3, SC1, SC1-D, SC1-E).
+See RC3/SC1/SC1-D/SC1-E sections below.
 
 ### F05 — Proof verification
 Status: **ACCEPTED** (prior sessions).
@@ -84,8 +84,8 @@ Status: **ACCEPTED**.
 All three actions bind contributor/caller via topics[2]; 22 behavioral tests in validateReceipt.test.ts.
 
 ### RC3 — Replacement / revert / retry lifecycle
-Status: **ACCEPTED** (base + RC follow-up + RL1–RL3 + SC1 + SC1-D).
-See RL1–RL3 and SC1/SC1-D sections below.
+Status: **ACCEPTED** (base + RC follow-up + RL1–RL3 + SC1 + SC1-D + SC1-E).
+See RL1–RL3 and SC1/SC1-D/SC1-E sections below.
 
 ### RC4 — Live pool state revalidation
 Status: **ACCEPTED**.
@@ -135,7 +135,7 @@ Status: **FIXED** (9965d37).
 Post-unmount and post-new-submission late deliveries are rejected before fetch/state change.
 
 ### SC1-D — Old hash event dispatched to newest handler (HIGH)
-Status: **FIXED** (this revision).
+Status: **FIXED** (bb992a6).
 
 Root cause: Pool.tsx stable wrappers (`onContribReplaced = (r) => onContribReplacedRef.current(r)`)
 read the current per-action handler ref at dispatch time. After a second same-action submission,
@@ -166,6 +166,26 @@ Regression tests (7 new SC1-D tests in lifecycle.test.ts, using dispatchOnReplac
 - SC1-D-UNKNOWN: unregistered hash silently ignored
 - SC1-D-RETRY: `dispatchRetry` re-runs validation after transient error
 
+### SC1-E — Stale wait-hook errors update current action (MEDIUM)
+Status: **FIXED** (this revision).
+
+Root cause: Pool.tsx wait-error effects (RC3) called `setPhase` directly, guarded only by
+`currentCtxRef.current?.snap.action`. A late wait-error from an older same-action submission
+(hash A, epoch 1) arrived after a newer submission (epoch 2). The action guard passed (same
+action name), so `setPhase` wrote an error for A's hash onto the current action's phase, displaying
+a stale error and an ineffective Retry button (retry correctly rejected A's stale ctx, starting zero RPCs).
+
+Fix: `actionLifecycle.ts` adds `dispatchError(txHash, message)`. It looks up `hashToCtx.get(txHash)`,
+checks `epoch !== ctx.submissionId`, and rejects stale hashes before `setPhase`. Pool.tsx wait-error
+effects now call `lifecycle.dispatchError(hash, message)` for all three actions.
+
+Regression tests (7 SC1-E tests, all using `dispatchError`):
+- SC1-E-CONTRIB, SC1-E-PAYOUT, SC1-E-REFUND: stale error from old submission silently ignored
+- SC1-E-CURRENT: current-hash error correctly displayed (positive control)
+- SC1-E-RETRY: `dispatchRetry` after `dispatchError` confirms (positive control)
+- SC1-E-UNKNOWN: unregistered hash silently ignored
+- SC1-E-STRUCT: structural check — Pool.tsx calls `lifecycle.dispatchError`, does not inline setPhase
+
 ---
 
 ## Lifecycle test coverage
@@ -174,15 +194,17 @@ Regression tests (7 new SC1-D tests in lifecycle.test.ts, using dispatchOnReplac
 |---|---|
 | 4 | RL1 behavioral (direct-module API) |
 | 7 | SC1-D (component-path dispatch: all 3 actions, late success, retry, unknown, control) |
+| 7 | SC1-E (component-path dispatchError: 3 stale-error negatives, 3 current/retry positives, 1 structural) |
 | 3 | SC1 post-unmount/post-new-submission (direct-module + dispatch path) |
 | 4 | RL2 (2 behavioral + 2 structural) |
 | 3 | RL3 (1 behavioral + 2 structural) |
 | 3 | account/pool/amount scope |
 | 1 | Retry (direct-module) |
-| **25** | **Total lifecycle** |
+| **32** | **Total lifecycle** |
 
 Limitations: no chain-switch lifecycle scenario; no mounted React/wagmi browser test; no
-live mempool replacement.
+live mempool replacement. The 31-probe count referenced in recheck docs refers to the Codex
+review instrument (separate receipt-probes.cjs), not to validateReceipt.test.ts (28 tests).
 
 ---
 

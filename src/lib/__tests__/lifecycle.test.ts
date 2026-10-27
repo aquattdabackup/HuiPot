@@ -294,7 +294,7 @@ describe('SC1-D — component-path: old hash events rejected after new submissio
 
   it('SC1-D-RETRY: dispatchRetry re-runs validation for the registered hash', async () => {
     let callCount = 0
-    vi.stubGlobal('fetch', vi.fn(async (_url: string, opts?: { body?: string }) => {
+    vi.stubGlobal('fetch', vi.fn(async () => {
       callCount++
       const result = callCount < 2
         ? { ok: false, status: 500, json: async () => ({}) }  // first call fails
@@ -313,6 +313,116 @@ describe('SC1-D — component-path: old hash events rejected after new submissio
     lc.dispatchRetry(HASH_A)
     await waitFor(() => successes.length > 0)
     expect(successes).toEqual([HASH_A])
+  })
+
+})
+
+// ─── SC1-E — stale wait-hook errors rejected by dispatchError ─────────────────
+//
+// Pool.tsx wait-error effects previously called setPhase directly, guarded only
+// by currentCtxRef.current.snap.action. A late wait-error from an older same-action
+// submission would bypass the hash/epoch guard and overwrite the current phase.
+//
+// Fix: wait-error effects call lifecycle.dispatchError(hash, message). That method
+// looks up hash → ctx, checks epoch, and rejects stale hashes before setPhase.
+
+describe('SC1-E — stale wait-error rejected by dispatchError', () => {
+
+  it('SC1-E-CONTRIB: stale contrib error after new submission is rejected', () => {
+    const { lc, phases } = makeTestLifecycle()
+
+    // Submission A
+    const ctx1 = lc.beginSubmission(baseSnap)
+    lc.registerHash(HASH_A, ctx1)
+
+    // Submission C (same action — advances epoch, ctx1 is now stale)
+    const ctx2 = lc.beginSubmission(baseSnap)
+    lc.registerHash(HASH_C, ctx2)
+
+    // Late wait-error for HASH_A (old submission)
+    lc.dispatchError(HASH_A, 'late revert')
+
+    // Must not update current phase — HASH_A's epoch is stale
+    expect(lastPhase(phases, 'contribute')).toBeUndefined()
+  })
+
+  it('SC1-E-PAYOUT: stale payout error after new payout submission is rejected', () => {
+    const payoutSnap: ReceiptSnapshot = { ...baseSnap, action: 'payout' }
+    const { lc, phases } = makeTestLifecycle()
+
+    const ctx1 = lc.beginSubmission(payoutSnap)
+    lc.registerHash(HASH_A, ctx1)
+
+    const ctx2 = lc.beginSubmission(payoutSnap)
+    lc.registerHash(HASH_C, ctx2)
+
+    lc.dispatchError(HASH_A, 'late revert')
+    expect(lastPhase(phases, 'payout')).toBeUndefined()
+  })
+
+  it('SC1-E-REFUND: stale refund error after new refund submission is rejected', () => {
+    const refundSnap: ReceiptSnapshot = { ...baseSnap, action: 'refund' }
+    const { lc, phases } = makeTestLifecycle()
+
+    const ctx1 = lc.beginSubmission(refundSnap)
+    lc.registerHash(HASH_A, ctx1)
+
+    const ctx2 = lc.beginSubmission(refundSnap)
+    lc.registerHash(HASH_C, ctx2)
+
+    lc.dispatchError(HASH_A, 'late revert')
+    expect(lastPhase(phases, 'refund')).toBeUndefined()
+  })
+
+  it('SC1-E-CURRENT: current submission error is displayed (positive control)', () => {
+    const { lc, phases } = makeTestLifecycle()
+
+    const ctx = lc.beginSubmission(baseSnap)
+    lc.registerHash(HASH_A, ctx)
+
+    lc.dispatchError(HASH_A, 'current revert')
+
+    const p = lastPhase(phases, 'contribute') as { phase: string; txHash: string; message: string } | undefined
+    expect(p?.phase).toBe('error')
+    expect(p?.txHash).toBe(HASH_A)
+    expect(p?.message).toBe('current revert')
+  })
+
+  it('SC1-E-RETRY: after dispatchError, dispatchRetry re-runs validation (positive control)', async () => {
+    stubFetchMap(new Map([[HASH_A, validReceiptFor(ACCOUNT_A)]]))
+    const { lc, phases, successes } = makeTestLifecycle()
+
+    const ctx = lc.beginSubmission(baseSnap)
+    lc.registerHash(HASH_A, ctx)
+
+    // Deliver error first
+    lc.dispatchError(HASH_A, 'temp revert')
+    expect(lastPhase(phases, 'contribute')?.phase).toBe('error')
+    expect(successes).toHaveLength(0)
+
+    // Retry via dispatch — should confirm
+    lc.dispatchRetry(HASH_A)
+    await waitFor(() => successes.length > 0)
+    expect(successes).toEqual([HASH_A])
+  })
+
+  it('SC1-E-UNKNOWN: dispatchError for unregistered hash is ignored', () => {
+    const { lc, phases } = makeTestLifecycle()
+    lc.beginSubmission(baseSnap)
+
+    lc.dispatchError(HASH_D, 'phantom error')
+    expect(lastPhase(phases, 'contribute')).toBeUndefined()
+  })
+
+  it('SC1-E-STRUCT: Pool.tsx wait-error effects call lifecycle.dispatchError (not setPhase)', async () => {
+    const { default: src } = await import('../../pages/Pool.tsx?raw')
+    // Must call dispatchError, not inline setPhase for wait errors
+    expect(src).toContain('lifecycle.dispatchError(')
+    // Must NOT contain inline setPhase calls for wait-hook error paths
+    // (the old RC3 pattern was: setPhase('contribute', { phase: 'error' ...}) inside the wait-error effect)
+    expect(src).not.toMatch(/contribWaitError[\s\S]{0,200}setPhase\('contribute'/)
+    expect(src).not.toMatch(/payoutWaitError[\s\S]{0,200}setPhase\('payout'/)
+    expect(src).not.toMatch(/refundWaitError[\s\S]{0,200}setPhase\('refund'/)
   })
 
 })

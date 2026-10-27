@@ -360,14 +360,16 @@ describe('RC1–RC6 regression — Pool.tsx source structure', () => {
     expect(poolCode).toContain('contribWaitError')
     expect(poolCode).toContain('payoutWaitError')
     expect(poolCode).toContain('refundWaitError')
-    // Retry path must exist
-    expect(poolCode).toContain('retryable: true')
-    // actionLifecycle.ts must NOT add to notifiedSet on error path
+    // SC1-E: wait-error effects route through lifecycle.dispatchError (hash/epoch guard)
+    expect(poolCode).toContain('lifecycle.dispatchError(')
+    // actionLifecycle.ts must NOT add to notifiedSet on error path and must mark retryable
     const lcSrc = await import('../actionLifecycle?raw') as { default: string }
     const lcCode = lcSrc.default
     // error branch must not add to notifiedSet
     expect(lcCode).toContain('// error: NOT added to notifiedSet')
     expect(lcCode).toContain("phase: 'error'")
+    // retryable flag lives in actionLifecycle, not inline in Pool
+    expect(lcCode).toContain('retryable: true')
   })
 
   it('RC4: confirmAction re-validates pool status before submitting wallet write', async () => {
