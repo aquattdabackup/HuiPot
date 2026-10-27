@@ -103,6 +103,12 @@ export function Create() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // PF2: disconnected submit must never reach writeContract even if triggered
+    // by a keyboard Enter or an unexpected button click. Return silently — the
+    // connection UI is shown by the render path below.
+    if (!isConnected) return
+
     if (!validate()) return
 
     if (wrongChain) {
@@ -508,8 +514,21 @@ export function Create() {
 
         {/* Submit */}
         {!isConnected ? (
+          // PF2: render the connect button with explicit type="button" so clicking
+          // it inside the form does not trigger form submission or validation.
           <div className="text-center">
-            <ConnectKitButton label="Connect wallet to create" />
+            <ConnectKitButton.Custom>
+              {({ show }) => (
+                <button
+                  type="button"
+                  onClick={show}
+                  className="rounded-xl px-5 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  Connect wallet to create
+                </button>
+              )}
+            </ConnectKitButton.Custom>
           </div>
         ) : wrongChain ? (
           <button

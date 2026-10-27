@@ -717,11 +717,22 @@ export function Pool() {
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED && !!address && validPoolId, refetchInterval: 12_000 },
   })
-  const { data: poolCount } = useReadContract({
+  const { data: poolCount, refetch: refetchPoolCount } = useReadContract({
     address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'poolCount',
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED, refetchInterval: 12_000 },
   })
+
+  // PF1: use count evidence to distinguish a nonexistent pool (contract revert / ID above count)
+  // from a genuine transport failure. An ID above a successfully loaded count is absent; an error
+  // with no count evidence (count undefined or count also failed) is an honest network failure.
+  const countLoaded = poolCount !== undefined
+  const poolAbsentByCount = countLoaded && poolIdBig !== null && poolIdBig > poolCount
+  // PF1: treat poolRpcError as not-found only when we have independent count proof of absence.
+  const poolNotFound =
+    poolAbsentByCount ||
+    (!pool && !poolLoading && !poolRpcError) // loaded successfully but returned nothing
+  const poolNetworkError = poolRpcError && !poolAbsentByCount
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
 
@@ -779,23 +790,45 @@ export function Pool() {
     )
   }
 
-  if (poolRpcError) {
+  // PF1: show honest network error only when no count evidence proves absence.
+  // Retry fetches both pool data and count so the distinction can resolve.
+  if (poolNetworkError) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <p className="mb-3" style={{ color: 'var(--error-text)' }}>Could not reach the network. Please check your connection and try again.</p>
-        <button onClick={() => { void refetchPool() }} className="text-sm underline" style={{ color: 'var(--muted)' }}>Retry</button>
+        <button
+          onClick={() => { void refetchPool(); void refetchPoolCount() }}
+          className="text-sm underline"
+          style={{ color: 'var(--muted)' }}
+        >
+          Retry
+        </button>
         <br />
         <Link to="/pools" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to pools</Link>
       </div>
     )
   }
 
-  if (!pool || (poolCount !== undefined && poolIdBig !== null && poolIdBig > poolCount)) {
+  // PF1: a pool is absent when: ID exceeds a successfully loaded count, or getPool
+  // returned nothing without error (e.g. RPC returned null for a nonexistent slot).
+  if (poolNotFound) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h2 className="display text-xl font-semibold mb-2" style={{ color: 'var(--ink)' }}>Pool not found</h2>
         <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Pool #{poolId} does not exist on this deployment.</p>
         <Link to="/pools" className="text-sm underline" style={{ color: 'var(--muted)' }}>Back to pools</Link>
+      </div>
+    )
+  }
+
+  if (!pool) {
+    // Count not yet loaded and pool not yet loaded — still loading
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 rounded" style={{ background: 'var(--surface)' }} />
+          <div className="h-40 rounded-2xl" style={{ background: 'var(--surface)' }} />
+        </div>
       </div>
     )
   }

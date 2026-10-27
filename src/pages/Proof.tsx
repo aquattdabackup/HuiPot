@@ -296,7 +296,7 @@ export function Proof() {
   const [txHashInput, setTxHashInput] = useState(prefillTx)
   const [verifyState, setVerifyState] = useState<VerifyState>({ phase: 'idle' })
 
-  const { data: pool, isLoading, isError: poolError } = useReadContract({
+  const { data: pool, isLoading, isError: poolError, refetch: refetchPool } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getPool',
@@ -312,13 +312,17 @@ export function Proof() {
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED && validPoolId },
   })
-  const { data: poolCount } = useReadContract({
+  const { data: poolCount, refetch: refetchPoolCount } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'poolCount',
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED },
   })
+
+  // PF1: separate not-found (ID above successful count) from transport error.
+  const poolAbsentByCount = poolCount !== undefined && poolIdBig !== null && poolIdBig > poolCount
+  const poolNetworkError = poolError && !poolAbsentByCount
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
 
@@ -390,11 +394,42 @@ export function Proof() {
     )
   }
 
-  if (poolError || !pool || (poolCount !== undefined && poolIdBig !== null && poolIdBig > poolCount)) {
+  // PF1: transport failure — honest retryable error
+  if (poolNetworkError) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <p className="mb-3" style={{ color: 'var(--error-text)' }}>Could not reach the network. Please check your connection and try again.</p>
+        <button
+          onClick={() => { void refetchPool(); void refetchPoolCount() }}
+          className="text-sm underline"
+          style={{ color: 'var(--muted)' }}
+        >
+          Retry
+        </button>
+        <br />
+        <Link to="/" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to home</Link>
+      </div>
+    )
+  }
+
+  // PF1: pool absent — either ID exceeds a successfully loaded count, or pool loaded as undefined
+  if (poolAbsentByCount || (!pool && !isLoading && !poolError)) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12 text-center">
         <p style={{ color: 'var(--muted)' }}>Pool #{poolId} not found on this deployment.</p>
         <Link to="/" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to home</Link>
+      </div>
+    )
+  }
+
+  if (!pool) {
+    // Count not yet loaded; still waiting
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 rounded" style={{ background: 'var(--surface-muted)' }} />
+          <div className="h-64 rounded-2xl" style={{ background: 'var(--surface-muted)' }} />
+        </div>
       </div>
     )
   }
