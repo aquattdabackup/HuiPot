@@ -1,5 +1,13 @@
 # Project log
 
+## October 27, 2026 — c3ae551 CK1 / SC1-E accepted
+
+- Pulled first; local/GitHub HEAD c3ae551f1ca541de415b75e4d2718b5b3cc73781. Studio input was 9aecf5739f67b05223809f23e4e1f74dc2ca626c. Read AGENTS.md and the Studio fix report in full and inspected all changed source/test sections.
+- First runs: Forge 120/0/0 exit 0, Vitest 112/0/0 exit 0, bun run check exit 0 (oxlint 0 warnings/errors, tsc 0 errors), build exit 0 with chunk-size warnings. Source unchanged.
+- Independent unchanged-expectation probes: receipt/action 31/31, lifecycle 21/21, error 6/6. Three stale-error negatives that previously failed now pass; valid current-error/retry behavior preserved. CK1 and SC1-E accepted within tested scope.
+- Count distinction: Studio lifecycle.test.ts has 32 tests (27 behavioral module/dispatch API + 5 structural); independent lifecycle/error probes total 27, separate from 31 receipt/action probes. See docs/STUDIO_ERROR_DISPATCH_RECHECK.md and evidence/recheck-c3ae551.
+- No new functional discrepancy reproduced in requested scope. Next gate is public configuration/revision verification and human-operated testnet demo per DEMO_RUNBOOK.md. Browser, wallet, live replacement, mainnet, deployment and hosting changes not performed. No Studio job started.
+
 ## October 27, 2026 — bb992a6 hash dispatch validation
 
 - Pulled first; local/GitHub input HEAD bb992a6dfe15b1838d7570067f4ce055fcbadd35. Studio input was 139ed88; prior reviewed application was 9965d37. Read all six requested files in full.
