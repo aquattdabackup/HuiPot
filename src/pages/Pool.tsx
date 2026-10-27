@@ -102,26 +102,17 @@ function ActionPanel({
   }, [lifecycle])
 
   // SC1: current submission context — set atomically in confirmAction.
-  // onReplaced handlers are created from this context so they carry immutable identity.
   const currentCtxRef = useRef<SubmissionContext | null>(null)
 
-  // SC1: per-submission onReplaced handlers stored in refs so they can be passed
-  // to useWaitForTransactionReceipt before confirmAction runs.
-  // The ref always holds the handler for the most-recently-started submission.
-  const onContribReplacedRef = useRef<(r: OnReplacedArg) => void>(() => {/* no submission yet */})
-  const onPayoutReplacedRef  = useRef<(r: OnReplacedArg) => void>(() => {/* no submission yet */})
-  const onRefundReplacedRef  = useRef<(r: OnReplacedArg) => void>(() => {/* no submission yet */})
-
-  // Stable wrappers: wagmi's useWaitForTransactionReceipt holds onReplaced by
-  // identity; we give it a stable wrapper that delegates to the current ref.
-  // This avoids re-creating the hook on every confirmAction while still dispatching
-  // to the context-bound handler.
+  // SC1-D: stable wrappers dispatch by hash identity, not by current action ref.
+  // lifecycle.dispatchOnReplaced routes r.replacedTransaction.hash → registered ctx.
+  // All three actions share the same stable wrapper — the hash lookup distinguishes them.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onContribReplaced = useMemo(() => (r: OnReplacedArg) => onContribReplacedRef.current(r), [])
+  const onContribReplaced = useMemo(() => (r: OnReplacedArg) => lifecycle.dispatchOnReplaced(r), [])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onPayoutReplaced  = useMemo(() => (r: OnReplacedArg) => onPayoutReplacedRef.current(r),  [])
+  const onPayoutReplaced  = useMemo(() => (r: OnReplacedArg) => lifecycle.dispatchOnReplaced(r), [])
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onRefundReplaced  = useMemo(() => (r: OnReplacedArg) => onRefundReplacedRef.current(r),  [])
+  const onRefundReplaced  = useMemo(() => (r: OnReplacedArg) => lifecycle.dispatchOnReplaced(r), [])
 
   // Write hooks
   // wagmi onReplaced expects its own ReplacementReturnType shape; our OnReplacedArg is
@@ -177,24 +168,44 @@ function ActionPanel({
     }
   }, [refundWaitError, refundHash, refundWaitErr])
 
-  // SC1/RL1: isSuccess effects — pass current context, not just current submissionId.
-  // If currentCtxRef.current is stale (new submission started or unmounted),
-  // lifecycle.runReceiptValidation will reject via epoch check.
+  // SC1-D: register hash → ctx when the write hash first becomes available.
+  // This must happen before isSuccess fires so dispatchSuccess can route by hash.
   useEffect(() => {
-    if (contribSuccess && contribHash && currentCtxRef.current?.snap.action === 'contribute') {
-      void lifecycle.runReceiptValidation(contribHash, currentCtxRef.current)
+    if (contribHash && currentCtxRef.current?.snap.action === 'contribute') {
+      lifecycle.registerHash(contribHash, currentCtxRef.current)
+    }
+  }, [contribHash, lifecycle])
+
+  useEffect(() => {
+    if (payoutHash && currentCtxRef.current?.snap.action === 'payout') {
+      lifecycle.registerHash(payoutHash, currentCtxRef.current)
+    }
+  }, [payoutHash, lifecycle])
+
+  useEffect(() => {
+    if (refundHash && currentCtxRef.current?.snap.action === 'refund') {
+      lifecycle.registerHash(refundHash, currentCtxRef.current)
+    }
+  }, [refundHash, lifecycle])
+
+  // SC1-D: isSuccess effects dispatch by hash. lifecycle.dispatchSuccess looks up
+  // the ctx registered for this hash. If the hash belongs to an old submission,
+  // its epoch will be stale and validation is rejected before any RPC.
+  useEffect(() => {
+    if (contribSuccess && contribHash) {
+      lifecycle.dispatchSuccess(contribHash)
     }
   }, [contribSuccess, contribHash, lifecycle])
 
   useEffect(() => {
-    if (payoutSuccess && payoutHash && currentCtxRef.current?.snap.action === 'payout') {
-      void lifecycle.runReceiptValidation(payoutHash, currentCtxRef.current)
+    if (payoutSuccess && payoutHash) {
+      lifecycle.dispatchSuccess(payoutHash)
     }
   }, [payoutSuccess, payoutHash, lifecycle])
 
   useEffect(() => {
-    if (refundSuccess && refundHash && currentCtxRef.current?.snap.action === 'refund') {
-      void lifecycle.runReceiptValidation(refundHash, currentCtxRef.current)
+    if (refundSuccess && refundHash) {
+      lifecycle.dispatchSuccess(refundHash)
     }
   }, [refundSuccess, refundHash, lifecycle])
 
@@ -279,12 +290,8 @@ function ActionPanel({
     const ctx = lifecycle.beginSubmission(snap)
     currentCtxRef.current = ctx
 
-    // SC1: create context-bound onReplaced handlers for this submission.
-    // Update the per-action refs so the stable wrappers dispatch to the new handlers.
-    const handler = lifecycle.makeOnReplaced(ctx)
-    if (snap.action === 'contribute') onContribReplacedRef.current = handler
-    else if (snap.action === 'payout') onPayoutReplacedRef.current = handler
-    else if (snap.action === 'refund') onRefundReplacedRef.current = handler
+    // SC1-D: no per-action handler refs needed — dispatch is hash-keyed.
+    // The write hash is registered via registerHash() in useEffect once available.
 
     if (snap.action === 'contribute') {
       resetContrib()
@@ -466,15 +473,10 @@ function ActionPanel({
               <><a href={explorerTxUrl(phase.txHash)} target="_blank" rel="noopener noreferrer" className="underline">View on explorer</a>.{' '}</>
             )}
             {phase.message}
-            {phase.retryable && currentCtxRef.current?.snap.action === action && phase.txHash && (
+            {phase.retryable && phase.txHash && (
               <button
                 className="ml-2 underline font-semibold"
-                onClick={() => {
-                  const ctx = currentCtxRef.current
-                  if (ctx) {
-                    void lifecycle.runReceiptValidation(phase.txHash, ctx)
-                  }
-                }}
+                onClick={() => { lifecycle.dispatchRetry(phase.txHash) }}
               >
                 Retry
               </button>

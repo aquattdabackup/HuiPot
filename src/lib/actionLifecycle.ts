@@ -1,19 +1,21 @@
 /**
  * actionLifecycle.ts — submission-bound lifecycle logic for Pool action validation.
  *
- * This module is extracted from ActionPanel so it can be directly unit-tested
- * without React. ActionPanel imports and calls makeActionLifecycle(); the
- * returned object is wired to useEffect dependencies and wagmi callbacks.
+ * Extracted from ActionPanel for direct unit-testability without React.
  *
- * SC1 fix: each confirmAction call captures an immutable SubmissionContext
- * (submissionId + snap). All callbacks (onReplaced, isSuccess, retry) receive
- * the context at dispatch time rather than reading mutable refs at callback time.
- * Post-unmount or post-new-submission callbacks find their submissionId stale
- * and are rejected before any work starts.
+ * SC1 fix (original): beginSubmission() returns an immutable SubmissionContext.
+ * makeOnReplaced(ctx) closes over ctx.submissionId; first line rejects stale epoch.
+ * Post-unmount and post-new-submission callbacks from late delivery are rejected.
  *
- * The lifecycle manager also exposes a clear() method called on unmount that
- * advances the epoch counter, ensuring any in-flight async work after unmount
- * cannot call onSuccess.
+ * SC1-D fix (this revision): stable wrappers in Pool.tsx previously dispatched by
+ * reading the *current* per-action handler ref, not the handler for the original hash.
+ * After a second same-action submission, the stable wrapper would route an old event
+ * to the new handler — bypassing the epoch check because the new handler's epoch matches.
+ *
+ * Fix: hash-keyed dispatch. Each confirmed hash is registered with its immutable context
+ * via registerHash(). The three stable dispatch methods (dispatchOnReplaced,
+ * dispatchSuccess, dispatchRetry) route by hash, not by action name. An unregistered
+ * or stale hash is silently ignored before any RPC or state change.
  */
 
 import { validateReceipt, type ReceiptSnapshot } from './validateReceipt'
@@ -54,20 +56,46 @@ export interface ActionLifecycle {
   /** Call at confirmAction time — returns the immutable context to pass to callbacks. */
   beginSubmission: (snap: ReceiptSnapshot) => SubmissionContext
 
-  /** Call on component unmount — invalidates current submission. */
+  /**
+   * Register the write hash once it becomes available (from wagmi data).
+   * SC1-D: binds txHash → ctx so stable dispatch methods can route by hash.
+   * Call after beginSubmission, once the hook's data property is set.
+   */
+  registerHash: (txHash: string, ctx: SubmissionContext) => void
+
+  /** Call on component unmount — invalidates all active submissions. */
   clear: () => void
 
   /**
    * Run receipt validation for a txHash under a given context.
-   * All entry points (isSuccess, onReplaced repriced, retry) call this.
-   * Context is immutable: stale contexts are rejected before any async work.
+   * Internal slot-claiming and stale-check logic lives here.
    */
   runReceiptValidation: (txHash: string, ctx: SubmissionContext) => Promise<void>
 
   /**
+   * SC1-D: stable dispatch — looks up the context registered for
+   * r.replacedTransaction.hash and delegates. Called by the stable wrapper.
+   * Silently ignores unknown or stale hashes.
+   */
+  dispatchOnReplaced: (r: OnReplacedArg) => void
+
+  /**
+   * SC1-D: stable dispatch — looks up the context registered for txHash
+   * and calls runReceiptValidation. Called by useEffect on isSuccess.
+   * Silently ignores unknown or stale hashes.
+   */
+  dispatchSuccess: (txHash: string) => void
+
+  /**
+   * SC1-D: stable dispatch for retry — same lookup as dispatchSuccess.
+   * Called by the Retry button in ReceiptBanner.
+   * Clears the notifiedSet entry for txHash so validation can re-run.
+   */
+  dispatchRetry: (txHash: string) => void
+
+  /**
    * Build onReplaced handler bound to a specific context.
-   * Returns a function suitable for wagmi's useWaitForTransactionReceipt onReplaced.
-   * SC1: context is passed in, not read from a mutable ref.
+   * Used internally by dispatchOnReplaced; also exported for direct-module tests.
    */
   makeOnReplaced: (ctx: SubmissionContext) => (r: OnReplacedArg) => void
 }
@@ -77,16 +105,17 @@ export function makeActionLifecycle(
   callbacks: LifecycleCallbacks,
 ): ActionLifecycle {
   // Epoch counter. Incremented on each beginSubmission and on clear().
-  // runReceiptValidation captures its epoch at call time; the stale check
-  // compares it at resolution time.
   let epoch = 0
 
   // Tracks the current active validation slot per epoch.
-  // If two hashes race for the same epoch, the second one invalidates the first.
   let activeSlot: { epoch: number; txHash: string } | null = null
 
   // notifiedSet: keyed by `${epoch}:${txHash}` — prevents duplicate onSuccess.
   const notifiedSet = new Set<string>()
+
+  // SC1-D: hash → SubmissionContext. Populated by registerHash().
+  // Stable dispatch methods use this to route events by hash identity.
+  const hashToCtx = new Map<string, SubmissionContext>()
 
   function beginSubmission(snap: ReceiptSnapshot): SubmissionContext {
     epoch++
@@ -94,9 +123,16 @@ export function makeActionLifecycle(
     return { submissionId: epoch, snap }
   }
 
+  function registerHash(txHash: string, ctx: SubmissionContext): void {
+    // SC1-D: only register if the context is still current
+    if (epoch !== ctx.submissionId) return
+    hashToCtx.set(txHash, ctx)
+  }
+
   function clear() {
     epoch++
     activeSlot = null
+    hashToCtx.clear()
   }
 
   async function runReceiptValidation(txHash: string, ctx: SubmissionContext): Promise<void> {
@@ -108,8 +144,7 @@ export function makeActionLifecycle(
     const key = `${submissionId}:${txHash}`
     if (notifiedSet.has(key)) return
 
-    // Claim active slot: if another hash is validating for this same submission,
-    // invalidate the old one so it cannot call onSuccess.
+    // Claim active slot — invalidate any competing hash for the same submission
     const existing = activeSlot
     if (existing && existing.epoch === submissionId && existing.txHash !== txHash) {
       notifiedSet.add(`${submissionId}:${existing.txHash}`)
@@ -144,13 +179,12 @@ export function makeActionLifecycle(
     const { submissionId, snap } = ctx
 
     return function onReplaced(r: OnReplacedArg) {
-      // SC1: reject if context has been superseded (new submission or unmount)
+      // SC1: reject if context has been superseded
       if (epoch !== submissionId) return
 
       const originalHash = r.replacedTransaction.hash
       const minedHash = r.transaction.hash
 
-      // Mark original hash consumed for this submission
       notifiedSet.add(`${submissionId}:${originalHash}`)
 
       if (r.reason === 'cancelled') {
@@ -161,10 +195,10 @@ export function makeActionLifecycle(
           note: `Transaction was cancelled. Mined: ${minedHash.slice(0, 10)}…`,
         })
       } else if (r.reason === 'repriced') {
-        // Same submission, new mined hash — validate B
+        // Register the replacement hash under the same context
+        hashToCtx.set(minedHash, ctx)
         void runReceiptValidation(minedHash, ctx)
       } else {
-        // 'replaced' — different tx won the slot
         callbacks.setPhase(snap.action, {
           phase: 'replaced',
           txHash: originalHash,
@@ -175,5 +209,38 @@ export function makeActionLifecycle(
     }
   }
 
-  return { beginSubmission, clear, runReceiptValidation, makeOnReplaced }
+  // SC1-D: stable dispatch — routes by hash identity, not by current action ref
+  function dispatchOnReplaced(r: OnReplacedArg): void {
+    const originalHash = r.replacedTransaction.hash
+    const ctx = hashToCtx.get(originalHash)
+    if (!ctx) return  // unknown hash — not from a registered submission
+    // Epoch check — if ctx is stale, makeOnReplaced will reject at first line
+    makeOnReplaced(ctx)(r)
+  }
+
+  function dispatchSuccess(txHash: string): void {
+    const ctx = hashToCtx.get(txHash)
+    if (!ctx) return
+    void runReceiptValidation(txHash, ctx)
+  }
+
+  function dispatchRetry(txHash: string): void {
+    const ctx = hashToCtx.get(txHash)
+    if (!ctx) return
+    // Clear the notifiedSet entry so the validation can re-run
+    const key = `${ctx.submissionId}:${txHash}`
+    notifiedSet.delete(key)
+    void runReceiptValidation(txHash, ctx)
+  }
+
+  return {
+    beginSubmission,
+    registerHash,
+    clear,
+    runReceiptValidation,
+    dispatchOnReplaced,
+    dispatchSuccess,
+    dispatchRetry,
+    makeOnReplaced,
+  }
 }
