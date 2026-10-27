@@ -1,5 +1,13 @@
 # Project log
 
+## October 28, 2026 — a7a681f PF1/PF2 recheck and focused follow-up
+
+- Pulled first: 67ac7ea445fcaaa2a7c9cb41ea3ab8c7acc2946f; application fix a7a681f6025e1ca432cf7ea6f57e82f5574d60f3 follows f445be9. HEAD's additional change is AGENTS.md only.
+- Independent exact-snapshot runs: Forge 120/0/0 exit 0; Vitest 125/0/0 exit 0; check exit 0 (lint 0 warnings/errors, typecheck 0 errors); build exit 0 with large-chunk warning. Source integrity checked for 42 tracked files. No deployment, hosting or wallet actions.
+- Independent production-page probes: 29 total, 21 pass / 8 fail. Both Pool and Proof fail successful-pool/stale-count, failed-count-retained-cache, paused-pending and InvalidPoolId-without-count cases. Five Create control/handler probes pass. PF1 not accepted; PF2 accepted at source/synthetic-handler boundary only.
+- Studio's 13 new tests are 12 raw-source checks and one duplicate classifier, not the specified production behavioral coverage. Report/evidence: STUDIO_PUBLIC_FLOW_RECHECK.md and evidence/recheck-67ac7ea.
+- On user request, published report/evidence and STUDIO_PF1_FOLLOWUP.md. This is a prepared browser handoff, not an executed Studio job. No tests rerun for the documentation delivery, no source edits, no token/setup repetition.
+
 ## October 27, 2026 — public configuration gate cleared; PF1/PF2 handoff
 
 - User reported redeployment. Public /create no longer shows the configuration warning; direct routes render. Actual deployed SHA/env value remain unverified. See PUBLIC_POSTDEPLOY_RECHECK.md (80d4778).

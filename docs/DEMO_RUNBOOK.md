@@ -9,7 +9,7 @@ HuiPot pools native USDC for a fixed goal, deadline and recipient. Reaching the 
 | Level | Current status | Finish condition |
 | --- | --- | --- |
 | Illustrative presentation | Both landing walkthroughs run successfully | Can explain payout/refund without a wallet; explicitly label all receipts illustrative |
-| Automated source validation | 120 Forge / 112 Vitest / check / build pass; independent 31 receipt + 21 lifecycle + 6 error cases pass | Accepted lifecycle cases preserved; new PF1/PF2 fixes independently reviewed |
+| Automated source validation | At a7a681f/67ac7ea: 120 Forge / 125 Vitest / check / build pass; new independent page probes 21 pass / 8 fail | PF1 stale-count/query-state fixes and production behavioral coverage still required; PF2 source/handler checks accepted |
 | Public testnet demo | Configuration warning gone after user redeployment; form and wallet chooser open; no signed flows verified | Correct read/error states, human-signed golden flow/refund/Proof and recorded receipts |
 | Competition submission | Not complete | Live requirements/eligibility confirmation, Studio project provenance, required mainnet USDC proof, video and submission artifacts; human approval for funds and submission |
 
@@ -64,7 +64,7 @@ Record a concise walkthrough: product problem → fixed terms → contribution �
 
 ## Remaining gates
 
-- Studio: PF1 read-error/nonexistence classification and PF2 connection-button/disconnected-submit behavior, with production-path regressions; preserve accepted lifecycle fixes.
+- Studio: [PF1 follow-up](STUDIO_PF1_FOLLOWUP.md) for stale-count/query-state failures and real behavioral coverage. Preserve PF2 source/handler correction and accepted lifecycle fixes; mounted DOM acceptance remains open.
 - Hosting: configuration gate is visibly cleared; still record exact deployed revision/address and verify a real pool read. No repeat redeployment is required solely by this checklist.
 - Human + reviewer: testnet signing session, receipts/Proof, multi-wallet and deadline behavior, measured fees; WalletConnect mobile only when configured.
 - Submission phase: confirm current program requirements, funding eligibility, authentic Studio project URL, mainnet route/budget/signatures, public builder profile, final video and submission approval.

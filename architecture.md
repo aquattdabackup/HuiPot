@@ -37,6 +37,7 @@
 | `docs/DEMO_RUNBOOK.md` | Demo steps, build-configuration prerequisite, human testnet flow and finish/submission gates |
 | `docs/LOG.md` | Decisions and actual execution evidence |
 | `docs/STUDIO_PUBLIC_FLOW_FIX.md` | PF1 pool read-error classification and PF2 Create wallet-button form submission; exact Studio fix/acceptance handoff |
+| `docs/STUDIO_PUBLIC_FLOW_RECHECK.md`, `docs/STUDIO_PF1_FOLLOWUP.md` | a7a681f review: PF2 source/handler accepted; PF1 stale-count/query-state gaps remain; exact follow-up and production-page probe evidence |
 | `docs/STUDIO_HANDOFF.md` | Approved browser workflow for later Studio work |
 
 ## Invariants
@@ -51,6 +52,6 @@
 - Arc Studio browser route and repo handoff are approved. Delivered source and logs are in GitHub; source/exports were independently reviewed. The real app-specific Studio permalink remains missing. See `docs/STUDIO_FIX_RECHECK.md` for current findings and evidence; do not treat test passes as app acceptance.
 - Competition live page is unverified; supplied text is the provisional planning source.
 - October 27 post-deploy checkpoint: configuration warning absent on /create; direct routes render. Explore reports no pools, Pool #1 reports network error and Proof reports not found. Actual deployed SHA/env value and real wallet flows unverified. See PUBLIC_POSTDEPLOY_RECHECK.md and STUDIO_PUBLIC_FLOW_FIX.md.
-- Read-state caveat: getPool/getStatus reject nonexistent IDs via InvalidPoolId. Query error is not synonymous with network outage or absence. Create's ConnectKit button is inside a form; public DOM confirmed its implicit submit type causes validation on connection click (PF2).
+- Read-state caveat: getPool/getStatus reject nonexistent IDs via InvalidPoolId. Query error is not synonymous with network outage or absence; query data may survive a failed refetch, and pending/paused isLoading can be false. At a7a681f both pages still let stale count override valid pool data. Create's original implicit-submit ConnectKit button was replaced with Custom/type=button and a disconnected submit guard; source/synthetic handler checks pass, mounted browser acceptance remains open.
 
-Last updated: October 27, 2026 (Asia/Ho_Chi_Minh).
+Last updated: October 28, 2026 (Asia/Ho_Chi_Minh).

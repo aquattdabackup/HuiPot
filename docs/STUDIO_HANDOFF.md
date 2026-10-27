@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Current priority — October 28, 2026:** run [STUDIO_PF1_FOLLOWUP.md](STUDIO_PF1_FOLLOWUP.md) in the existing project after reading [STUDIO_PUBLIC_FLOW_RECHECK.md](STUDIO_PUBLIC_FLOW_RECHECK.md). At a7a681f/67ac7ea, standard suites pass (120 Forge / 125 Vitest / check / build), but independent production-page probes reproduce eight PF1 failures. Preserve PF2 and accepted lifecycle fixes. The follow-up is prepared, not yet executed by Codex. Older priorities below are history.
+
 **Current priority — October 27, 2026:** use [STUDIO_PUBLIC_FLOW_FIX.md](STUDIO_PUBLIC_FLOW_FIX.md) for PF1/PF2. The user redeployed; the public configuration warning is gone. Fix inconsistent absent-pool/RPC states and the confirmed Create wallet-button form submission. c3ae551 lifecycle checks are accepted; do not repeat setup or reopen those historical fixes. The available Studio browser is signed out; this exact request is prepared but not executed. All older milestone/visual status below is historical.
 
 **Current priority — October 25, 2026 functional completion:** user redirected work to competition fit and reliable functionality after the artwork integration at `37ee96c`. Follow [STUDIO_FUNCTIONAL_FIX.md](STUDIO_FUNCTIONAL_FIX.md) and [FUNCTIONAL_READINESS.md](FUNCTIONAL_READINESS.md). Fix public configuration/direct routes, real review steps, receipt/proof correctness and data recovery. Preserve the existing art; do not restart the visual work or setup. Mainnet and hosting-account actions retain their separate gates.
