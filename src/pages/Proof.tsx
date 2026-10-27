@@ -6,6 +6,7 @@ import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
 import { TARGET_CHAIN_ID, arcTestnet, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
 import { formatAddress, formatDeadline, statusLabel, STATUS } from '../lib/utils'
 import { type VerifyResult, computeOverallValid } from '../lib/verifyTxLogic'
+import { classifyPoolQuery } from '../lib/poolQueryState'
 
 const DEPLOYED = DEPLOYMENT_CONFIGURED
 
@@ -296,7 +297,10 @@ export function Proof() {
   const [txHashInput, setTxHashInput] = useState(prefillTx)
   const [verifyState, setVerifyState] = useState<VerifyState>({ phase: 'idle' })
 
-  const { data: pool, isLoading, isError: poolError, refetch: refetchPool } = useReadContract({
+  const {
+    data: pool, isLoading, isError: poolIsError, error: poolError,
+    fetchStatus: poolFetchStatus, refetch: refetchPool,
+  } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'getPool',
@@ -312,7 +316,10 @@ export function Proof() {
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED && validPoolId },
   })
-  const { data: poolCount, refetch: refetchPoolCount } = useReadContract({
+  const {
+    data: poolCount, isError: countIsError, fetchStatus: countFetchStatus,
+    refetch: refetchPoolCount,
+  } = useReadContract({
     address: HUIPOT_ADDRESS,
     abi: HUIPOT_ABI,
     functionName: 'poolCount',
@@ -320,9 +327,18 @@ export function Proof() {
     query: { enabled: DEPLOYED },
   })
 
-  // PF1: separate not-found (ID above successful count) from transport error.
-  const poolAbsentByCount = poolCount !== undefined && poolIdBig !== null && poolIdBig > poolCount
-  const poolNetworkError = poolError && !poolAbsentByCount
+  // PF1 (A-D): shared classifier resolves stale count, transport error and InvalidPoolId.
+  const poolKind = classifyPoolQuery({
+    poolData: pool,
+    poolIsLoading: isLoading,
+    poolIsError,
+    poolError,
+    poolFetchStatus: poolFetchStatus as 'fetching' | 'paused' | 'idle' | undefined,
+    countData: poolCount as bigint | undefined,
+    countIsError,
+    countFetchStatus: countFetchStatus as 'fetching' | 'paused' | 'idle' | undefined,
+    poolIdBig,
+  })
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
 
@@ -374,7 +390,17 @@ export function Proof() {
     )
   }
 
-  if (isLoading) {
+  if (!validPoolId) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <p style={{ color: 'var(--muted)' }}>Invalid pool ID{poolId ? ` "${poolId}"` : ''}.</p>
+        <Link to="/" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to home</Link>
+      </div>
+    )
+  }
+
+  // PF1 (A-D): shared classifier result.
+  if (poolKind === 'loading') {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
         <div className="animate-pulse space-y-4">
@@ -385,17 +411,7 @@ export function Proof() {
     )
   }
 
-  if (!validPoolId) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
-        <p style={{ color: 'var(--muted)' }}>Invalid pool ID{poolId ? ` "${poolId}"` : ''}.</p>
-        <Link to="/" className="mt-4 inline-block text-sm underline" style={{ color: 'var(--muted)' }}>Back to home</Link>
-      </div>
-    )
-  }
-
-  // PF1: transport failure — honest retryable error
-  if (poolNetworkError) {
+  if (poolKind === 'network') {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12 text-center">
         <p className="mb-3" style={{ color: 'var(--error-text)' }}>Could not reach the network. Please check your connection and try again.</p>
@@ -412,8 +428,7 @@ export function Proof() {
     )
   }
 
-  // PF1: pool absent — either ID exceeds a successfully loaded count, or pool loaded as undefined
-  if (poolAbsentByCount || (!pool && !isLoading && !poolError)) {
+  if (poolKind === 'not-found') {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12 text-center">
         <p style={{ color: 'var(--muted)' }}>Pool #{poolId} not found on this deployment.</p>
@@ -422,16 +437,9 @@ export function Proof() {
     )
   }
 
+  // poolKind === 'content' — pool data is present.
   if (!pool) {
-    // Count not yet loaded; still waiting
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded" style={{ background: 'var(--surface-muted)' }} />
-          <div className="h-64 rounded-2xl" style={{ background: 'var(--surface-muted)' }} />
-        </div>
-      </div>
-    )
+    return null
   }
 
   const [creator, recipient, target, deadline, title, , totalContributed] = pool

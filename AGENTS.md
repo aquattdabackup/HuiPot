@@ -8,7 +8,19 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — PF1 + PF2 (commit a7a681f, pushed from f445be9)
+## Latest Studio delivery — PF1 follow-up (input 4bdbe60, output TBD after push)
+
+- **PF1-A:** `classifyPoolQuery()` in `src/lib/poolQueryState.ts` — successfully loaded pool data always wins over any stale/failed count. A pool that loaded with valid data is never classified absent.
+- **PF1-B:** Count evidence accepted only when `countIsError=false` and `countFetchStatus!='paused'`. Retained-after-refetch-error zero is never treated as current absence proof.
+- **PF1-C:** `isInvalidPoolIdError()` traverses the viem/wagmi cause chain (up to 5 levels) looking for `.errorName='InvalidPoolId'` (synthetic probe format) or `.data.errorName='InvalidPoolId'` (real viem `ContractFunctionRevertedError`). Only `InvalidPoolId` triggers absence; all other reverts/transport failures remain retryable.
+- **PF1-D:** `poolFetchStatus='paused'` (TanStack offline/paused state) returns `'loading'`, not absent. The unreachable `!pool` fallback is replaced by explicit `if (!pool) return null` guard after `poolKind==='content'`.
+- Both Pool.tsx and Proof.tsx now import and call `classifyPoolQuery()` and branch on `poolKind`.
+- Adapted probe: `pf1-probe-adapted.cjs` at root — runs all 29 original cases with real `classifyPoolQuery` injected as module mock. Exit 0, 29/29 pass.
+- Tests: 43 new vitest cases in `src/lib/__tests__/publicFlow.test.ts` (PF1-A×3, PF1-B×5, PF1-C×7, PF1-D×3, acceptance matrix×10, source structure×7) + 5 PF2 preserved.
+- All checks: oxlint 0/0, tsc 0, vitest 151/151 pass, forge 120/120 pass, build exit 0.
+- PF2 (Create.tsx ConnectKitButton.Custom) unchanged and confirmed passing.
+
+## Previous Studio delivery — PF1 + PF2 initial (commit a7a681f, pushed from f445be9)
 
 - **PF1:** Pool.tsx + Proof.tsx now distinguish not-found (ID above a successfully loaded count, or InvalidPoolId revert) from genuine transport failure. Network-error branch shows honest "Could not reach the network" + Retry (refetches both pool and count). Not-found branch shows "Pool not found". Stale count alone does not override a successfully loaded pool.
 - **PF2:** Create.tsx connect button replaced with `ConnectKitButton.Custom` rendering a `type="button"` so clicking it inside the form does not trigger submission or validation. `handleSubmit` also returns early when `!isConnected` as a second guard.

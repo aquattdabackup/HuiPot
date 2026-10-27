@@ -15,6 +15,7 @@ import {
   type SubmissionContext,
   type OnReplacedArg,
 } from '../lib/actionLifecycle'
+import { classifyPoolQuery } from '../lib/poolQueryState'
 
 const RPC_URL = arcTestnet.rpcUrls.default.http[0]
 
@@ -695,7 +696,10 @@ export function Pool() {
   })()
   const validPoolId = poolIdBig !== null && poolIdBig > 0n
 
-  const { data: pool, isLoading: poolLoading, isError: poolRpcError, refetch: refetchPool } = useReadContract({
+  const {
+    data: pool, isLoading: poolLoading, isError: poolRpcError, error: poolError,
+    fetchStatus: poolFetchStatus, refetch: refetchPool,
+  } = useReadContract({
     address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'getPool',
     args: [poolIdBig ?? 0n], chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED && validPoolId, refetchInterval: 12_000 },
@@ -717,22 +721,27 @@ export function Pool() {
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED && !!address && validPoolId, refetchInterval: 12_000 },
   })
-  const { data: poolCount, refetch: refetchPoolCount } = useReadContract({
+  const {
+    data: poolCount, isError: countIsError, fetchStatus: countFetchStatus,
+    refetch: refetchPoolCount,
+  } = useReadContract({
     address: HUIPOT_ADDRESS, abi: HUIPOT_ABI, functionName: 'poolCount',
     chainId: TARGET_CHAIN_ID,
     query: { enabled: DEPLOYED, refetchInterval: 12_000 },
   })
 
-  // PF1: use count evidence to distinguish a nonexistent pool (contract revert / ID above count)
-  // from a genuine transport failure. An ID above a successfully loaded count is absent; an error
-  // with no count evidence (count undefined or count also failed) is an honest network failure.
-  const countLoaded = poolCount !== undefined
-  const poolAbsentByCount = countLoaded && poolIdBig !== null && poolIdBig > poolCount
-  // PF1: treat poolRpcError as not-found only when we have independent count proof of absence.
-  const poolNotFound =
-    poolAbsentByCount ||
-    (!pool && !poolLoading && !poolRpcError) // loaded successfully but returned nothing
-  const poolNetworkError = poolRpcError && !poolAbsentByCount
+  // PF1 (A-D): shared classifier resolves all four correctness requirements.
+  const poolKind = classifyPoolQuery({
+    poolData: pool,
+    poolIsLoading: poolLoading,
+    poolIsError: poolRpcError,
+    poolError,
+    poolFetchStatus: poolFetchStatus as 'fetching' | 'paused' | 'idle' | undefined,
+    countData: poolCount as bigint | undefined,
+    countIsError,
+    countFetchStatus: countFetchStatus as 'fetching' | 'paused' | 'idle' | undefined,
+    poolIdBig,
+  })
 
   const status = rawStatus !== undefined ? Number(rawStatus) : undefined
 
@@ -779,7 +788,9 @@ export function Pool() {
     )
   }
 
-  if (poolLoading) {
+  // PF1 (A-D): use shared classifier result; poolKind is one of
+  // 'content' | 'not-found' | 'network' | 'loading' | 'invalid'.
+  if (poolKind === 'loading') {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="animate-pulse space-y-4">
@@ -790,9 +801,7 @@ export function Pool() {
     )
   }
 
-  // PF1: show honest network error only when no count evidence proves absence.
-  // Retry fetches both pool data and count so the distinction can resolve.
-  if (poolNetworkError) {
+  if (poolKind === 'network') {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <p className="mb-3" style={{ color: 'var(--error-text)' }}>Could not reach the network. Please check your connection and try again.</p>
@@ -809,9 +818,7 @@ export function Pool() {
     )
   }
 
-  // PF1: a pool is absent when: ID exceeds a successfully loaded count, or getPool
-  // returned nothing without error (e.g. RPC returned null for a nonexistent slot).
-  if (poolNotFound) {
+  if (poolKind === 'not-found') {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h2 className="display text-xl font-semibold mb-2" style={{ color: 'var(--ink)' }}>Pool not found</h2>
@@ -821,16 +828,9 @@ export function Pool() {
     )
   }
 
+  // poolKind === 'content' — pool data is present. TypeScript needs the guard below.
   if (!pool) {
-    // Count not yet loaded and pool not yet loaded — still loading
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded" style={{ background: 'var(--surface)' }} />
-          <div className="h-40 rounded-2xl" style={{ background: 'var(--surface)' }} />
-        </div>
-      </div>
-    )
+    return null
   }
 
   const safePoolIdBig = poolIdBig as bigint
