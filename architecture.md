@@ -28,6 +28,8 @@
 | `docs/STUDIO_RECEIPT_RECHECK.md` | Historical 9d75573 review and RC1-RC6 definitions; topic/bytecode evidence |
 | `docs/STUDIO_RC_RECHECK.md` | Historical 7467d1b review and follow-up definitions; its five failing cases pass at 68fa8be |
 | `src/lib/validateReceipt.ts` | Shared RPC receipt/action/identity validation extracted at 68fa8be, imported by Pool and validator tests |
+| `src/lib/actionLifecycle.ts` | Production submission lifecycle extracted at 9965d37; direct-module stale-context guard works, but Pool's mutable wrapper still needs originating-hash/context binding |
+| `docs/STUDIO_CALLBACK_DISPATCH_RECHECK.md` | 9965d37 validation: 120 Forge / 98 Vitest after startup retry / check pass; SC1-D component dispatch gap remains, with reproducible evidence and Studio prompt |
 | `docs/STUDIO_REPLACEMENT_RECHECK.md` | Historical 68fa8be RL1–RL3 findings; its 14 lifecycle cases pass at f00c80d |
 | `docs/STUDIO_SUBMISSION_CONTEXT_RECHECK.md` | f00c80d review: 120 Forge / 92 Vitest / check / build pass, late callback binding still open; actual public browser checkpoint |
 | `docs/DEMO_RUNBOOK.md` | Demo steps, build-configuration prerequisite, human testnet flow and finish/submission gates |
@@ -47,4 +49,4 @@
 - Competition live page is unverified; supplied text is the provisional planning source.
 - October 26 browser checkpoint: public landing payout/refund illustrations run, and /pools, /create, /pools/1, /pools/1/proof render (historical 404 no longer reproduced). Real flows remain gated; /pools/1 says VITE_HUIPOT_ADDRESS is not configured in the build. Public deployed SHA and Vercel settings unknown. See DEMO_RUNBOOK.md. No wallet/mainnet proof from this review.
 
-Last updated: October 26, 2026 (Asia/Ho_Chi_Minh).
+Last updated: October 27, 2026 (Asia/Ho_Chi_Minh).

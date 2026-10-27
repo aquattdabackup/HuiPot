@@ -1,5 +1,13 @@
 # Project log
 
+## October 27, 2026 — 9965d37 callback dispatch validation
+
+- Pulled main first; local/GitHub input SHA 9965d379518c86fd2a1c7350aa47e19ff575ec9f. Read all six requested files in full. No source, contracts, dependencies or Studio tests changed.
+- Forge 120/0/0, exit 0. First Bun test launch failed before tests with CouldntReadCurrentDirectory (exit 1); unchanged-source retry passed 98/0/0, exit 0. Check passed (oxlint 0 warnings/errors, tsc 0 errors). Build/browser/wallet not run this review.
+- Shared lifecycle production module correctly rejects old contexts; post-unmount component callback now passes. Pool's stable wrapper still dispatches old same-action callbacks to the latest handler/context; late success effect has related binding behavior. Independent probes: receipt/action 31/0; lifecycle 17/4 (four manifestations of the remaining dispatch gap).
+- F02/F06 report edits still contradict unchanged vercel.json/share.ts. Lifecycle tests are 14 production-module behavioral + 4 raw-source checks, not 18 component tests.
+- Report, reproduction evidence and exact Studio prompt: docs/STUDIO_CALLBACK_DISPATCH_RECHECK.md. Hosting config, human testnet acceptance and mainnet gates remain open. Product enhancement direction (keep HuiPot, improve community funding experience) remains requested; this explicit validation request takes priority. No new Studio job was started.
+
 ## October 26, 2026 — f00c80d review and actual public walkthrough
 
 - Pulled first; local/GitHub HEAD f00c80da0168afacd136b1c8f0cf44e077952888. Read all six requested files in full. Source unchanged.

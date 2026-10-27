@@ -1,0 +1,208 @@
+{
+  "sourceRevision": "9965d379518c86fd2a1c7350aa47e19ff575ec9f",
+  "scope": "Unchanged validateReceipt and ActionPanel executed with synthetic inputs; no network/browser/wallet",
+  "passed": 31,
+  "failed": 0,
+  "results": [
+    {
+      "name": "valid contribute",
+      "expected": "confirmed",
+      "actual": "confirmed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "name": "valid payout",
+      "expected": "confirmed",
+      "actual": "confirmed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "name": "valid refund",
+      "expected": "confirmed",
+      "actual": "confirmed",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "name": "contribution wrong contributor",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Contributed event contributor (0x3333333333333333333333333333333333333333) does not match submitting wallet (0x2222222222222222222222222222222222222222)."
+    },
+    {
+      "name": "payout wrong submitting caller",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "PaidOut caller (0x3333333333333333333333333333333333333333) does not match submitting wallet (0x2222222222222222222222222222222222222222)."
+    },
+    {
+      "name": "refund wrong contributor",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Refunded contributor (0x3333333333333333333333333333333333333333) does not match submitting wallet (0x2222222222222222222222222222222222222222)."
+    },
+    {
+      "name": "contribution wrong amount",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Contributed amount (1) does not match review amount (400000000000000000)."
+    },
+    {
+      "name": "different target",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "Transaction reached a different contract (0x3333333333333333333333333333333333333333) — not this deployment."
+    },
+    {
+      "name": "no action event",
+      "expected": "replaced",
+      "actual": "replaced",
+      "pass": true,
+      "note": "No Contributed event from this contract — transaction may have been replaced or cancelled."
+    },
+    {
+      "name": "reverted receipt",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "Transaction reverted (status 0x0)."
+    },
+    {
+      "name": "missing receipt",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "Receipt not found — transaction may still be pending."
+    },
+    {
+      "name": "RPC failure",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "RPC error: fixture network failure"
+    },
+    {
+      "name": "HTTP 500 with receipt-shaped body",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "HTTP 500 from RPC endpoint."
+    },
+    {
+      "name": "JSON-RPC error with receipt-shaped result",
+      "expected": "error",
+      "actual": "error",
+      "pass": true,
+      "note": "RPC error -32000: fixture RPC error"
+    },
+    {
+      "name": "payout initially enabled",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "payout enabled after final contribution confirmed",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks live wrong chain",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "confirm accepts valid contribution",
+      "expectedWrites": 1,
+      "actualWrites": 1,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks contribution after state change",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks contribution exceeding capacity",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "confirm accepts valid payout",
+      "expectedWrites": 1,
+      "actualWrites": 1,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks payout after state change",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "confirm accepts valid refund",
+      "expectedWrites": 1,
+      "actualWrites": 1,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks refund after state change",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "confirm blocks exhausted refund",
+      "expectedWrites": 0,
+      "actualWrites": 0,
+      "pass": true
+    },
+    {
+      "name": "another contribution enabled after a confirmed partial contribution",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "contribution idle fallback retains hash while ACTIVE",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "final contribution retains hash after FUNDED",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "payout retains hash after PAID",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "refund retains hash with zero claimable while REFUNDING",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "refund retains hash after CLOSED",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    }
+  ]
+}

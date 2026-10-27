@@ -1,0 +1,108 @@
+$ vitest run --reporter=verbose
+
+ RUN  v2.1.9 C:/Users/luong/HuiPot/.review/recheck-9965d37/snapshot
+
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-1: PaidOut event=1 base unit, Transfer=1 base unit, target=1e18 → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-2: PaidOut with missing Arc Transfer evidence → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-3: PaidOut with wrong Transfer destination → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-4: PaidOut with wrong Transfer amount vs event → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — R2 regression (preserved) > NF-5: Refunded without Arc Transfer evidence → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — positive controls > PC-1: valid PaidOut → true
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — positive controls > PC-2: valid Refunded with movement → true
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — positive controls > PC-3: valid Contributed with inbound Transfer from correct sender → true
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-1: Contributed with no inbound Transfer evidence → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-2: Contributed with wrong inbound Transfer amount → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-3: Contributed with zero event amount → false (BigInt("0") > 0n fails)
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — F05 contribution negatives > F05-NF-4: Contributed with inbound Transfer from WRONG sender → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > reverted receipt → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > wrong contract target → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > no event found → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > wrong pool ID in log → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > PaidOut wrong recipient in log → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > Refunded with wrong Transfer destination → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > Refunded with wrong Transfer amount → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > PaidOut with correct Transfer but wrong event amount vs target → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > PaidOut with amountInLog null → false
+ ✓ src/lib/__tests__/verifyTx.test.ts > overallValid — additional negatives > Contributed with amountInLog null → false
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL1 — per-submission id prevents isSuccess from discarding repriced validation > RL1-FAST: repriced B confirms; isSuccess(A) fired after is discarded
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC5: HTTP/RPC rejection > RC5-1: HTTP 500 (resp.ok=false) → error
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC5: HTTP/RPC rejection > RC5-2: JSON-RPC error field → error
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC5: HTTP/RPC rejection > RC5-3: null result (pending) → error
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC5: HTTP/RPC rejection > RC5-4: fetch throws (network error) → error
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC3: revert detection > RC3-1: receipt status 0x0 (revert) → error
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — positive controls > PC-1: valid Contributed → confirmed
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — positive controls > PC-2: valid PaidOut from submitting caller → confirmed
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — positive controls > PC-3: valid Refunded → confirmed
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: contributor identity binding > RC2-C1: Contributed from WRONG wallet → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: contributor identity binding > RC2-C2: Contributed from correct wallet with different amount → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: contributor identity binding > RC2-C3: Repeated contribution — second Contributed with same wallet/amount → confirmed
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: PaidOut caller identity binding > RC2-P1: PaidOut from DIFFERENT caller → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: PaidOut caller identity binding > RC2-P2: PaidOut from submitting wallet to different recipient → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: PaidOut caller identity binding > RC2-P3: PaidOut from submitting wallet, correct recipient but wrong amount → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: PaidOut caller identity binding > RC2-P4: PaidOut from correct caller to correct recipient with correct amount → confirmed
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: Refunded contributor binding > RC2-R1: Refunded with WRONG contributor → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — RC2: Refunded contributor binding > RC2-R2: Refunded correct contributor wrong amount → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — contract / pool / event checks > wrong contract address → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — contract / pool / event checks > no Contributed event → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — contract / pool / event checks > Contributed event for wrong pool → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — contract / pool / event checks > no PaidOut event → replaced
+ ✓ src/lib/__tests__/validateReceipt.test.ts > validateReceipt — contract / pool / event checks > no Refunded event → replaced
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL1 — per-submission id prevents isSuccess from discarding repriced validation > RL1-SLOW: isSuccess(A) starts first; onReplaced fires while A is in-flight; B wins
+ ✓ src/lib/__tests__/validateReceipt.test.ts > RC1 structural — contribute re-enable after confirmed > RC1: Pool.tsx isActionBusy for contribute checks only checking (not confirmed)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx does NOT export ActionPanel (it is a local function only — raw source check)
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL1 — per-submission id prevents isSuccess from discarding repriced validation > RL1-DUP: isSuccess(A) and onReplaced(repriced) both complete; onSuccess called once
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL1 — per-submission id prevents isSuccess from discarding repriced validation > RL1-NEWSUB: second submission starts fresh; both onSuccess calls fire independently
+ ✓ src/lib/__tests__/validateReceipt.test.ts > RC1 structural — contribute re-enable after confirmed > RC3: Pool.tsx uses onReplaced; actionLifecycle.ts handles repriced/cancelled
+ ✓ src/lib/__tests__/validateReceipt.test.ts > RC1 structural — contribute re-enable after confirmed > RC3/SC1: actionLifecycle.ts uses epoch for stale context prevention
+ ✓ src/lib/__tests__/validateReceipt.test.ts > RC1 structural — contribute re-enable after confirmed > RC6: Pool.tsx renders ReceiptBanner at FUNDED state (contribution evidence survives ACTIVE→FUNDED)
+ ✓ src/lib/__tests__/validateReceipt.test.ts > RC1 structural — contribute re-enable after confirmed > RC6: Pool.tsx renders ReceiptBanner at CLOSED state (refund evidence survives CLOSED)
+ ✓ src/lib/__tests__/validateReceipt.test.ts > RC1 structural — contribute re-enable after confirmed > RC2/SC1: validateReceipt used from actionLifecycle.ts (not inline in Pool.tsx)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Landing page does NOT import useWriteContract (no write hooks in landing)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > verifyTxLogic exports computeOverallValid as a function (production path confirmed)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx uses currentChainId prop (not stored snapshot chainId) for pre-confirm validation
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx validates receipt event after isSuccess (no bare isSuccess success banner)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx review shows full addresses (not truncated)
+ ✓ src/lib/__tests__/verifyTx.test.ts > R3 structural — ActionPanel isolation > Pool.tsx gas estimate is honest: wallet provides fee, no false estimability claim
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC1: payout button disable uses isActionBusy("payout"), not global receiptValidation
+ ✓ src/lib/__tests__/lifecycle.test.ts > SC1 — late callbacks adopt the current submission context > SC1-POST-UNMOUNT: onReplaced(repriced) callback arriving after clear() is rejected before starting work
+ ✓ src/lib/__tests__/lifecycle.test.ts > SC1 — late callbacks adopt the current submission context > SC1-POST-NEWSUB: old onReplaced(repriced) callback arriving after new submission is rejected
+ ✓ src/lib/__tests__/lifecycle.test.ts > SC1 — late callbacks adopt the current submission context > SC1-POST-UNMOUNT-SUCCESS: isSuccess RPC resolves after clear(); onSuccess not called
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL2 — cancelled/replaced phases carry minedHash > RL2-CANCEL: cancelled phase has both originalHash and minedHash
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL2 — cancelled/replaced phases carry minedHash > RL2-REPLACED: replaced (non-repriced) phase has txHash=originalHash and minedHash=minedHash
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC2: validateReceipt checks contributor identity for Contributed event (shared lib) 792ms
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC3: wait-hook errors surfaced; notifiedSet not marked on error (retry allowed)
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC4: confirmAction re-validates pool status before submitting wallet write
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC5: validateReceipt checks resp.ok and JSON-RPC error field (in shared lib)
+ ✓ src/lib/__tests__/verifyTx.test.ts > RC1–RC6 regression — Pool.tsx source structure > RC6: confirmedTxRef persists confirmed hash outside transient action states
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL2 — cancelled/replaced phases carry minedHash > RL2-STRUCT: Pool.tsx replaced banner uses phase.minedHash ?? phase.txHash 746ms
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL2 — cancelled/replaced phases carry minedHash > RL2-STRUCT: Pool.tsx cancelled banner conditionally links to phase.minedHash
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL3 — clear() on unmount invalidates in-flight validation > RL3-UNMOUNT: onSuccess not called when RPC resolves after clear()
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL3 — clear() on unmount invalidates in-flight validation > RL3-STRUCT: Pool.tsx useEffect cleanup calls lifecycle.clear()
+ ✓ src/lib/__tests__/lifecycle.test.ts > RL3 — clear() on unmount invalidates in-flight validation > RL3-STRUCT: actionLifecycle.ts clear() advances epoch and resets activeSlot 939ms
+ ✓ src/lib/__tests__/lifecycle.test.ts > account/pool/chain scope — wrong context rejected by validateReceipt > wrong account → replaced (not confirmed)
+ ✓ src/lib/__tests__/lifecycle.test.ts > account/pool/chain scope — wrong context rejected by validateReceipt > wrong pool → replaced (not confirmed)
+ ✓ src/lib/__tests__/lifecycle.test.ts > account/pool/chain scope — wrong context rejected by validateReceipt > wrong amount → replaced (not confirmed)
+ ✓ src/lib/__tests__/lifecycle.test.ts > Accepted: transient HTTP error allows retry within same submission > error does not mark notifiedSet — retry with same submissionId succeeds
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "0,4" — comma must not be silently stripped to produce 4 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "1e3" — scientific notation must not be silently stripped to produce 13 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "-0.4" — minus sign must not be silently stripped to produce 0.4 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "+1.5" — plus sign
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "  " (whitespace-only) returns 0n — caller rejects zero
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "" (empty string) returns 0n — caller rejects zero
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "1.2.3" — multiple dots
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects ".5" — leading dot (no integer part)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects "0.0000001" — 7 decimal places (max is 6)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.000001" — exactly 6 decimal places → 1 quantum (10^12 native)
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.000000" — 6 trailing zeros → 0n
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "1" — 1 USDC → 10^18 native
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "0.4" → 0.4 USDC in native units
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "1.5" → 1.5 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "100" → 100 USDC
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > rejects uint256-overflowing value
+ ✓ src/lib/__tests__/parseProductAmount.test.ts > parseProductAmount — R1 regression > accepts "  1.5  " — trims whitespace
+
+ Test Files  4 passed (4)
+      Tests  98 passed (98)
+   Start at  07:19:17
+   Duration  18.17s (transform 769ms, setup 0ms, collect 10.99s, tests 3.06s, environment 1ms, prepare 1.26s)
+
