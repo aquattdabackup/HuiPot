@@ -1,0 +1,8 @@
+[
+  {
+    "command": "forge test --summary --fuzz-seed 1",
+    "exitCode": 1,
+    "seconds": 2.2,
+    "log": "forge.log"
+  }
+]

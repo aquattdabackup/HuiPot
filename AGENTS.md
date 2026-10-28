@@ -8,13 +8,20 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — PFI1/PFI2 integration fixes (current HEAD)
+## Latest independent acceptance — 53c8190 PFI1/PFI2
+
+- Reviewed output: `53c8190ed2a5dde8e7eb1ed953e15fffa19271f7`; input: `0f8d4e4e12d2052c44cade277719e012b8e07e13`.
+- PFI1/PFI2 accepted at local source/integration/synthetic-page scope. Independent Forge 120/120, Vitest 165/165, check/build exit 0; original probes 29/29, additional probes 8/8, real-query transition probes 18/18.
+- Correct publicFlow count is 53, not 57: 40 classifier/smoke calls, 1 ABI assertion, 12 source assertions. Studio report still has reporting discrepancies; see docs/STUDIO_PFI_ACCEPTANCE.md. No remaining functional blocker found in these two fixes.
+- Next: deployed-revision verification and human-operated public testnet flow/Proof/refund, then separate required submission evidence. Mounted DOM/wallet, live replacement, mobile, fee and cross-session checks remain open. No signing/hosting/deployment performed in this review.
+
+## Studio delivery — PFI1/PFI2 integration fixes (53c8190; count corrected below)
 
 - Input: `0f8d4e4e12d2052c44cade277719e012b8e07e13` (docs-only commit above reviewed app `41c68bd`).
 - Changed files: `src/contract.ts`, `src/lib/poolQueryState.ts`, `src/lib/__tests__/publicFlow.test.ts`, `docs/STUDIO_FUNCTIONAL_FIX_REPORT.md`, `AGENTS.md`.
 - **PFI1:** Added `{name:'InvalidPoolId', type:'error', inputs:[]}` to `HUIPOT_ABI`. Solidity source, deployed bytecode, address, and all function/event signatures unchanged. With this ABI entry, viem decodes the `0x0afa7ee8` revert to `ContractFunctionRevertedError.data.errorName='InvalidPoolId'`, which the existing cause-chain walker recognizes.
 - **PFI2:** Changed `countIsCurrentSuccess` guard from `countFetchStatus !== 'paused'` to `countFetchStatus === 'idle'`. Stale cached count during an in-flight background refetch (`fetchStatus='fetching'`) is no longer treated as authoritative absence evidence. Count is accepted only when its fetch has completed and is not currently running.
-- **publicFlow.test.ts** rebuilt as 57-case file: PFI1×4 (real viem + deterministic transport + actual HUIPOT_ABI), PFI2×8 (full acceptance-matrix transitions), PF1-A×3/B×5/C×7/D×3 (preserved; B-5 fixture corrected to `countFetchStatus:'idle'`), acceptance matrix×10, source-structure×8 (added PFI1/PFI2 guards), PF2×5.
+- **publicFlow.test.ts** rebuilt as 53-case file (independently corrected): PFI1×4 (real viem + deterministic transport + actual HUIPOT_ABI), PFI2×8 (full acceptance-matrix transitions), PF1-A×3/B×5/C×7/D×3 (preserved; B-5 fixture corrected to `countFetchStatus:'idle'`), acceptance matrix×10, source-structure×8 (added PFI1/PFI2 guards), PF2×5.
 - Validation: oxlint 0/0, tsc 0; vitest **165/165** (5 files); forge **120/120**; build exit 0; independent-original-probes **29/29**; additional-probes **8/8**.
 - Evidence: `pf1-original-new-results.json`, `pf1-additional-new-results.json` at repo root. Full report: `docs/STUDIO_FUNCTIONAL_FIX_REPORT.md`.
 

@@ -1,0 +1,242 @@
+{
+  "scope": "Installed TanStack QueryObserver transitions supplied to unchanged production page functions through synthetic React/wagmi hooks; no mounted DOM or wallet",
+  "passed": 18,
+  "failed": 0,
+  "total": 18,
+  "results": [
+    {
+      "name": "Pool: cached zero refetch begins, pool pending",
+      "expected": "loading",
+      "actual": "loading",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "fetching",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: cached zero refetch begins, pool pending",
+      "expected": "loading",
+      "actual": "loading",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "fetching",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Pool: cached zero refetch begins, pool error",
+      "expected": "network",
+      "actual": "network",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "fetching",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: cached zero refetch begins, pool error",
+      "expected": "network",
+      "actual": "network",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "fetching",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Pool: refetch completes at one, pool still pending",
+      "expected": "loading",
+      "actual": "loading",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: refetch completes at one, pool still pending",
+      "expected": "loading",
+      "actual": "loading",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Pool: refetch completes at one, pool loads",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: refetch completes at one, pool loads",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Pool: second poll in flight, loaded content remains",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "success",
+        "fetchStatus": "fetching",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: second poll in flight, loaded content remains",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "success",
+        "fetchStatus": "fetching",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Pool: poll fails retaining data, content remains",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "error",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": true
+      }
+    },
+    {
+      "name": "Proof: poll fails retaining data, content remains",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "error",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": true
+      }
+    },
+    {
+      "name": "Pool: poll fails retaining data, pool error",
+      "expected": "network",
+      "actual": "network",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "error",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": true
+      }
+    },
+    {
+      "name": "Proof: poll fails retaining data, pool error",
+      "expected": "network",
+      "actual": "network",
+      "pass": true,
+      "count": {
+        "data": "1",
+        "status": "error",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": true
+      }
+    },
+    {
+      "name": "Pool: completed lower count, no successful pool",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: completed lower count, no successful pool",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Pool: completed lower count cannot override successful pool",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    },
+    {
+      "name": "Proof: completed lower count cannot override successful pool",
+      "expected": "content",
+      "actual": "content",
+      "pass": true,
+      "count": {
+        "data": "0",
+        "status": "success",
+        "fetchStatus": "idle",
+        "isStale": true,
+        "isError": false
+      }
+    }
+  ]
+}

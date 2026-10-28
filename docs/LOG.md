@@ -1,5 +1,13 @@
 # Project log
 
+## October 28, 2026 — 53c8190 PFI1/PFI2 independently accepted
+
+- Pulled first; input 0f8d4e4e12d2052c44cade277719e012b8e07e13, reviewed Studio output/main 53c8190ed2a5dde8e7eb1ed953e15fffa19271f7. Read focused handoff, prior recheck, changed source/tests/report and preserved page wiring.
+- Source-identical independent runs: Forge 120/0/0, Vitest 165/0/0, check/build exit 0. Initial Forge attempt exited 1 before tests because dependency junction creation had been denied; after authorized environment repair the unchanged source passed. Logs retained.
+- Supplied probes rerun unchanged: 29/29 original, 8/8 additional; Studio JSON matches. New independent real-TanStack transition probes: 18/18 across Pool/Proof. Manifest covers 45 files.
+- Both functional PFI findings accepted within tested scope. publicFlow has 53 cases, not reported 57; report also overstates transition-test execution and contains minor probe wording inaccuracies. No new application-code blocker found.
+- Report STUDIO_PFI_ACCEPTANCE.md and evidence/recheck-53c8190 prepared for authorized repository delivery. Codex changed documentation/review evidence only. No new Studio job, hosting/deployment, wallet transaction or live browser acceptance.
+
 ## October 28, 2026 — 41c68bd integration recheck and Studio handoff
 
 - Input 4bdbe60a8f0189c6f753d383dd2d3000708ac973; reviewed Studio output/local/GitHub main 41c68bd59b608e47d8185235b0b16c1a0e11070a. Pulled again before documentation delivery: already current.

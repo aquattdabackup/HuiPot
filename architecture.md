@@ -38,7 +38,7 @@
 | `docs/LOG.md` | Decisions and actual execution evidence |
 | `docs/STUDIO_PUBLIC_FLOW_FIX.md` | PF1 pool read-error classification and PF2 Create wallet-button form submission; exact Studio fix/acceptance handoff |
 | `docs/STUDIO_PUBLIC_FLOW_RECHECK.md`, `docs/STUDIO_PF1_FOLLOWUP.md` | a7a681f review: PF2 source/handler accepted; PF1 stale-count/query-state gaps remain; exact follow-up and production-page probe evidence |
-| `src/lib/poolQueryState.ts` | Shared Pool/Proof read classifier; loaded pool takes priority. Actual frontend ABI decoding and count freshness need integration coverage; see STUDIO_PF1_INTEGRATION_RECHECK.md. |
+| `src/lib/poolQueryState.ts` | Shared Pool/Proof read classifier; loaded pool takes priority. 53c8190 adds the existing InvalidPoolId error ABI and requires completed idle count reads; independent ABI/query-transition acceptance in STUDIO_PFI_ACCEPTANCE.md. |
 | `docs/STUDIO_HANDOFF.md` | Approved browser workflow for later Studio work |
 
 ## Invariants
@@ -53,6 +53,6 @@
 - Arc Studio browser route and repo handoff are approved. Delivered source and logs are in GitHub; source/exports were independently reviewed. The real app-specific Studio permalink remains missing. See `docs/STUDIO_FIX_RECHECK.md` for current findings and evidence; do not treat test passes as app acceptance.
 - Competition live page is unverified; supplied text is the provisional planning source.
 - October 27 post-deploy checkpoint: configuration warning absent on /create; direct routes render. Explore reports no pools, Pool #1 reports network error and Proof reports not found. Actual deployed SHA/env value and real wallet flows unverified. See PUBLIC_POSTDEPLOY_RECHECK.md and STUDIO_PUBLIC_FLOW_FIX.md.
-- Read-state caveat: getPool/getStatus reject nonexistent IDs via InvalidPoolId. Query error is not synonymous with network outage or absence; query data may survive a failed refetch, and pending/paused isLoading can be false. 41c68bd fixes loaded-pool priority, but its count freshness check accepts stale data during refetch. The frontend ABI lacks InvalidPoolId, so viem exposes its raw selector rather than a decoded error name; cause-shape tests alone cannot establish end-to-end decoding. Create's original implicit-submit ConnectKit button was replaced with Custom/type=button and a disconnected submit guard; source/synthetic handler checks pass, mounted browser acceptance remains open.
+- Read-state caveat: getPool/getStatus reject nonexistent IDs via InvalidPoolId. Query error is not synonymous with network outage or absence; query data may survive a failed refetch, and pending/paused isLoading can be false. 53c8190 preserves loaded-pool priority, accepts count absence evidence only after an idle non-error read, and declares InvalidPoolId in the frontend ABI so viem can decode the real revert. Tests using real library/ABI paths complement cause-shape fixtures. Create's original implicit-submit ConnectKit button was replaced with Custom/type=button and a disconnected submit guard; source/synthetic handler checks pass, mounted browser acceptance remains open.
 
 Last updated: October 28, 2026 (Asia/Ho_Chi_Minh).
