@@ -8,15 +8,21 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest independent checkpoint — 41c68bd PF1 follow-up
+## Latest Studio delivery — PFI1/PFI2 integration fixes (current HEAD)
+
+- Input: `0f8d4e4e12d2052c44cade277719e012b8e07e13` (docs-only commit above reviewed app `41c68bd`).
+- Changed files: `src/contract.ts`, `src/lib/poolQueryState.ts`, `src/lib/__tests__/publicFlow.test.ts`, `docs/STUDIO_FUNCTIONAL_FIX_REPORT.md`, `AGENTS.md`.
+- **PFI1:** Added `{name:'InvalidPoolId', type:'error', inputs:[]}` to `HUIPOT_ABI`. Solidity source, deployed bytecode, address, and all function/event signatures unchanged. With this ABI entry, viem decodes the `0x0afa7ee8` revert to `ContractFunctionRevertedError.data.errorName='InvalidPoolId'`, which the existing cause-chain walker recognizes.
+- **PFI2:** Changed `countIsCurrentSuccess` guard from `countFetchStatus !== 'paused'` to `countFetchStatus === 'idle'`. Stale cached count during an in-flight background refetch (`fetchStatus='fetching'`) is no longer treated as authoritative absence evidence. Count is accepted only when its fetch has completed and is not currently running.
+- **publicFlow.test.ts** rebuilt as 57-case file: PFI1×4 (real viem + deterministic transport + actual HUIPOT_ABI), PFI2×8 (full acceptance-matrix transitions), PF1-A×3/B×5/C×7/D×3 (preserved; B-5 fixture corrected to `countFetchStatus:'idle'`), acceptance matrix×10, source-structure×8 (added PFI1/PFI2 guards), PF2×5.
+- Validation: oxlint 0/0, tsc 0; vitest **165/165** (5 files); forge **120/120**; build exit 0; independent-original-probes **29/29**; additional-probes **8/8**.
+- Evidence: `pf1-original-new-results.json`, `pf1-additional-new-results.json` at repo root. Full report: `docs/STUDIO_FUNCTIONAL_FIX_REPORT.md`.
+
+## Previous independent checkpoint — 41c68bd PF1 follow-up (superseded for PFI1/PFI2)
 
 - Input: `4bdbe60a8f0189c6f753d383dd2d3000708ac973`; Studio output: `41c68bd59b608e47d8185235b0b16c1a0e11070a`.
-- Independent validation: Forge 120/120, Vitest 151/151, check/build exit 0; both original/adapted page probes 29/29.
-- PF1-A is accepted at source/synthetic-page scope. Failed-refetch cached-zero, paused reads, Retry/recovery and invalid-ID cases pass. PF2 is unchanged and its five handler probes pass. Mounted browser/wallet acceptance remains open.
-- PF1 is NOT fully accepted: actual viem + frontend ABI cannot decode InvalidPoolId without count; stale zero count during an in-flight refetch still produces premature not-found on both pages. Additional probes: 1 pass / 7 fail across these two defects and a positive control.
-- publicFlow.test.ts contains 39 tests (29 production-classifier calls including smoke, 10 raw-source checks). Breakdown: A3/B5/C7/D3/matrix10/source-group6/PF2-5. It replaces 13 prior cases; 112 other cases + 39 = 151 total.
-- Studio's adapted instrument also adds default fetchStatus='fetching'; an independent import-only adaptation still passes all 29 unchanged expectations.
-- Read `docs/STUDIO_PF1_INTEGRATION_RECHECK.md`, then execute `docs/STUDIO_PF1_INTEGRATION_FIX.md` in Studio. Handoff prepared; not yet executed. Preserve all unrelated contract, lifecycle, receipt, hosting and wallet boundaries.
+- PF1-A accepted; PF2 accepted. PFI1/PFI2 gaps identified by Codex; now fixed above.
+- publicFlow.test.ts in 41c68bd had 39 tests (not 48 as previously claimed). 112 + 39 = 151 total.
 
 ## Previous Studio delivery — PF1 + PF2 initial (commit a7a681f, pushed from f445be9)
 

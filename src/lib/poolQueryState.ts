@@ -130,12 +130,19 @@ export function classifyPoolQuery(inputs: PoolQueryInputs): PoolQueryKind {
     return 'not-found'
   }
 
-  // PF1-B: count is current evidence only when it has data AND is not currently errored.
-  // data !== undefined alone does not mean the latest read succeeded (retained after refetch error).
+  // PF1-B (PFI2): count is authoritative absence evidence only when it has data AND
+  // the most recent fetch completed successfully — i.e. the count query is not currently
+  // in an error state and is not currently fetching (refetching stale data).
+  // TanStack Query can have status='success' with stale data while a background
+  // refetch is in progress (fetchStatus='fetching').  Cached zero during a refetch
+  // is not authoritative: the refetch may raise the count above the requested ID.
+  // Do not simply reject every isStale=true result: default staleTime=0 makes a
+  // just-completed fetch stale immediately after it finishes (fetchStatus='idle').
+  // Accept count only when fetchStatus='idle' (fetch completed, not in progress).
   const countIsCurrentSuccess =
     countData !== undefined &&
     !countIsError &&
-    countFetchStatus !== 'paused'
+    countFetchStatus === 'idle'
 
   // PF1-A + PF1-B: ID above a currently successful count means absent.
   if (countIsCurrentSuccess && poolIdBig > countData!) {

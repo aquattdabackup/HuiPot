@@ -9,6 +9,14 @@ export const HUIPOT_ADDRESS: `0x${string}` = _isValidAddr
 export const DEPLOYMENT_CONFIGURED = _isValidAddr
 
 export const HUIPOT_ABI = [
+  // Custom errors — required for viem to decode contract reverts by name.
+  // InvalidPoolId() is the only revert that indicates a nonexistent pool (PFI1).
+  // Solidity source and deployed bytecode are unchanged; this is ABI metadata only.
+  {
+    name: 'InvalidPoolId',
+    type: 'error',
+    inputs: [],
+  },
   // Write functions
   {
     name: 'createPool',

@@ -1,0 +1,228 @@
+{
+  "scope": "Unchanged production page render/handlers with synthetic hooks; no mounted DOM or live wallet",
+  "passed": 29,
+  "failed": 0,
+  "total": 29,
+  "results": [
+    {
+      "name": "Pool: count=0 plus InvalidPoolId revert",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true
+    },
+    {
+      "name": "Pool: transport error without count",
+      "expected": "network",
+      "actual": "network",
+      "pass": true
+    },
+    {
+      "name": "Pool: existing pool",
+      "expected": "content",
+      "actual": "content",
+      "pass": true
+    },
+    {
+      "name": "Pool: successful pool must beat stale count",
+      "expected": "content",
+      "actual": "content",
+      "pass": true
+    },
+    {
+      "name": "Pool: failed count retaining cached zero plus transport error",
+      "expected": "network",
+      "actual": "network",
+      "pass": true
+    },
+    {
+      "name": "Pool: paused pending query is not absence",
+      "expected": "loading",
+      "actual": "loading",
+      "pass": true
+    },
+    {
+      "name": "Pool: decoded InvalidPoolId without count",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true
+    },
+    {
+      "name": "Pool: invalid abc",
+      "expected": "invalid",
+      "actual": "invalid",
+      "pass": true
+    },
+    {
+      "name": "Pool: invalid 0",
+      "expected": "invalid",
+      "actual": "invalid",
+      "pass": true
+    },
+    {
+      "name": "Pool: invalid 115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "expected": "invalid",
+      "actual": "invalid",
+      "pass": true
+    },
+    {
+      "name": "Pool: retry refreshes pool and count",
+      "expected": [
+        "getPool",
+        "poolCount"
+      ],
+      "actual": [
+        "getPool",
+        "poolCount"
+      ],
+      "pass": true
+    },
+    {
+      "name": "Pool: retry success recovery",
+      "expected": "content",
+      "actual": "content",
+      "pass": true
+    },
+    {
+      "name": "Proof: count=0 plus InvalidPoolId revert",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true
+    },
+    {
+      "name": "Proof: transport error without count",
+      "expected": "network",
+      "actual": "network",
+      "pass": true
+    },
+    {
+      "name": "Proof: existing pool",
+      "expected": "content",
+      "actual": "content",
+      "pass": true
+    },
+    {
+      "name": "Proof: successful pool must beat stale count",
+      "expected": "content",
+      "actual": "content",
+      "pass": true
+    },
+    {
+      "name": "Proof: failed count retaining cached zero plus transport error",
+      "expected": "network",
+      "actual": "network",
+      "pass": true
+    },
+    {
+      "name": "Proof: paused pending query is not absence",
+      "expected": "loading",
+      "actual": "loading",
+      "pass": true
+    },
+    {
+      "name": "Proof: decoded InvalidPoolId without count",
+      "expected": "not-found",
+      "actual": "not-found",
+      "pass": true
+    },
+    {
+      "name": "Proof: invalid abc",
+      "expected": "invalid",
+      "actual": "invalid",
+      "pass": true
+    },
+    {
+      "name": "Proof: invalid 0",
+      "expected": "invalid",
+      "actual": "invalid",
+      "pass": true
+    },
+    {
+      "name": "Proof: invalid 115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "expected": "invalid",
+      "actual": "invalid",
+      "pass": true
+    },
+    {
+      "name": "Proof: retry refreshes pool and count",
+      "expected": [
+        "getPool",
+        "poolCount"
+      ],
+      "actual": [
+        "getPool",
+        "poolCount"
+      ],
+      "pass": true
+    },
+    {
+      "name": "Proof: retry success recovery",
+      "expected": "content",
+      "actual": "content",
+      "pass": true
+    },
+    {
+      "name": "Create: connect button semantics and callback",
+      "expected": {
+        "type": "button",
+        "show": 1,
+        "writes": 0,
+        "stateWrites": 0
+      },
+      "actual": {
+        "type": "button",
+        "show": 1,
+        "writes": 0,
+        "stateWrites": 0
+      },
+      "pass": true
+    },
+    {
+      "name": "Create: disconnected submit blocked before validate/write",
+      "expected": {
+        "writes": 0,
+        "stateWrites": 0
+      },
+      "actual": {
+        "writes": 0,
+        "stateWrites": 0
+      },
+      "pass": true
+    },
+    {
+      "name": "Create: valid connected submit validates and writes once",
+      "expected": {
+        "writes": 1,
+        "validated": true
+      },
+      "actual": {
+        "writes": 1,
+        "validated": true
+      },
+      "pass": true
+    },
+    {
+      "name": "Create: invalid connected submit validates without write",
+      "expected": {
+        "writes": 0,
+        "errorFields": 6
+      },
+      "actual": {
+        "writes": 0,
+        "errorFields": 6
+      },
+      "pass": true
+    },
+    {
+      "name": "Create: wrong chain requests switch and does not write",
+      "expected": {
+        "writes": 0,
+        "switches": 1
+      },
+      "actual": {
+        "writes": 0,
+        "switches": 1
+      },
+      "pass": true
+    }
+  ]
+}
