@@ -1,0 +1,80 @@
+{
+  "checkedAt": "2026-10-28T23:41:06.361Z",
+  "rpcUrl": "https://rpc.testnet.arc.io",
+  "address": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+  "scope": "Read-only RPC simulation, not the actual wallet payload; no transaction broadcast.",
+  "chain": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x4cef52"
+  },
+  "runtime": {
+    "bytes": 4134,
+    "keccak256": "0xf37dc66edae9c040ce487a64d6ac60e5f30da05f844ba77e4d4be7c96947e8b4",
+    "localKeccak256": "0x3cd32615ad423bff99ce09e0b50c4235069cd9ba3f8afe8897cbc1bedf7fa906",
+    "exactMatch": false,
+    "executableMatchWithoutMetadata": true
+  },
+  "deployment": {
+    "status": "0x1",
+    "contractAddress": null,
+    "blockNumber": "0x419c0ec"
+  },
+  "simulatedRequest": {
+    "from": "[wallet omitted]",
+    "to": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+    "value": "0x0",
+    "selector": "0x3afabdd5",
+    "decoded": {
+      "functionName": "createPool",
+      "args": [
+        "[wallet omitted]",
+        "1000000000000000000",
+        "1793232068",
+        "Demo \u00e2\u20ac\u201d Refund",
+        "Test refunds when the funding goal is not reached before the deadline."
+      ]
+    },
+    "deadlineBasis": "latest block + 1200 seconds; not original user deadline"
+  },
+  "validCreateCall": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x"
+  },
+  "estimate": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": "0x3e6bf"
+  },
+  "createWithDeposit": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": 3,
+      "message": "execution reverted"
+    }
+  },
+  "zeroRecipient": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "code": 3,
+      "message": "execution reverted",
+      "data": "0x9c8d2cd2"
+    }
+  },
+  "expiredDeadline": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+      "data": "0x769d11e4",
+      "code": 3,
+      "message": "execution reverted"
+    }
+  },
+  "expectedErrorSelectors": {
+    "InvalidRecipient": "0x9c8d2cd2",
+    "InvalidDeadline": "0x769d11e4"
+  }
+}

@@ -1,0 +1,755 @@
+{
+  "checkedAt": "2026-10-28T23:41:24.320158+00:00",
+  "url": "https://hui-pot.vercel.app/",
+  "html": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <link rel=\"icon\" type=\"image/svg+xml\" href=\"/vite.svg\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>HuiPot \u2014 Goal Pool</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\n    <link\n      rel=\"stylesheet\"\n      href=\"https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\"\n    />\n    <script type=\"module\" crossorigin src=\"/assets/index-DKsGIngY.js\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/index-C08iDf1b.css\">\n  </head>\n  <body>\n    <div id=\"root\"></div>\n  </body>\n</html>\n",
+  "headers": {
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+  },
+  "assetCount": 93,
+  "matchingCount": 92,
+  "assets": [
+    {
+      "path": "/assets/index-C08iDf1b.css",
+      "sha256": "0681783629c863ffffcf624a4240b0da0f370bbc6abcdd33aee4f8a9a3935f1e",
+      "normalizedMatches": [
+        "index-C08iDf1b.css"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-C08iDf1b.css"
+    },
+    {
+      "path": "/assets/index-DKsGIngY.js",
+      "sha256": "e8a7c443330042d10ec4bc30ed2cfb7538b687ee866e19f87838b7b8d7e419f1",
+      "normalizedMatches": [
+        "index-B_xcfERZ.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-DKsGIngY.js"
+    },
+    {
+      "path": "/assets/ccip-CDfqZB6H.js",
+      "sha256": "25ff4f6b53e31d15ceb26cb19b8512eb25b9d6feb4db04e8cf5e47789e679bd6",
+      "normalizedMatches": [
+        "ccip-Cy3F8nz8.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/ccip-CDfqZB6H.js"
+    },
+    {
+      "path": "/assets/clsx.m-DHulAg21.js",
+      "sha256": "fb137b760bacfb05fc2eacfee16f7954a01bd739c1846a2efd5ea53e24f454e1",
+      "normalizedMatches": [
+        "clsx.m-DHulAg21.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/clsx.m-DHulAg21.js"
+    },
+    {
+      "path": "/assets/hashTypedData-CU1UJOBy.js",
+      "sha256": "455326eb45f880423f3c2b9b0742561c44541dcd4eec02dd177831474a3afa14",
+      "normalizedMatches": [
+        "hashTypedData-DByRZCHe.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/hashTypedData-CU1UJOBy.js"
+    },
+    {
+      "path": "/assets/index--bwbAJYi.js",
+      "sha256": "48639e02c803f472df6bc812a5ea0150dd7babcf6ef08afcc1182217a00e64ba",
+      "normalizedMatches": [
+        "index-DLCmBVeh.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index--bwbAJYi.js"
+    },
+    {
+      "path": "/assets/index-Bvf9ZmC_.js",
+      "sha256": "cf372ae59dc3627bef874d88e814259ad30f4d7d60b3690132e870a0957374f0",
+      "normalizedMatches": [
+        "index-Blq2Xm_f.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-Bvf9ZmC_.js"
+    },
+    {
+      "path": "/assets/index-CT6o0N0L.js",
+      "sha256": "64a2b4a2ddc9daaeb428e63b6035bc063202497ad4776eba907723bd70d5115b",
+      "normalizedMatches": [],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-CT6o0N0L.js"
+    },
+    {
+      "path": "/assets/index-DEctWDyn.js",
+      "sha256": "ca51b3a107483ca78ac1fb5892766572250b58a507d41b832a163ab387e176ed",
+      "normalizedMatches": [
+        "index-8OGIAIeX.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-DEctWDyn.js"
+    },
+    {
+      "path": "/assets/index-DrAshLsx-CNq0b8Uj.js",
+      "sha256": "90326b134dd4494ba2fdc915d0a638b91fedd65305c1b70acc41cdbdc2f31ddd",
+      "normalizedMatches": [
+        "index-DrAshLsx-CNq0b8Uj.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-DrAshLsx-CNq0b8Uj.js"
+    },
+    {
+      "path": "/assets/index-nibyPLVP.js",
+      "sha256": "1ec0c3e605b1f64e7d87a28c2540b084a517fb75ff5939ec04af40e574b875ba",
+      "normalizedMatches": [
+        "index-nibyPLVP.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-nibyPLVP.js"
+    },
+    {
+      "path": "/assets/index.es-W9GN41KG.js",
+      "sha256": "8a007e5bf392606a846fdd813ac4a269faee6e00fc35d59300235a2d2545a406",
+      "normalizedMatches": [
+        "index.es-Dd966j20.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index.es-W9GN41KG.js"
+    },
+    {
+      "path": "/assets/secp256k1-C4jHa0N6.js",
+      "sha256": "fad7e3af43c1c108b2d7afd85ab5d2fd229c9f4c51a6428aaea38c3873c999d7",
+      "normalizedMatches": [
+        "secp256k1-5t3MjD82.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/secp256k1-C4jHa0N6.js"
+    },
+    {
+      "path": "/assets/core-BBFXQiAv.js",
+      "sha256": "c257e15e1c014b18b3aec6494f9dd7d40085ebffc29b257e17c234dcf788c9f2",
+      "normalizedMatches": [
+        "core-CN8hbFcn.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/core-BBFXQiAv.js"
+    },
+    {
+      "path": "/assets/secp256k1-DeK5TDL8.js",
+      "sha256": "90831166f75ec3d7cc6269bb9e2fde02b542e7cff834ee976a9ec4ccd121bb4c",
+      "normalizedMatches": [
+        "secp256k1-T-Dq_IJP.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/secp256k1-DeK5TDL8.js"
+    },
+    {
+      "path": "/assets/basic-s2tJCHHz.js",
+      "sha256": "8ed9adb45fdb1f33ee8ee3616f58a23fec335cc9c2bc6a366fa322c1e7fcd72c",
+      "normalizedMatches": [
+        "basic-wgZoS-qH.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/basic-s2tJCHHz.js"
+    },
+    {
+      "path": "/assets/index-CtOlouk8.js",
+      "sha256": "a517ec7c6dc4bbb8ccced167ea730124f89b88b449b356016e89ab4e072deecf",
+      "normalizedMatches": [
+        "index-lKyZivAf.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/index-CtOlouk8.js"
+    },
+    {
+      "path": "/assets/secp256k1-1P8xV4dk.js",
+      "sha256": "e95027d6eccd7300decbec989138961913a1ae6bf9b4aee32744fffe51a6f504",
+      "normalizedMatches": [
+        "secp256k1-DgIoh_Lo.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/secp256k1-1P8xV4dk.js"
+    },
+    {
+      "path": "/assets/w3m-modal-DwHme1_d.js",
+      "sha256": "b9cce232decdfdc876d3cb9cad939a4a4e88b17932b9bc9b5ee5c4148f08971e",
+      "normalizedMatches": [
+        "w3m-modal-DuihTzth.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/w3m-modal-DwHme1_d.js"
+    },
+    {
+      "path": "/assets/add-CddzealC.js",
+      "sha256": "e9422cb929bf466b226612ed823f32909deec34859b1a9ee6cd9445dd01ba90c",
+      "normalizedMatches": [
+        "add-B9B9OF7h.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/add-CddzealC.js"
+    },
+    {
+      "path": "/assets/all-wallets-jYN1XITF.js",
+      "sha256": "e64220f5651443bb4acf064353eb5768ee8ef74df5ebb1b96c82d8c7f65aefe5",
+      "normalizedMatches": [
+        "all-wallets-De9KyPk2.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/all-wallets-jYN1XITF.js"
+    },
+    {
+      "path": "/assets/app-store-x1QOyUg3.js",
+      "sha256": "60797e5f45964dd7665523966b83132b83fde7db402caa188654733aefc4ddbf",
+      "normalizedMatches": [
+        "app-store-Kj4Ln6Lo.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/app-store-x1QOyUg3.js"
+    },
+    {
+      "path": "/assets/apple-DYNxtUA-.js",
+      "sha256": "235e8ad8c9cc0e2bbb698f693730f6a560f3910c694d22ed61704567be12b990",
+      "normalizedMatches": [
+        "apple-kI281UjO.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/apple-DYNxtUA-.js"
+    },
+    {
+      "path": "/assets/arrow-bottom-Cd12lYE-.js",
+      "sha256": "b77323d6179228e18bc22dea4f6e852fd1b6e9a54884d5e0ff69054d48d31d6e",
+      "normalizedMatches": [
+        "arrow-bottom-4UxV18g4.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/arrow-bottom-Cd12lYE-.js"
+    },
+    {
+      "path": "/assets/arrow-bottom-circle-P-6vPIrE.js",
+      "sha256": "705c06ba901c86dc93c5edfbcade2b6d986f7a11d6ad481d2b665f57b64be508",
+      "normalizedMatches": [
+        "arrow-bottom-circle-DIBzuxQ6.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/arrow-bottom-circle-P-6vPIrE.js"
+    },
+    {
+      "path": "/assets/arrow-left-CL8F66hV.js",
+      "sha256": "ed172607aa50a7e53bd787effeccaefa6a3a439b5a87f5918c62cc82a42161ce",
+      "normalizedMatches": [
+        "arrow-left-BbczztOg.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/arrow-left-CL8F66hV.js"
+    },
+    {
+      "path": "/assets/arrow-right-CtFnsyvL.js",
+      "sha256": "2cc04ce1656154b8b9a2ba71c9ac7b4496467a60a9b1f0796fa83f2a023b8bf3",
+      "normalizedMatches": [
+        "arrow-right-CKp0qvTU.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/arrow-right-CtFnsyvL.js"
+    },
+    {
+      "path": "/assets/arrow-top-BZd8G6iq.js",
+      "sha256": "2211157e5db89357bd33570e81e965df4eb28667e77b446bcf87db75d3a717f0",
+      "normalizedMatches": [
+        "arrow-top-CGRYDH8i.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/arrow-top-BZd8G6iq.js"
+    },
+    {
+      "path": "/assets/bank-DdKXTP21.js",
+      "sha256": "42d7745e087fd6387d6d2f383d0f1b1532b8727a22298fd1438394c5213101a9",
+      "normalizedMatches": [
+        "bank-DYXaWFG_.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/bank-DdKXTP21.js"
+    },
+    {
+      "path": "/assets/browser-B4qAg7zO.js",
+      "sha256": "3c6bb27440e19d1e32fc45d857a301c5f928094ca6d6c5438db6700a8d1c1e15",
+      "normalizedMatches": [
+        "browser-Dfxp4tps.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/browser-B4qAg7zO.js"
+    },
+    {
+      "path": "/assets/card-BVLvfvwf.js",
+      "sha256": "debd19cc94e708a138f2405a80da920f6c854b26e190c1560f3c2d1270abeb51",
+      "normalizedMatches": [
+        "card-CoFWITRW.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/card-BVLvfvwf.js"
+    },
+    {
+      "path": "/assets/checkmark-BEm2h9zF.js",
+      "sha256": "98592c561bedb36885852e100eee385413164752043b313072395a38630c33de",
+      "normalizedMatches": [
+        "checkmark-uDx6R_my.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/checkmark-BEm2h9zF.js"
+    },
+    {
+      "path": "/assets/checkmark-bold-DplijZ54.js",
+      "sha256": "95fba65b0571ed61827153ac3d9cf9688f9e2c1c088a08c494f2c178ed8613ba",
+      "normalizedMatches": [
+        "checkmark-bold-Bk6Uh0eM.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/checkmark-bold-DplijZ54.js"
+    },
+    {
+      "path": "/assets/chevron-bottom-DZ8jG0iW.js",
+      "sha256": "f6e96a9682f4e04381d8dff58bb57b7fbb295df3acac544fe60fe814a5401108",
+      "normalizedMatches": [
+        "chevron-bottom-C3KfEW6n.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/chevron-bottom-DZ8jG0iW.js"
+    },
+    {
+      "path": "/assets/chevron-left-TR9WR7RM.js",
+      "sha256": "e04ea4febba92e508bb843dadbae9722e60bc759b873410f345a98197a27f7d5",
+      "normalizedMatches": [
+        "chevron-left-CkYGUUiM.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/chevron-left-TR9WR7RM.js"
+    },
+    {
+      "path": "/assets/chevron-right-B_Ht5AZn.js",
+      "sha256": "e1bee7addb7e4effcb0b52240025e06a1b7b4ceff57fe45fe259db99245a0959",
+      "normalizedMatches": [
+        "chevron-right-BFOGM8u8.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/chevron-right-B_Ht5AZn.js"
+    },
+    {
+      "path": "/assets/chevron-top-Bru94ZWU.js",
+      "sha256": "a6ffe4fb9ff7da9e04d4526ffa3f469daba35441f195f3125ceb4980d98a1fc2",
+      "normalizedMatches": [
+        "chevron-top-D5MAbp4h.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/chevron-top-Bru94ZWU.js"
+    },
+    {
+      "path": "/assets/chrome-store-BLMeLBVk.js",
+      "sha256": "b8d380cf29e6f2b6edbde3f1d5bad7e844e28af9f0eec35a4969576213d01956",
+      "normalizedMatches": [
+        "chrome-store-DuePcQmo.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/chrome-store-BLMeLBVk.js"
+    },
+    {
+      "path": "/assets/clock-DCo6FKtl.js",
+      "sha256": "8a114c9aa95e2b51b9d77b855c4c3470dfd9bb7453b9f618ac895769c7d40afb",
+      "normalizedMatches": [
+        "clock-Bk0PheYI.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/clock-DCo6FKtl.js"
+    },
+    {
+      "path": "/assets/close-DMnwQaqb.js",
+      "sha256": "e9428ee9c617c49b670746f040dd655a38ac48749de79df146394edf3c8c7467",
+      "normalizedMatches": [
+        "close-C8umHL-i.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/close-DMnwQaqb.js"
+    },
+    {
+      "path": "/assets/coinPlaceholder-DtuipJH2.js",
+      "sha256": "c6553c722cc4aed2e6d2ffa6175cdf2e95c48de99d284e9122b1c36265cbdca1",
+      "normalizedMatches": [
+        "coinPlaceholder-vvewtQ-g.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/coinPlaceholder-DtuipJH2.js"
+    },
+    {
+      "path": "/assets/compass-36b1zHp-.js",
+      "sha256": "68fa86ac9d3d40f01f656e82aba96de45cbd2283e2f3f8ebfb9a3c000635ae08",
+      "normalizedMatches": [
+        "compass-VgUPHltW.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/compass-36b1zHp-.js"
+    },
+    {
+      "path": "/assets/copy-CdBSxAHd.js",
+      "sha256": "51966cc7514bbafe30327192b675f2ddaf193d1b7ff4ca4a13da81d8229449dc",
+      "normalizedMatches": [
+        "copy-DiJLge1R.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/copy-CdBSxAHd.js"
+    },
+    {
+      "path": "/assets/cursor-DAxEPK5d.js",
+      "sha256": "f08e2d6bb4e21b1a19ad122ead02d0bc52bb27f9183b85f5498f23496d97f47e",
+      "normalizedMatches": [
+        "cursor-BHE89fre.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/cursor-DAxEPK5d.js"
+    },
+    {
+      "path": "/assets/cursor-transparent-Z35-4546.js",
+      "sha256": "90197ce6e60812f4b44cb596d43d29f5720aa534693696b5ede5f697d29da03e",
+      "normalizedMatches": [
+        "cursor-transparent-D0wu--rs.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/cursor-transparent-Z35-4546.js"
+    },
+    {
+      "path": "/assets/desktop-DyohMk6N.js",
+      "sha256": "87b66179342e6a9be99296f1a65d96ec984cf1dffd8a3e0889323d986233fd14",
+      "normalizedMatches": [
+        "desktop-_iX4CTwz.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/desktop-DyohMk6N.js"
+    },
+    {
+      "path": "/assets/disconnect-B0vOj73p.js",
+      "sha256": "c06da9092fd928daac2dcd9fa72bd7f63d16f149a667c30032624ed92452fef6",
+      "normalizedMatches": [
+        "disconnect-X46hQIMO.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/disconnect-B0vOj73p.js"
+    },
+    {
+      "path": "/assets/discord-RPcYyFix.js",
+      "sha256": "c62c7a7e102ecdf7d68edc7e8353cea24732e359e36d56e51b5287b1eee55f80",
+      "normalizedMatches": [
+        "discord-Bs7NM6Ud.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/discord-RPcYyFix.js"
+    },
+    {
+      "path": "/assets/etherscan-JVdeOVxi.js",
+      "sha256": "c6d8aec121e7388bc1cdd3400e00575e9c211896dd551b185bd368839835a3a5",
+      "normalizedMatches": [
+        "etherscan-C4ALQOTo.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/etherscan-JVdeOVxi.js"
+    },
+    {
+      "path": "/assets/exclamation-triangle-BYca2pjm.js",
+      "sha256": "aa1ed8a28adbcd3a7e2f4bdaac45d22682133537a26000b18f621ebf354e53e1",
+      "normalizedMatches": [
+        "exclamation-triangle-9xanqJLS.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/exclamation-triangle-BYca2pjm.js"
+    },
+    {
+      "path": "/assets/extension-CO1b0gqR.js",
+      "sha256": "0f7226a9cbebcb7b476e41e370cb81bd24750f5f748f7b028f4c55896292782d",
+      "normalizedMatches": [
+        "extension-DQOtWir7.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/extension-CO1b0gqR.js"
+    },
+    {
+      "path": "/assets/external-link-a0R2sDmy.js",
+      "sha256": "be6da3786cd8afe12b1e478db9e17acc9234ccf38d6bdc412205fcc946b00d51",
+      "normalizedMatches": [
+        "external-link-D8y1PehC.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/external-link-a0R2sDmy.js"
+    },
+    {
+      "path": "/assets/facebook-Cr_g8kHz.js",
+      "sha256": "8acac8911588056cb277ddcfe5457d8e613a7f729fabe01179b89a24e6f20235",
+      "normalizedMatches": [
+        "facebook-CHV2KynG.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/facebook-Cr_g8kHz.js"
+    },
+    {
+      "path": "/assets/farcaster-BrI_Hj8y.js",
+      "sha256": "363180d2fde2178c6f0a4be9d9d49562ad23267b21650db71336027a617ae11f",
+      "normalizedMatches": [
+        "farcaster-6cVfTVho.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/farcaster-BrI_Hj8y.js"
+    },
+    {
+      "path": "/assets/filters-NJVP0ov-.js",
+      "sha256": "1820d369d871310809b0d6f20a78fc3fc4e648ddb14468d5e80e107034e773f8",
+      "normalizedMatches": [
+        "filters-Cf4NTjew.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/filters-NJVP0ov-.js"
+    },
+    {
+      "path": "/assets/github-D_5jvs4r.js",
+      "sha256": "b24e643133078cd4b691e07c7d1879a72bc7cd3998a133329fbf6923fa22c990",
+      "normalizedMatches": [
+        "github-UzOS976u.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/github-D_5jvs4r.js"
+    },
+    {
+      "path": "/assets/google-Byb4kdkX.js",
+      "sha256": "86d313b3a394b9faf4ba4b0ae9008783c7dfa60b02548890850b54a48e29e448",
+      "normalizedMatches": [
+        "google-CVOSPW8D.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/google-Byb4kdkX.js"
+    },
+    {
+      "path": "/assets/help-circle-CtG8Mzwl.js",
+      "sha256": "33f5524145a4edad64a5a63baa87e1972a7dea2061f599df479fde65dbec803e",
+      "normalizedMatches": [
+        "help-circle-Kr_5lO-U.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/help-circle-CtG8Mzwl.js"
+    },
+    {
+      "path": "/assets/id-BYVa8YRJ.js",
+      "sha256": "bf464eb8a3b06e9e32c3570ba056e5d35ae603b2b18eb562b2ad518f95020186",
+      "normalizedMatches": [
+        "id-BwgOvuml.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/id-BYVa8YRJ.js"
+    },
+    {
+      "path": "/assets/image-CKElC9U4.js",
+      "sha256": "b5d5ec2a410bb636860454f980a792b10b9a7ae119e05c780d56334b821b043d",
+      "normalizedMatches": [
+        "image-CmHuxetB.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/image-CKElC9U4.js"
+    },
+    {
+      "path": "/assets/info-DB6nX3L4.js",
+      "sha256": "bcb1acc29450b1d44fa84cb091802d777866cdfdbd2688f30ca3e10601e17fc1",
+      "normalizedMatches": [
+        "info-DUeBKOy9.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/info-DB6nX3L4.js"
+    },
+    {
+      "path": "/assets/info-circle-4FJ0MrZ0.js",
+      "sha256": "9e22c20e1db5fa3c52ecbc5ebca1d0a474a953ef3dccf1bb240872492836b0e2",
+      "normalizedMatches": [
+        "info-circle-BZSQ3cWd.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/info-circle-4FJ0MrZ0.js"
+    },
+    {
+      "path": "/assets/lightbulb-BbCgfUB5.js",
+      "sha256": "8c16c580015c641024d0748cd1dbe44762122731b4cc6b6ca9747798a67f4d40",
+      "normalizedMatches": [
+        "lightbulb-Cj-PdkFo.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/lightbulb-BbCgfUB5.js"
+    },
+    {
+      "path": "/assets/mail-FNw9QE4K.js",
+      "sha256": "c4891362888fc01b1748ada36b692f880b7b4801100109fd1fcbb1fd9bd14fb9",
+      "normalizedMatches": [
+        "mail-DOCup0f9.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/mail-FNw9QE4K.js"
+    },
+    {
+      "path": "/assets/mobile-CvZTVQdO.js",
+      "sha256": "5791b1d1ea5ee0ffa03c72d017f1015b9cfc700bc0d3864ef8586cd8c1140cdd",
+      "normalizedMatches": [
+        "mobile-HSP_rfQ1.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/mobile-CvZTVQdO.js"
+    },
+    {
+      "path": "/assets/more-CAiFhEzj.js",
+      "sha256": "c61502cfc2c732725ffac059f75bf7df5341a608a8de4680b48a32bfc9420fbc",
+      "normalizedMatches": [
+        "more-PmOVjzw7.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/more-CAiFhEzj.js"
+    },
+    {
+      "path": "/assets/network-placeholder-sqNOoSh6.js",
+      "sha256": "91ff376838c08061a72d769ef78bc05e406e9dd092662e4fe57b66df1f2c964f",
+      "normalizedMatches": [
+        "network-placeholder-DT9oN6pa.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/network-placeholder-sqNOoSh6.js"
+    },
+    {
+      "path": "/assets/nftPlaceholder-D3XYMxqb.js",
+      "sha256": "b10e345ca7620ed153f4962a05a0c0c25367ede18082f1fcff0cd3e5709c2d79",
+      "normalizedMatches": [
+        "nftPlaceholder-BPZ9yq3Y.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/nftPlaceholder-D3XYMxqb.js"
+    },
+    {
+      "path": "/assets/off-MxYDO5aM.js",
+      "sha256": "ad201d1d0f63a42dbf7cc0c09a0955ebfb65bfe465e7eb14776e8fa4d89f448e",
+      "normalizedMatches": [
+        "off-CspQ3qBl.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/off-MxYDO5aM.js"
+    },
+    {
+      "path": "/assets/play-store-BA1hxD8H.js",
+      "sha256": "57f797e2e62f1113ecdc6c257bf44a5f94c8e8826d3bdd28e158c3ee32e5466c",
+      "normalizedMatches": [
+        "play-store-rafirUAo.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/play-store-BA1hxD8H.js"
+    },
+    {
+      "path": "/assets/plus-BT2SXQF8.js",
+      "sha256": "4e1d24623b828878b0e8d8fe46edf90b03a0a384e34acc904fa793066beb7c08",
+      "normalizedMatches": [
+        "plus-BigLEsJ6.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/plus-BT2SXQF8.js"
+    },
+    {
+      "path": "/assets/qr-code-B4TFwFQ4.js",
+      "sha256": "4684b871306e5c22c175fd28ee23bd8c7cb9db45962fce0da01be6ad60d31a5b",
+      "normalizedMatches": [
+        "qr-code-1QDjPd0z.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/qr-code-B4TFwFQ4.js"
+    },
+    {
+      "path": "/assets/recycle-horizontal-BSeIyrj2.js",
+      "sha256": "9eb31e148492eff4ef8bf855c0d86bc1a1742f2aea653b16ebb4930543eccfa0",
+      "normalizedMatches": [
+        "recycle-horizontal-TNRyjqt5.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/recycle-horizontal-BSeIyrj2.js"
+    },
+    {
+      "path": "/assets/refresh-C2UClKJE.js",
+      "sha256": "7f5631add543438f478302940a24067d53012dee20359e4417ab8fd8481413b2",
+      "normalizedMatches": [
+        "refresh-DC9khMO7.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/refresh-C2UClKJE.js"
+    },
+    {
+      "path": "/assets/reown-logo-BZah1YUP.js",
+      "sha256": "6e96497f94185f9f3d348c8a05f1aae12974a032ecab4c1508d3d239d93afc58",
+      "normalizedMatches": [
+        "reown-logo-DYS0ZRUw.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/reown-logo-BZah1YUP.js"
+    },
+    {
+      "path": "/assets/search-Br0LPMF2.js",
+      "sha256": "22ec915ff508fded5bd9c6e1d12ef6fc3d2bedc0aaf604dd1f87e9e41906e9d4",
+      "normalizedMatches": [
+        "search-CiiIngAa.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/search-Br0LPMF2.js"
+    },
+    {
+      "path": "/assets/send-CSVcaUUD.js",
+      "sha256": "fb91ef2081606a0b5daf4b56eb12e67548115dc5d04a99c6a95514b9a5a58bdf",
+      "normalizedMatches": [
+        "send-DjIh38so.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/send-CSVcaUUD.js"
+    },
+    {
+      "path": "/assets/swapHorizontal-ChiCo1wj.js",
+      "sha256": "31bbfded24f839066004ed40e6e8f27da75a0b8b61d8abf83391bbe79bf93fc4",
+      "normalizedMatches": [
+        "swapHorizontal-BulEg45y.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/swapHorizontal-ChiCo1wj.js"
+    },
+    {
+      "path": "/assets/swapHorizontalBold-CD1BSpLS.js",
+      "sha256": "d017ab9124e0f10d489c64d532e20ed50235674a4eadf35cddead2bc3800bfc5",
+      "normalizedMatches": [
+        "swapHorizontalBold-BFg1kGoj.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/swapHorizontalBold-CD1BSpLS.js"
+    },
+    {
+      "path": "/assets/swapHorizontalMedium-BsVv-2j3.js",
+      "sha256": "57c2184717ac2caff67ff60a776fa3ddb030906f3261200c9bae2ced1c00d0db",
+      "normalizedMatches": [
+        "swapHorizontalMedium-YBwGs5NS.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/swapHorizontalMedium-BsVv-2j3.js"
+    },
+    {
+      "path": "/assets/swapHorizontalRoundedBold-CINvIPGq.js",
+      "sha256": "d672452668bdc8dfc0a3f8f8fd35e1bc62ff68aec39b3dcc10aeb406f208e382",
+      "normalizedMatches": [
+        "swapHorizontalRoundedBold-CfNm7xPC.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/swapHorizontalRoundedBold-CINvIPGq.js"
+    },
+    {
+      "path": "/assets/swapVertical-DSoJNN8n.js",
+      "sha256": "86c6a7ce0bc75f880745ae35c4c9bd775b91c273683525c693128b77428018d4",
+      "normalizedMatches": [
+        "swapVertical-JgzgQY8h.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/swapVertical-DSoJNN8n.js"
+    },
+    {
+      "path": "/assets/telegram-BQy3yFx7.js",
+      "sha256": "833b9e13d718c0450a9249744b740a31b70e469669b7ecc0a15a57a37477b3cc",
+      "normalizedMatches": [
+        "telegram-CAkyvOjx.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/telegram-BQy3yFx7.js"
+    },
+    {
+      "path": "/assets/three-dots-GzcdPrfS.js",
+      "sha256": "abb4a1b59893c0e062c46757a8ad6a149407596c5dc665ed9f9427bec445a13b",
+      "normalizedMatches": [
+        "three-dots-ChEJYnjD.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/three-dots-GzcdPrfS.js"
+    },
+    {
+      "path": "/assets/twitch-CnF9_UAW.js",
+      "sha256": "d3bf18753076778798a90c66e23a230031a2aeab56a6e713445cf55798b012c3",
+      "normalizedMatches": [
+        "twitch-MRTQlobQ.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/twitch-CnF9_UAW.js"
+    },
+    {
+      "path": "/assets/twitterIcon-BQGtoYWi.js",
+      "sha256": "927d64557358c4119374135e3d3ce843c1bf31e3a155b2cb35b11d4f3c6f22fa",
+      "normalizedMatches": [
+        "twitterIcon-Bj0M9oGP.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/twitterIcon-BQGtoYWi.js"
+    },
+    {
+      "path": "/assets/verify-D9BY8R1N.js",
+      "sha256": "60195d2728d4109850acb85b7b3271d491dbf70c102dc9d111522b6c306338d0",
+      "normalizedMatches": [
+        "verify-i1ufU1A4.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/verify-D9BY8R1N.js"
+    },
+    {
+      "path": "/assets/verify-filled-CyndWPIg.js",
+      "sha256": "06a51a9216c6368c6bf10a9fa2d1d68589dda419eaad9d8bc25a1c66b60cdbfe",
+      "normalizedMatches": [
+        "verify-filled-BL50bAGS.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/verify-filled-CyndWPIg.js"
+    },
+    {
+      "path": "/assets/wallet-dh_0IdPF.js",
+      "sha256": "dd6677921f5565381fbb9981b55dfe2d73bb8efc5bd27bf47f2fe4b27ad8639a",
+      "normalizedMatches": [
+        "wallet-CEX_xdRm.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/wallet-dh_0IdPF.js"
+    },
+    {
+      "path": "/assets/wallet-placeholder-DEbllj_0.js",
+      "sha256": "888f32eea95b49216204abc7b1c5a3d8235f49c031184c1d0223a0b62014475d",
+      "normalizedMatches": [
+        "wallet-placeholder-Dc1gduKX.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/wallet-placeholder-DEbllj_0.js"
+    },
+    {
+      "path": "/assets/walletconnect-CZwU1KT_.js",
+      "sha256": "bd016fc24bed45280ab17a097461598fb4c7e2bb5b1ad1ced0479c2c0115deeb",
+      "normalizedMatches": [
+        "walletconnect-BDtoVebJ.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/walletconnect-CZwU1KT_.js"
+    },
+    {
+      "path": "/assets/warning-circle-BiJZFhgK.js",
+      "sha256": "1133c3d3d27534a7f3f4a01ae5dec5b569d4597c7ac338b0c81d1fa719705665",
+      "normalizedMatches": [
+        "warning-circle-DUGuEilr.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/warning-circle-BiJZFhgK.js"
+    },
+    {
+      "path": "/assets/x-fjC_Ws7s.js",
+      "sha256": "f561dd10b6b6b79a043cbdf4f1b07770afb76378feeab829af3ada2770ba8b76",
+      "normalizedMatches": [
+        "x-CK8b7ZXl.js"
+      ],
+      "finalUrl": "https://hui-pot.vercel.app/assets/x-fjC_Ws7s.js"
+    }
+  ],
+  "scope": "Recursively discovered same-origin JS/CSS string references. Normalization removes only eight-character generated filename hashes. External resources, extension injection and dynamically computed URLs are not covered."
+}

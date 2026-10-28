@@ -1,0 +1,6 @@
+{
+  "equalAfterBindingAndChunkHashNormalization": false,
+  "publicLength": 918956,
+  "localLength": 919120,
+  "scope": "Babel lexical binding rename, preserving property/import names, literals and operations; generated JS/CSS filename hashes normalized."
+}

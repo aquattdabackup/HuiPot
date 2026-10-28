@@ -1,0 +1,61 @@
+{
+  "scope": "Production component executed with controlled hooks; no DOM/wallet; expected acceptance assertions, not Studio regression suite",
+  "passed": 6,
+  "failed": 2,
+  "results": [
+    {
+      "name": "Valid production submit: exact target, chain, 1-USDC goal and no deposit",
+      "pass": true,
+      "writes": 1,
+      "errors": {}
+    },
+    {
+      "name": "Disconnected blocks write",
+      "pass": true,
+      "writes": 0,
+      "errors": {}
+    },
+    {
+      "name": "Wrong chain requests switch without write",
+      "pass": true,
+      "writes": 0,
+      "errors": {}
+    },
+    {
+      "name": "Missing acknowledgement blocks write",
+      "pass": true,
+      "writes": 0,
+      "errors": {
+        "reviewed": "Please acknowledge the terms before creating."
+      }
+    },
+    {
+      "name": "Expired deadline blocks write",
+      "pass": true,
+      "writes": 0,
+      "errors": {
+        "deadline": "Deadline must be in the future."
+      }
+    },
+    {
+      "name": "Contract recipient blocks write",
+      "pass": true,
+      "writes": 0,
+      "errors": {
+        "recipient": "Recipient cannot be this contract."
+      }
+    },
+    {
+      "name": "Zero recipient should be rejected before wallet request",
+      "pass": false,
+      "writes": 1,
+      "errors": {}
+    },
+    {
+      "name": "Different target in receipt must not confirm original request",
+      "pass": false,
+      "writes": 0,
+      "errors": {}
+    }
+  ]
+}

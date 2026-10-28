@@ -1,0 +1,10 @@
+{
+  "publicAsset": "index-DKsGIngY.js",
+  "localAsset": "index-B_xcfERZ.js",
+  "publicSha256": "e8a7c443330042d10ec4bc30ed2cfb7538b687ee866e19f87838b7b8d7e419f1",
+  "localSha256": "63ee7313db1c315ac6e0f9573058fd7be9fd9d7013c2d18cb3331c5321adecd1",
+  "equalAfterChunkFilenameHashNormalization": true,
+  "publicCharacters": 1592452,
+  "localCharacters": 1592452,
+  "limitation": "Only main entry asset compared, chunk filename hashes normalized; not whole site byte identity."
+}

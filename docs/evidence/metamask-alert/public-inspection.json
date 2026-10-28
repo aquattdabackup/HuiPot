@@ -1,0 +1,31 @@
+{
+  "url": "https://hui-pot.vercel.app/",
+  "finalUrl": "https://hui-pot.vercel.app/",
+  "status": 200,
+  "scripts": [
+    "/assets/index-DKsGIngY.js"
+  ],
+  "assets": [
+    {
+      "url": "https://hui-pot.vercel.app/assets/index-DKsGIngY.js",
+      "sha256": "e8a7c443330042d10ec4bc30ed2cfb7538b687ee866e19f87838b7b8d7e419f1",
+      "excerpts": [
+        {
+          "marker": "functionName:\"createPool\"",
+          "found": true,
+          "snippet": "==0}function D(V){if(V.preventDefault(),!n||!U())return;if(R){r({chainId:Ye});return}const H=Hu(l);O.current={account:e??\"\",chainId:t??Ye},A({address:tt,abi:kn,functionName:\"createPool\",args:[d.trim(),H,BigInt(M),o.trim(),s.trim()],chainId:Ye})}let F,z=!1;if(j&&L){for(const V of L.logs)if(V.address.toLowerCase()===tt.toLowerCase())try{const H=NU({abi:kn,eventName:\"PoolCreated\",data:V.data,topics:V.topics}),K=(Y=H.args.poolId)==null?void 0:Y.toString(),$=H.args.recipient??\"\",re=H.args.creator??\"\",te=((G=O.current)==null?void 0:G.accoun"
+        },
+        {
+          "marker": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+          "found": true,
+          "snippet": "tion:e!==I.Fragment}),Zue=bae({...vle,...Fue,...Eue,...Bue},Gue),li=Ose(Zue);function N8(){!I8.current&&wP();const[e]=I.useState(Fp.current);return e}const J6=\"0x81a139599d252eb2dc2bbb6c267e911a21264288\",kP=/^0x[0-9a-fA-F]{40}$/.test(J6)&&J6!==\"0x0000000000000000000000000000000000000000\",tt=kP?J6:\"0x0000000000000000000000000000000000000000\",Lf=kP,kn=[{name:\"InvalidPoolId\",type:\"error\",inputs:[]},{name:\"createPool\",type:\"function\",stateMutability:\"nonpayable\",inputs:[{name:\"recipient\",type:\"address\"},{name:\"target\",type:\"uint256\"},{nam"
+        },
+        {
+          "marker": "name:\"InvalidPoolId\"",
+          "found": true,
+          "snippet": "21264288\",kP=/^0x[0-9a-fA-F]{40}$/.test(J6)&&J6!==\"0x0000000000000000000000000000000000000000\",tt=kP?J6:\"0x0000000000000000000000000000000000000000\",Lf=kP,kn=[{name:\"InvalidPoolId\",type:\"error\",inputs:[]},{name:\"createPool\",type:\"function\",stateMutability:\"nonpayable\",inputs:[{name:\"recipient\",type:\"address\"},{name:\"target\",type:\"uint256\"},{name:\"deadline\",type:\"uint256\"},{name:\"title\",type:\"string\"},{name:\"purpose\",type:\"string\"}],outputs:[]},{name:\"contribute\",type:\"function\",stateMutability:\"payable\",inputs:[{name:\"poolId\",type:\"ui"
+        }
+      ]
+    }
+  ]
+}

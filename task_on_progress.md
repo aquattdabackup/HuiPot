@@ -1,5 +1,13 @@
 # Task On Progress
 
+## Active blocker — MetaMask classification, October 29
+- Main pulled at 589b8ec; app 53c8190 unchanged. User requested deep investigation, and authorized MetaMask Support contact. Concise message/follow-up sent; no human ticket/detection reason established.
+- See docs/METAMASK_DEEP_RECHECK.md. Exact user calldata is createPool, 1 USDC goal, title test/purpose 1, deadline Oct 29 noon Vietnam; canonical encoding and read-only call pass at expected target/value. Full wallet envelope unavailable. Runtime executable matches after CBOR removal, full byte hashes differ.
+- 93 public JS/CSS assets inspected: 92 match normalized local build; one vendor chunk has helper-wrapper/build differences, full provenance remains open. No confirmed cause of warning.
+- Production Create probes 6 pass/2 fail: zero recipient reaches wallet; wrong-target receipt can confirm. Studio fixes prepared in STUDIO_CREATE_SAFETY_FIX.md. Incorrect appUrl correction prepared separately; installed injected MetaMask connector does not receive that field.
+- Do not sign/bypass warning or claim false positive. No app source, contracts or hosting modified. Keep raw wallet calldata/account out of public evidence.
+
+
 ## Current checkpoint
 - Reviewed Studio output 53c8190ed2a5dde8e7eb1ed953e15fffa19271f7, parent 0f8d4e4e12d2052c44cade277719e012b8e07e13. PFI1/PFI2 accepted at local source/integration/synthetic-page scope.
 - Forge 120/0/0; Vitest 165/0/0; check/build exit 0. Initial missing-dependency Forge compile failed before tests, then unchanged source passed after environment repair. Original probes 29/29; additional probes 8/8; real TanStack transition probes 18/18. Manifest: 45 matching files.

@@ -1,0 +1,17 @@
+{
+  "decoded": {
+    "functionName": "createPool",
+    "args": [
+      "[wallet omitted]",
+      "1000000000000000000",
+      "1793250000",
+      "test",
+      "1"
+    ]
+  },
+  "canonicalEncodingMatches": true,
+  "deadlineUTC": "2026-10-29T05:00:00.000Z",
+  "deadlineVietnam": "29/10/2026, 12:00:00",
+  "targetUSDC": "1",
+  "calldataBytes": 292
+}
