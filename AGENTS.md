@@ -8,7 +8,17 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest independent acceptance — 53c8190 PFI1/PFI2
+## Latest Studio delivery — CS1/CS2/metadata (2e777fb)
+
+- Input: `e727ddf49503668b2d3ab812f2a6b95f9837c078`.
+- Output SHA: `2e777fb` (confirmed push `e727ddf..2e777fb  main -> main`).
+- Changed: `src/pages/Create.tsx`, `src/config.ts`, `src/lib/__tests__/createSafety.test.ts`.
+- CS1: validate() rejects all-zero recipient before writeContract. CS2: submittedRef captures full snapshot; receipt validated against all PoolCreated fields. Metadata: appUrl corrected to `https://hui-pot.vercel.app`.
+- New test file `createSafety.test.ts`: 19 cases. Probes: 8/8 (was 6/8).
+- Validation: oxlint 0/0, tsc 0; vitest 184/184 (6 files); forge 120/120; build exit 0.
+- Open: mounted DOM, keyboard, live wallet, live replacement, MetaMask classification (independent provider observation required).
+
+## Previous independent acceptance — 53c8190 PFI1/PFI2
 
 - Reviewed output: `53c8190ed2a5dde8e7eb1ed953e15fffa19271f7`; input: `0f8d4e4e12d2052c44cade277719e012b8e07e13`.
 - PFI1/PFI2 accepted at local source/integration/synthetic-page scope. Independent Forge 120/120, Vitest 165/165, check/build exit 0; original probes 29/29, additional probes 8/8, real-query transition probes 18/18.
