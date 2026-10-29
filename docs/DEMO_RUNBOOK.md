@@ -1,5 +1,7 @@
 # HuiPot demo and finish checklist
 
+**October 29 update:** user completed pool 7 funding/payout/Proof and pool 8 missed-goal/refund/Proof on the public app. RPC receipt/transfer checks are recorded in [TESTNET_DEMO_ACCEPTANCE.md](TESTNET_DEMO_ACCEPTANCE.md). This supersedes older “not yet run” statements below for these specific flows. Follow [STUDIO_FINAL_FIX_PASS.md](STUDIO_FINAL_FIX_PASS.md) for remaining source/build/test repairs. Other browser and mainnet/submission gates remain open.
+
 Updated October 27, 2026 (Asia/Ho_Chi_Minh). Validated source: c3ae551f1ca541de415b75e4d2718b5b3cc73781; public follow-up input: 80d4778f2da5144d060d51e6f163dcf75c9ae8e6. See [source review](STUDIO_ERROR_DISPATCH_RECHECK.md), [public observations](PUBLIC_POSTDEPLOY_RECHECK.md) and [PF1/PF2 Studio handoff](STUDIO_PUBLIC_FLOW_FIX.md). Actual public deployment SHA remains unverified.
 
 ## What works and what “finished” means

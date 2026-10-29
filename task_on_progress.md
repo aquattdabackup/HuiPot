@@ -1,5 +1,12 @@
 # Task On Progress
 
+## Active closure handoff — after successful testnet demo
+- User asked to close remaining defects. Pulled main ba02ec6e686c5b490239c42e32811c262fad3d10; source still 00252d0. No need to rerun unchanged suites solely for documentation.
+- Human completed pool 7 0.4+0.6 contributions, 1-USDC payout to Buyer and Proof; pool 8 0.2 contribution, expiry, refund to TTuan and Proof. RPC receipts/transfers independently checked; user screenshots inspected. See docs/TESTNET_DEMO_ACCEPTANCE.md and evidence/testnet-demo-2026-10-29.
+- Prepared docs/STUDIO_FINAL_FIX_PASS.md for existing manual Studio browser workflow: CWR4 types/build, CWR5 portable paths/clock, CWR6 actual-library revert handling plus correct reproducible probes/report. Do not reopen accepted live happy paths or promise MetaMask/mainnet clearance.
+- Source not modified and Studio prompt not executed. Next user action: push documentation from an authenticated terminal, run the focused prompt in Studio, then independently review its resulting commit.
+- October 30 delivery check: documentation committed locally; push failed because GitHub credentials cannot be prompted in this session. Direct ls-remote returned main 00252d0e38e4bc9e047072246e905424c8878951, despite local planning HEAD ba02ec6. Local presence is not evidence of publication. Do not force push; reconcile any subsequent remote changes before delivery.
+
 ## Current review — 00252d0, October 29
 - Pulled 00252d0e38e4bc9e047072246e905424c8878951 from 4d9f3c07ac74a02689be16039d949e0bc413e03a. Report: docs/STUDIO_CWR_ACCEPTANCE_RECHECK.md; evidence docs/evidence/recheck-00252d0. Source unchanged.
 - Forge 120/120; Vitest 200 pass / 10 fail due Windows URL pathname; check exit 2/build exit 1 due four missing Node type errors. Runner additionally uses expired fixed noon fixture without a controlled clock; independently reproduced before/after deadline.

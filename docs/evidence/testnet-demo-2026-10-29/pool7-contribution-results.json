@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-29T11:56:00.238Z",
+  "chainId": 5042002,
+  "results": [
+    {
+      "hash": "0x9c714e0155cb0b160a66a29a7f076e354073ba3ed47e04d7278c98c072ac0f5b",
+      "status": "success",
+      "from": "0x7719878979fabb28e5c35f9aeb1f4614bf2a3eee",
+      "to": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+      "value": "600000000000000000",
+      "fee": "0.0011826",
+      "events": [
+        {
+          "eventName": "Contributed",
+          "args": {
+            "poolId": "7",
+            "contributor": "0x7719878979FabB28e5C35F9aEB1F4614Bf2a3EEE",
+            "amount": "600000000000000000",
+            "newTotal": "1000000000000000000"
+          }
+        },
+        {
+          "eventName": "GoalReached",
+          "args": {
+            "poolId": "7",
+            "target": "1000000000000000000"
+          }
+        }
+      ],
+      "pool": [
+        "0x7719878979FabB28e5C35F9aEB1F4614Bf2a3EEE",
+        "0x2b270B135667f38bB58Fc9376F29c95173641D31",
+        "1000000000000000000",
+        "1793276400",
+        "Demo — Successful Funding",
+        "Test contributions and payout to a fixed recipient.",
+        "1000000000000000000",
+        "0",
+        false
+      ],
+      "poolStatus": 1
+    }
+  ]
+}

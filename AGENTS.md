@@ -8,6 +8,12 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
+## Current repair handoff and human demo checkpoint
+
+- Main pulled at `ba02ec6e686c5b490239c42e32811c262fad3d10`; application remains 00252d0. Execute docs/STUDIO_FINAL_FIX_PASS.md in the existing Studio project: CWR4 build/types, CWR5 portable/time-stable tests, CWR6 actual revert classification, accurate reporting/probes.
+- User-operated pool 7 contribution/payout/Proof and pool 8 missed-goal/refund/Proof passed. Public RPC confirms 1 USDC payout and 0.2 USDC refund. See docs/TESTNET_DEMO_ACCEPTANCE.md. This supersedes older blanket statements that no live flows were exercised, without asserting a full browser suite or exact deployed SHA.
+- No MetaMask clearance or mainnet/submission acceptance. Handoff prepared; Studio execution pending.
+
 ## Latest independent review — 00252d0
 
 - Actual input `4d9f3c07ac74a02689be16039d949e0bc413e03a`; reviewed output `00252d0e38e4bc9e047072246e905424c8878951`. See docs/STUDIO_CWR_ACCEPTANCE_RECHECK.md.

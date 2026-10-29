@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-29T12:00:50.449Z",
+  "chainId": 5042002,
+  "results": [
+    {
+      "hash": "0x177184a3e8a088090fa5f0f4f4b9cacbd0ad95655ec6f837cd65f0e86e79c9c6",
+      "status": "success",
+      "from": "0x7719878979fabb28e5c35f9aeb1f4614bf2a3eee",
+      "to": "0x81a139599d252eb2dc2bbb6c267e911a21264288",
+      "value": "0",
+      "fee": "0.005320225",
+      "events": [
+        {
+          "eventName": "PoolCreated",
+          "args": {
+            "poolId": "8",
+            "creator": "0x7719878979FabB28e5C35F9aEB1F4614Bf2a3EEE",
+            "recipient": "0x2b270B135667f38bB58Fc9376F29c95173641D31",
+            "target": "2000000000000000000",
+            "deadline": "1793275800",
+            "title": "Demo — Refund Protection",
+            "purpose": "Test contributor refunds after an unmet funding deadline."
+          }
+        }
+      ],
+      "pool": [
+        "0x7719878979FabB28e5C35F9aEB1F4614Bf2a3EEE",
+        "0x2b270B135667f38bB58Fc9376F29c95173641D31",
+        "2000000000000000000",
+        "1793275800",
+        "Demo — Refund Protection",
+        "Test contributor refunds after an unmet funding deadline.",
+        "0",
+        "0",
+        false
+      ],
+      "poolStatus": 0
+    }
+  ]
+}
