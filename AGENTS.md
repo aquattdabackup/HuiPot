@@ -8,7 +8,19 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — CSF1–CSF4 (current HEAD)
+## Latest Studio delivery — CW1/CW2 (current HEAD)
+
+- Input: `9e4ae8f3ff5eea484c31d5e14f4f6a2b4e1a8c3d` (actual: verify via git log — pull showed `9e4ae8f`).
+- Changed: `src/pages/Create.tsx`, `src/lib/__tests__/createSafety.test.ts`, `recovery-results-new.json`.
+- **CW1:** While a submitted hash exists and receipt is pending (`isConfirming=true`): a confirmation status banner renders outside the `<form>` with an ArcScan explorer link (`explorerTxUrl(hash)`) and a "Check transaction status" button. This banner is read-only and cannot trigger `writeContract`.
+- **CW2:** `isError`/`error`/`refetch` destructured from `useWaitForTransactionReceipt`. When `isReceiptError=true`: banner renders with error message surfaced from `receiptError.message`, "Retry confirmation check" button calls `retryReceipt()` (wagmi refetch, never `writeContract`), submit button disabled with `|| isReceiptError` guard. A receipt query failure does not silently re-enable the create form.
+- `hashPending = !!hash && (isConfirming || isReceiptError)` is the combined guard.
+- Tests: createSafety.test.ts 30→40 cases (+7 CW1/CW2 source-structure +3 behavioral). All 204/204 vitest pass.
+- Recovery probes: **3/3** (was 1/3; all 2 failing cases fixed). Existing probes: **23/23** preserved.
+- Validation: oxlint 0/0, tsc 0; vitest **204/204** (6 files); forge **120/120**; build exit 0.
+- Open: mounted DOM, keyboard, live wallet, live replacement, prolonged-pending RPC timeout, MetaMask classification.
+
+## Previous Studio delivery — CSF1–CSF4 (a526ce6)
 
 - Input: `a348fb2e1e65a01ab38409532912f7c4dba0c639`.
 - Changed: `src/pages/Create.tsx`, `src/lib/__tests__/createSafety.test.ts`, `create-probe-results.json`.

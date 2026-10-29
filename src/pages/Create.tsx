@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { ConnectKitButton } from 'connectkit'
-import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert } from 'lucide-react'
+import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert, RefreshCw, ExternalLink } from 'lucide-react'
 import { decodeEventLog } from 'viem'
 import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
 import { TARGET_CHAIN_ID, parseProductAmount, formatNativeAmount, explorerTxUrl } from '../config'
@@ -36,7 +36,16 @@ export function Create() {
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
   // CSF3: pin receipt watching to the submitted Arc Testnet chain so that a wallet
   // or config network switch after submission does not redirect lookup to another chain.
-  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
+  // CW2: also destructure isError/error/refetch so receipt-query failures are surfaced
+  // and a retry action (read-only refetch) is available without calling writeContract.
+  const {
+    isLoading: isConfirming,
+    isSuccess,
+    data: receipt,
+    isError: isReceiptError,
+    error: receiptError,
+    refetch: retryReceipt,
+  } = useWaitForTransactionReceipt({
     hash,
     chainId: TARGET_CHAIN_ID,
   })
@@ -324,6 +333,11 @@ export function Create() {
     } catch { return null }
   })()
 
+  // CW1/CW2: determine whether a submitted hash is currently being watched or errored.
+  // While the outcome is unknown we show a read-only status banner and keep the submit
+  // button disabled so the user cannot create a second pool.
+  const hashPending = !!hash && (isConfirming || isReceiptError)
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6">
@@ -344,6 +358,68 @@ export function Create() {
           Set a fixed goal, recipient, and deadline. Terms cannot be changed after creation.
         </p>
       </div>
+
+      {/* CW1/CW2: confirmation status banner — shown whenever a hash exists but outcome is
+          still unknown (waiting for receipt, or receipt query errored). This section is
+          read-only: the retry button calls retryReceipt (a wagmi refetch) and never calls
+          writeContract or requests a new signature. It is rendered outside the <form> so
+          it cannot be accidentally submitted. */}
+      {hashPending && (
+        <div
+          className="mb-6 rounded-xl p-4 text-sm"
+          style={{
+            background: isReceiptError ? 'var(--error-bg)' : 'var(--warning-bg)',
+            border: `1px solid ${isReceiptError ? 'var(--error-text)' : 'var(--border)'}`,
+            color: isReceiptError ? 'var(--error-text)' : 'var(--warning-text)',
+          }}
+        >
+          <div className="flex items-start gap-3">
+            {isReceiptError ? (
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            ) : (
+              <Loader2 className="h-4 w-4 mt-0.5 shrink-0 animate-spin" />
+            )}
+            <div className="flex-1 min-w-0">
+              {isReceiptError ? (
+                <>
+                  <p className="font-medium mb-1">Could not confirm the transaction</p>
+                  <p className="text-xs opacity-80 mb-3">
+                    {receiptError instanceof Error ? receiptError.message : 'Receipt lookup failed. The transaction may still have been mined.'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium mb-1">Waiting for confirmation…</p>
+                  <p className="text-xs opacity-80 mb-3">
+                    Your transaction was submitted. Do not create another pool — check the status below.
+                  </p>
+                </>
+              )}
+              <div className="flex flex-wrap gap-3 items-center">
+                {/* CW1: explorer link available as soon as hash exists */}
+                <a
+                  href={explorerTxUrl(hash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Check transaction on ArcScan
+                </a>
+                {/* CW2: read-only retry — only calls refetch, never writeContract */}
+                <button
+                  type="button"
+                  onClick={() => retryReceipt()}
+                  className="inline-flex items-center gap-1 text-xs underline"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  {isReceiptError ? 'Retry confirmation check' : 'Check transaction status'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!DEPLOYED && (
         <div
@@ -610,7 +686,7 @@ export function Create() {
         ) : (
           <button
             type="submit"
-            disabled={!DEPLOYED || isPending || isConfirming}
+            disabled={!DEPLOYED || isPending || isConfirming || isReceiptError}
             className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
             style={{ background: 'var(--accent)' }}
           >
@@ -621,6 +697,10 @@ export function Create() {
             ) : isConfirming ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" /> Confirming…
+              </span>
+            ) : isReceiptError ? (
+              <span className="flex items-center justify-center gap-2">
+                <AlertCircle className="h-4 w-4" /> Confirmation error — use retry above
               </span>
             ) : (
               'Create pool'
