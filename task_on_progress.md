@@ -1,5 +1,11 @@
 # Task On Progress
 
+## Active public issue — Create stuck Confirming, October 29
+- User transaction 0xa1cfc4e3f0e3547a9a965eb9d83e785cd2a1767036b914c339ac4dd2c617c08b created pool #3 successfully, but supplied UI screenshot still shows Confirming. Exact browser trigger/hash/network logs unknown.
+- Installed wagmi core read-only waiter resolves the same receipt in 339 ms. Public bundle contains current Create repair markers.
+- Confirmed gaps: no pending transaction link/recovery, no finite app wait, receipt-query errors ignored and submit can re-enable while outcome unknown. Controlled production probes 1 pass / 2 fail.
+- Studio task prepared, not executed: docs/STUDIO_CREATE_CONFIRMATION_RECOVERY.md. No duplicate pool submission, contract change or signing. Prior 23/23 acceptance is scoped and did not cover this waiting/error recovery.
+
 ## Latest review — a526ce6, October 29
 - Pulled/reviewed a526ce6a551651f059988539e2fe9fbe20a366bc from input a348fb2e1e65a01ab38409532912f7c4dba0c639. CSF1–CSF3 and ESM repair accepted at source/synthetic production scope.
 - Independent Forge 120/120, Vitest 194/194, check/build exit 0; production probes 23/23, identical to Studio results. No source edits.

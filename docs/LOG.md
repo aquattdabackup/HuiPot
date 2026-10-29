@@ -425,3 +425,7 @@ Input e727ddf49503668b2d3ab812f2a6b95f9837c078; Studio source 2e777fbabfa49db41e
 ## October 29, 2026 — a526ce6 independent Create acceptance
 
 Input a348fb2e1e65a01ab38409532912f7c4dba0c639; output a526ce6a551651f059988539e2fe9fbe20a366bc. CSF1–CSF3 and ESM repair accepted at source/synthetic scope. Independent Forge 120/120, Vitest 194/194, check/build exit 0, unchanged production probes 23/23 matching Studio. Test-file count is 29, not 30; source/ABI/fixture-only Vitest coverage remains a maintenance gap, with actual production behavior tested separately. See STUDIO_CREATE_SAFETY_ACCEPTANCE.md and evidence/recheck-a526ce6. No app-source edits, signing, deployment or hosting changes; no MetaMask clearance claim.
+
+## October 29, 2026 — Public Create confirmation recovery gap
+
+At HEAD 9182db2f6e7fcdf9f0d913494175bc8a1296f68f, user supplied successful pool #3 transaction and a screenshot still showing Confirming. Live read-only wagmi core waiter returns success in 339 ms. Exact browser-session trigger unknown. Public entry contains accepted Create markers. Controlled production probes find missing pending recovery/link and ignored receipt-query errors (1 pass/2 fail); no app-level wait timeout is configured. Prepared STUDIO_CREATE_CONFIRMATION_RECOVERY.md for Studio; no source edits or signatures. Evidence: evidence/create-confirming.

@@ -1,0 +1,16 @@
+{
+  "hash": "0xa1cfc4e3f0e3547a9a965eb9d83e785cd2a1767036b914c339ac4dd2c617c08b",
+  "checkedAt": "2026-10-29T07:24:02.033Z",
+  "scope": "Installed wagmi core waitForTransactionReceipt, read-only; 15-second review timeout, not browser reproduction",
+  "durationMs": 339,
+  "status": "success",
+  "chainId": 5042002,
+  "transactionHash": "0xa1cfc4e3f0e3547a9a965eb9d83e785cd2a1767036b914c339ac4dd2c617c08b",
+  "blockNumber": "69633265",
+  "calls": [
+    {
+      "at": "2026-10-29T07:24:01.747Z",
+      "body": {}
+    }
+  ]
+}
