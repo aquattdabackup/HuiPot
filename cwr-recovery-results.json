@@ -1,0 +1,25 @@
+{
+  "scope": "Unchanged production Create component; persistent mocked refs across submit/receipt renders; real viem logs. No DOM, wallet, RPC or copied predicate.",
+  "passed": 2,
+  "failed": 1,
+  "results": [
+    {
+      "name": "Pending receipt exposes read-only recovery or explorer link",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Receipt RPC failure is shown rather than silently re-enabling create",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Confirmed receipt still shows correct success",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    }
+  ]
+}

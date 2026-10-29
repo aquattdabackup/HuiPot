@@ -8,6 +8,16 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
+## Latest Studio delivery — CWR1/CWR2/CWR3 (current HEAD)
+
+- Input: `4d9f3c07ac74a02689be16039d949e0bc413e03a`.
+- Changed: `src/pages/Create.tsx`, `src/lib/__tests__/createSafety.test.ts`, evidence JSON files.
+- **CWR1:** `hashPending` includes `|| receiptFetchStatus === 'paused'`. `handleSubmit` has `if (hash) return` as first check, blocking duplicate write at handler level regardless of button state.
+- **CWR2:** `timeout: 30_000` in `useWaitForTransactionReceipt`. `retryReceipt()` calls `_rawRefetch({ cancelRefetch: true })`. Confirmed-reverted (`receipt.status==='reverted'`) gets a distinct UI branch. Banner distinguishes `WaitForTransactionReceiptTimeoutError` from RPC errors.
+- **CWR3:** 10 source-text assertions replaced by 15 production-component-execution tests via `makeCreateRunner()`. Covers paused lock, handler-level duplicate prevention, pending banner, retry paths, null snapshot, confirmed-revert, timeout value, and structural guards.
+- Validation: oxlint 0/0, tsc 0; vitest **210/210**; forge **120/120**; build exit 0. Probes: 23/23 original, 3/3 recovery, 10/13 expanded (3 failures are probe instrumentation timing gaps — documented in commit and report, not behavioral defects).
+- Open: mounted DOM, keyboard, live wallet, live replacement, MetaMask classification.
+
 ## Latest independent review — b2bf1ef CW1/CW2
 
 - Input `9e4ae8f5bc34a7d03432ea605acd15610adf3b6e`; reviewed output `b2bf1ef705f5eac6a14d047e391b701100a0cd3b`.

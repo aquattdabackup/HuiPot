@@ -36,19 +36,29 @@ export function Create() {
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
   // CSF3: pin receipt watching to the submitted Arc Testnet chain so that a wallet
   // or config network switch after submission does not redirect lookup to another chain.
-  // CW2: also destructure isError/error/refetch so receipt-query failures are surfaced
-  // and a retry action (read-only refetch) is available without calling writeContract.
+  // CW2: destructure isError/error/refetch/fetchStatus so receipt-query failures are
+  // surfaced and a read-only retry is available without calling writeContract.
+  // CWR2: timeout=30_000ms gives a finite recovery boundary; wagmi default is 0 (no bound).
   const {
     isLoading: isConfirming,
     isSuccess,
     data: receipt,
     isError: isReceiptError,
     error: receiptError,
-    refetch: retryReceipt,
+    refetch: _rawRefetch,
+    fetchStatus: receiptFetchStatus,
   } = useWaitForTransactionReceipt({
     hash,
     chainId: TARGET_CHAIN_ID,
+    timeout: 30_000,
   })
+
+  // CWR2: cancelRefetch:true ensures a retry starts an independent receipt read rather
+  // than deduplicating against the existing in-flight promise. This lets the probe and
+  // real browser observe waiterCalls > 1 on retry. Never calls writeContract.
+  function retryReceipt() {
+    void _rawRefetch({ cancelRefetch: true })
+  }
 
   // CS2: Immutable submission snapshot — captured at the moment writeContract is called.
   // Receipt validation checks all these fields against the PoolCreated event so that a
@@ -134,6 +144,13 @@ export function Create() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // CWR1: if a hash is already submitted and outcome is still unknown (pending,
+    // paused/offline, or receipt error), block any new submission at the handler
+    // level. This prevents a duplicate creation even if the visible button is
+    // somehow enabled (e.g. keyboard Enter, programmatic trigger, or a paused
+    // query with isLoading=false and isError=false).
+    if (hash) return
 
     // PF2: disconnected submit must never reach writeContract even if triggered
     // by a keyboard Enter or an unexpected button click. Return silently — the
@@ -247,8 +264,45 @@ export function Create() {
   const minedHash = (isSuccess && receipt?.transactionHash) ? receipt.transactionHash : hash
 
   if (isSuccess && receipt) {
+    // CWR2: distinguish a confirmed-reverted transaction from a replaced/unmatched one.
+    // wagmi v2 returns isSuccess=true with receipt.status='reverted' for on-chain reverts;
+    // this is different from a transport/RPC error (isError=true) or a matched success.
+    if (receipt.status === 'reverted') {
+      return (
+        <div className="mx-auto max-w-lg px-4 py-12 text-center">
+          <div
+            className="mb-4 flex h-16 w-16 items-center justify-center rounded-full mx-auto"
+            style={{ background: 'var(--error-bg)' }}
+          >
+            <AlertCircle className="h-8 w-8" style={{ color: 'var(--error-text)' }} />
+          </div>
+          <h1 className="display text-xl font-bold mb-2" style={{ color: 'var(--ink)' }}>
+            Transaction reverted — no pool created
+          </h1>
+          <p className="mb-6 text-sm" style={{ color: 'var(--muted)' }}>
+            The transaction was confirmed on-chain but reverted. No pool was created. This may be
+            caused by a validation error in the contract (e.g. invalid recipient or expired deadline).
+            Check the transaction for details, then try again with corrected terms.
+          </p>
+          <div className="flex flex-col gap-3">
+            <a
+              href={explorerTxUrl(minedHash!)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm underline"
+              style={{ color: 'var(--muted)' }}
+            >
+              View reverted transaction on ArcScan
+            </a>
+            <Link to="/create" className="text-sm" style={{ color: 'var(--muted)' }} onClick={() => window.location.reload()}>
+              Try again
+            </Link>
+          </div>
+        </div>
+      )
+    }
     if (!poolCreatedEventFound) {
-      // Receipt succeeded but no matching PoolCreated event — replacement or unrelated tx
+      // Receipt succeeded (status=success) but no matching PoolCreated event — replaced or unrelated tx
       return (
         <div className="mx-auto max-w-lg px-4 py-12 text-center">
           <div
@@ -333,10 +387,13 @@ export function Create() {
     } catch { return null }
   })()
 
-  // CW1/CW2: determine whether a submitted hash is currently being watched or errored.
-  // While the outcome is unknown we show a read-only status banner and keep the submit
-  // button disabled so the user cannot create a second pool.
-  const hashPending = !!hash && (isConfirming || isReceiptError)
+  // CWR1/CW1/CW2: determine whether a submitted hash is still unresolved.
+  // isConfirming covers isLoading=true (active fetch).
+  // isReceiptError covers a settled RPC/transport error.
+  // receiptFetchStatus==='paused' covers the TanStack offline/paused state where
+  // isLoading and isError are both false but the query has not completed — the
+  // outcome is still unknown and must not re-enable the create form.
+  const hashPending = !!hash && (isConfirming || isReceiptError || receiptFetchStatus === 'paused')
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -376,15 +433,33 @@ export function Create() {
           <div className="flex items-start gap-3">
             {isReceiptError ? (
               <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            ) : receiptFetchStatus === 'paused' ? (
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             ) : (
               <Loader2 className="h-4 w-4 mt-0.5 shrink-0 animate-spin" />
             )}
             <div className="flex-1 min-w-0">
               {isReceiptError ? (
                 <>
-                  <p className="font-medium mb-1">Could not confirm the transaction</p>
+                  {/* CWR2: distinguish timeout (outcome unknown) from transport/RPC error */}
+                  <p className="font-medium mb-1">
+                    {receiptError?.name === 'WaitForTransactionReceiptTimeoutError'
+                      ? 'Confirmation timed out — outcome unknown'
+                      : 'Could not confirm the transaction'}
+                  </p>
                   <p className="text-xs opacity-80 mb-3">
-                    {receiptError instanceof Error ? receiptError.message : 'Receipt lookup failed. The transaction may still have been mined.'}
+                    {receiptError?.name === 'WaitForTransactionReceiptTimeoutError'
+                      ? 'The transaction may still be pending or already mined. A timeout is not proof of failure. Check ArcScan or retry.'
+                      : (receiptError instanceof Error ? receiptError.message : 'Receipt lookup failed. The transaction may still have been mined.')}
+                  </p>
+                </>
+              ) : receiptFetchStatus === 'paused' ? (
+                <>
+                  {/* CWR1: offline/paused — outcome unknown, do not claim failure */}
+                  <p className="font-medium mb-1">Waiting for confirmation — offline</p>
+                  <p className="text-xs opacity-80 mb-3">
+                    Network is unavailable. The transaction was submitted but confirmation is paused.
+                    Do not create another pool. Check ArcScan when back online.
                   </p>
                 </>
               ) : (
@@ -686,7 +761,7 @@ export function Create() {
         ) : (
           <button
             type="submit"
-            disabled={!DEPLOYED || isPending || isConfirming || isReceiptError}
+            disabled={!DEPLOYED || isPending || isConfirming || isReceiptError || receiptFetchStatus === 'paused'}
             className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
             style={{ background: 'var(--accent)' }}
           >

@@ -1,0 +1,144 @@
+{
+  "scope": "Unchanged production Create component; persistent mocked refs across submit/receipt renders; real viem logs. No DOM, wallet, RPC or copied predicate.",
+  "passed": 15,
+  "failed": 8,
+  "results": [
+    {
+      "name": "CS1 valid submission captures every trimmed snapshot field",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "CS1 zero blocks write with expected error",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "CS1 self blocks write with expected error",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "CS1 malformed blocks write with expected error",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "Disconnected blocks submission",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "Wrong chain blocks submission",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "Missing acknowledgement blocks submission",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "CS2 valid matching receipt succeeds after actual submit",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "CS2 different target rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 different deadline rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 different title rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 different purpose rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 different creator rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 different recipient rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 different address rejected with full actual snapshot",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 original receipt still matches after form edits",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "CS2 account switch does not rebind original receipt",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "name": "CS2 missing snapshot must reject foreign creator and different terms",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 empty snapshot account must not skip creator check",
+      "pass": false,
+      "error": "TypeError: Cannot set properties of null (setting 'account')"
+    },
+    {
+      "name": "CS2 cancellation without event does not confirm pool",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "name": "CS2 success explorer link uses mined replacement hash",
+      "expected": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "actual": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "pass": true
+    },
+    {
+      "name": "CS2 cancellation explorer link uses mined replacement hash",
+      "expected": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "actual": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "pass": true
+    },
+    {
+      "name": "CS2 receipt watcher remains pinned to submitted chain after switch",
+      "expected": 5042002,
+      "actual": 5042002,
+      "pass": true
+    }
+  ]
+}

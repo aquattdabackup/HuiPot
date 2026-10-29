@@ -309,114 +309,298 @@ describe('Wallet metadata — appUrl correction', () => {
 
 // ─── CW1/CW2 — confirmation recovery ─────────────────────────────────────────
 
-describe('CW1/CW2 — confirmation recovery (source structure)', () => {
+// ─── CW1/CW2/CWR — production component execution ────────────────────────────
+//
+// These tests execute the Create component through the production transpiler
+// path (TypeScript → CommonJS) with controlled hooks, then inspect the rendered
+// tree and call the actual handler functions. They do not mount a browser DOM or
+// invoke a wallet, but they do execute all production logic including snapshot
+// capture, log decoding, and state classification.
 
-  it('CW1-STRUCT: useWaitForTransactionReceipt destructures isError and refetch', async () => {
-    const src = await import('../../pages/Create?raw') as { default: string }
-    // Must destructure isError (as isReceiptError) from the receipt watcher
-    expect(src.default).toMatch(/isError\s*:\s*isReceiptError/)
-    // Must destructure refetch (as retryReceipt) for read-only retry
-    expect(src.default).toMatch(/refetch\s*:\s*retryReceipt/)
+import { createRequire } from 'module'
+import { transpileModule, ModuleKind, ScriptTarget, JsxEmit } from 'typescript'
+
+// Load production component with controlled hooks
+function makeCreateRunner() {
+  const cjsRequire = createRequire(import.meta.url)
+  const React = cjsRequire('react')
+  const viem  = cjsRequire('viem')
+  const contractSrc = (cjsRequire('fs') as typeof import('fs'))
+    .readFileSync(new URL('../../contract.ts', import.meta.url).pathname, 'utf8')
+  const configSrc = (cjsRequire('fs') as typeof import('fs'))
+    .readFileSync(new URL('../../config.ts', import.meta.url).pathname, 'utf8')
+  const abi = new Function(
+    transpileModule(
+      contractSrc.slice(contractSrc.indexOf('export const HUIPOT_ABI')).replace('export const', 'const'),
+      { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2020 } },
+    ).outputText + '; return HUIPOT_ABI',
+  )()
+  const moneyFns = new Function(
+    'PRODUCT_DECIMALS', 'QUANTUM', 'UINT256_MAX',
+    transpileModule(
+      configSrc
+        .slice(configSrc.indexOf('export function parseProductAmount'), configSrc.indexOf('export function explorerTxUrl'))
+        .split('export function').join('function'),
+      { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2020 } },
+    ).outputText + '; return { parseProductAmount, formatNativeAmount }',
+  )(6, 10n ** 12n, (1n << 256n) - 1n)
+
+  const CONTRACT = '0x81a139599d252eb2dc2bbb6c267e911a21264288'
+  const WALLET   = '0x1111111111111111111111111111111111111111'
+  const HASH_A   = ('0x' + 'a'.repeat(64)) as `0x${string}`
+  const HASH_B   = ('0x' + 'b'.repeat(64)) as `0x${string}`
+  const noop = () => {}
+
+  let hashValue: string | undefined
+  let retries = 0
+  let nextReceipt: Record<string, unknown> | null = null
+  let states: unknown[], index: number, writes: unknown[]
+  let connected: boolean, chain: number
+  let receipt: Record<string, unknown>
+  let errors: Record<string, string>
+  let account: string
+  let refs: Array<{ current: unknown }>, refIndex: number
+
+  const mocks: Record<string, unknown> = {
+    react: {
+      ...React,
+      useState: () => { const i = index++; return [states[i], (x: unknown) => { if (i === 7) errors = x as Record<string, string> }] },
+      useRef: (initial: unknown) => { const i = refIndex++; return refs[i] ?? (refs[i] = { current: initial }) },
+    },
+    'react-router-dom': { Link: 'a' },
+    wagmi: {
+      useAccount: () => ({ address: account, chainId: chain, isConnected: connected }),
+      useSwitchChain: () => ({ switchChain: (_x: unknown) => {} }),
+      useWriteContract: () => ({
+        writeContract: (x: unknown) => { writes.push(x); hashValue = HASH_A as string },
+        data: hashValue,
+        isPending: false, isError: false,
+      }),
+      useWaitForTransactionReceipt: (_args: unknown) => {
+        const r = receipt
+        return {
+          ...r,
+          refetch: (r as Record<string, unknown>).refetch
+            ?? ((_opts?: unknown) => { retries++; if (nextReceipt) receipt = nextReceipt as Record<string, unknown>; return Promise.resolve({ data: receipt }) }),
+        }
+      },
+    },
+    connectkit: { ConnectKitButton: { Custom: () => null } },
+    'lucide-react': new Proxy({}, { get: () => () => null }),
+    '../contract': { HUIPOT_ADDRESS: CONTRACT, HUIPOT_ABI: abi, DEPLOYMENT_CONFIGURED: true },
+    '../config': { ...moneyFns, TARGET_CHAIN_ID: 5042002, explorerTxUrl: (x: string) => x },
+    '../lib/utils': { formatDeadline: () => '', parseOnchainError: () => '' },
+    '../components/CommitmentNotice': { CommitmentNotice: () => null },
+  }
+
+  const src = (cjsRequire('fs') as typeof import('fs'))
+    .readFileSync(new URL('../../pages/Create.tsx', import.meta.url).pathname, 'utf8')
+  const mod = { exports: {} as Record<string, unknown> }
+  new Function('require', 'module', 'exports',
+    transpileModule(src, { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2020, jsx: JsxEmit.ReactJSX } }).outputText,
+  )((n: string) => mocks[n] ?? cjsRequire(n), mod, mod.exports)
+
+  const Create = mod.exports.Create as () => unknown
+
+  function nodes(t: unknown): unknown[] {
+    if (!t || typeof t !== 'object') return []
+    if (Array.isArray(t)) return t.flatMap(nodes)
+    const elem = t as { type?: unknown; props?: { children?: unknown } }
+    return [t, ...nodes(elem.props?.children)]
+  }
+  function textOf(t: unknown): string { return JSON.stringify(t, (_, x) => typeof x === 'bigint' ? x.toString() : x) }
+  function links(t: unknown) { return nodes(t).filter(x => (x as Record<string,unknown>).type === 'a' && typeof (x as Record<string,unknown> & {props?:{href?:unknown}}).props?.href === 'string').map(x => (x as Record<string, unknown> & {props:{href:string}}).props.href) }
+  function submitBtn(t: unknown) { return nodes(t).find(x => (x as Record<string,unknown> & {props?:{type?:string}}).props?.type === 'submit') as (Record<string,unknown> & {props:{disabled:boolean}}) | undefined }
+  function retryBtn(t: unknown) { return nodes(t).find(x => (x as Record<string,unknown> & {props?:{type?:string}}).props?.type === 'button' && /retry|check.*status/i.test(textOf(x))) as (Record<string,unknown> & {props:{onClick:()=>void}}) | undefined }
+  function successH1(t: unknown) { return nodes(t).some(x => (x as Record<string,unknown> & {props?:{children?:unknown}}).type === 'h1' && (x as Record<string,unknown> & {props:{children:unknown}}).props.children === 'Pool created') }
+  function revertedH1(t: unknown) { return nodes(t).some(x => (x as Record<string,unknown> & {props?:{children?:unknown}}).type === 'h1' && String((x as Record<string,unknown> & {props:{children:unknown}}).props.children).includes('reverted')) }
+
+  function makeLog(opts: Record<string, unknown> = {}) {
+    const values = { poolId: 1n, creator: WALLET, recipient: WALLET, target: 10n ** 18n, deadline: BigInt(Math.floor(new Date('2026-10-29T12:00:00').getTime() / 1000)), title: 'test', purpose: '1', address: CONTRACT, ...opts }
+    return {
+      address: values.address as string,
+      topics: viem.encodeEventTopics({ abi, eventName: 'PoolCreated', args: values }),
+      data: viem.encodeAbiParameters([{type:'uint256'},{type:'uint256'},{type:'string'},{type:'string'}], [values.target, values.deadline, values.title, values.purpose]),
+    }
+  }
+
+  function reset() {
+    hashValue = undefined; retries = 0; nextReceipt = null
+    states = [' test ', ' 1 ', '1', WALLET, '2026-10-29', '12:00', true, {}]
+    index = 0; refIndex = 0; refs = []; account = WALLET
+    writes = []; errors = {}; connected = true; chain = 5042002
+    receipt = { isLoading: false, isSuccess: false, fetchStatus: 'idle' }
+  }
+  function render() { index = 0; refIndex = 0; return Create() }
+  function doSubmit() { const t = render(); const form = nodes(t).find(x => (x as Record<string,unknown>).type === 'form') as (Record<string,unknown> & {props:{onSubmit:(e:{preventDefault:()=>void})=>void}}) | undefined; form?.props.onSubmit({ preventDefault: noop }); return t }
+
+  return { reset, render, doSubmit, links, submitBtn, retryBtn, successH1, revertedH1, makeLog, nodes, textOf, HASH_A, HASH_B, CONTRACT, WALLET, get writes() { return writes }, get retries() { return retries }, get errors() { return errors }, get receipt() { return receipt }, set receipt(v) { receipt = v as Record<string, unknown> }, get nextReceipt() { return nextReceipt }, set nextReceipt(v) { nextReceipt = v }, get refs() { return refs } }
+}
+
+describe('CWR/CW1/CW2 — confirmation recovery (production component execution)', () => {
+
+  it('CWR1-BEH: paused/offline query shows explorer link and keeps submit disabled', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: false, fetchStatus: 'paused' }
+    const t = r.render()
+    const btn = r.submitBtn(t)
+    expect(btn?.props.disabled).toBe(true)
+    expect(r.links(t)).toContain(r.HASH_A)
   })
 
-  it('CW1-STRUCT: submit button disabled condition includes isReceiptError', async () => {
-    const src = await import('../../pages/Create?raw') as { default: string }
-    // Submit button must remain disabled when receipt error exists (outcome unknown)
-    expect(src.default).toMatch(/disabled.*isReceiptError|isReceiptError.*disabled/)
+  it('CWR1-BEH: handleSubmit blocks second write when paused (hash guard)', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit() // first write, writes.length = 1
+    r.receipt = { isLoading: false, isSuccess: false, isError: false, fetchStatus: 'paused' }
+    r.doSubmit() // second attempt — must be blocked by `if (hash) return`
+    expect(r.writes.length).toBe(1)
   })
 
-  it('CW1-STRUCT: explorer link for submitted hash is shown while pending', async () => {
-    const src = await import('../../pages/Create?raw') as { default: string }
-    // A link using explorerTxUrl(hash) must appear in the confirmation banner
-    expect(src.default).toMatch(/explorerTxUrl\(hash\)/)
+  it('CWR1-BEH: handleSubmit blocks second write during receipt error (handler guard)', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('RPC'), fetchStatus: 'idle' }
+    r.doSubmit() // must be blocked — hash is set, handler returns early
+    expect(r.writes.length).toBe(1)
   })
 
-  it('CW2-STRUCT: retry button calls retryReceipt (not writeContract)', async () => {
-    const src = await import('../../pages/Create?raw') as { default: string }
-    // Retry must invoke retryReceipt() — a wagmi refetch, not a new write
-    expect(src.default).toContain('retryReceipt()')
-    // writeContract must NOT appear inside the retry click handler
-    // (i.e. retryReceipt and writeContract are distinct call sites)
-    const retryIdx = src.default.indexOf('retryReceipt()')
-    const writeIdx = src.default.indexOf('writeContract(')
-    // They exist at different positions — retry is not a writeContract alias
-    expect(retryIdx).toBeGreaterThan(-1)
-    expect(writeIdx).toBeGreaterThan(-1)
-    expect(retryIdx).not.toBe(writeIdx)
+  it('CW1-BEH: pending receipt shows submitted hash link outside form and disables submit', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: true, isSuccess: false, fetchStatus: 'fetching' }
+    const t = r.render()
+    const form = r.nodes(t).find((x: unknown) => (x as Record<string,unknown>).type === 'form') as unknown
+    const formLinks = r.links(form)
+    expect(r.links(t)).toContain(r.HASH_A)    // link present in tree
+    expect(formLinks).not.toContain(r.HASH_A) // not inside the form
+    expect(r.submitBtn(t)?.props.disabled).toBe(true)
   })
 
-  it('CW2-STRUCT: hashPending guards the recovery banner', async () => {
+  it('CW2-BEH: receipt error shows message, submit disabled, retry is read-only', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('RPC unavailable'), fetchStatus: 'idle' }
+    const t = r.render()
+    r.retryBtn(t)?.props.onClick()
+    expect(r.textOf(t)).toContain('RPC unavailable')
+    expect(r.submitBtn(t)?.props.disabled).toBe(true)
+    expect(r.retries).toBe(1)
+    expect(r.writes.length).toBe(1)
+  })
+
+  it('CWR2-BEH: retry with valid receipt uses original snapshot and shows exactly one write', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('timeout'), fetchStatus: 'idle' }
+    r.nextReceipt = { isSuccess: true, data: { status: 'success', transactionHash: r.HASH_B, logs: [r.makeLog()] }, fetchStatus: 'idle' }
+    r.retryBtn(r.render())?.props.onClick()
+    const t = r.render()
+    expect(r.successH1(t)).toBe(true)
+    expect(r.links(t)).toContain(r.HASH_B)
+    expect(r.writes.length).toBe(1)
+    expect(r.retries).toBe(1)
+  })
+
+  it('CWR2-BEH: retry with unindexed receipt stays pending and locked', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, fetchStatus: 'idle' }
+    r.nextReceipt = { isLoading: true, isSuccess: false, data: undefined, fetchStatus: 'fetching' }
+    r.retryBtn(r.render())?.props.onClick()
+    const t = r.render()
+    expect(r.successH1(t)).toBe(false)
+    expect(r.submitBtn(t)?.props.disabled).toBe(true)
+    expect(r.links(t)).toContain(r.HASH_A)
+    expect(r.writes.length).toBe(1)
+  })
+
+  it('CWR2-BEH: retry with mismatched target stays unmatched with mined link', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, fetchStatus: 'idle' }
+    r.nextReceipt = { isSuccess: true, data: { status: 'success', transactionHash: r.HASH_B, logs: [r.makeLog({ target: 2n * 10n ** 18n })] }, fetchStatus: 'idle' }
+    r.retryBtn(r.render())?.props.onClick()
+    const t = r.render()
+    expect(r.successH1(t)).toBe(false)
+    expect(r.links(t)).toContain(r.HASH_B)
+    expect(r.writes.length).toBe(1)
+  })
+
+  it('CWR2-BEH: retry with null snapshot does not confirm success', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.refs[0].current = null // wipe the snapshot after write
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, fetchStatus: 'idle' }
+    r.nextReceipt = { isSuccess: true, data: { status: 'success', transactionHash: r.HASH_B, logs: [r.makeLog()] }, fetchStatus: 'idle' }
+    r.retryBtn(r.render())?.props.onClick()
+    expect(r.successH1(r.render())).toBe(false)
+    expect(r.writes.length).toBe(1)
+  })
+
+  it('CWR2-BEH: confirmed-reverted receipt shows "reverted" heading not success', () => {
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isSuccess: true, data: { status: 'reverted', transactionHash: r.HASH_B, logs: [] }, fetchStatus: 'idle' }
+    const t = r.render()
+    expect(r.successH1(t)).toBe(false)
+    expect(r.revertedH1(t)).toBe(true)
+    expect(r.links(t)).toContain(r.HASH_B)
+  })
+
+  it('CWR2-BEH: finite timeout is passed to useWaitForTransactionReceipt', async () => {
     const src = await import('../../pages/Create?raw') as { default: string }
-    // hashPending must be defined and used to conditionally show the banner
+    // Source-level verification: timeout must be a positive numeric literal
+    expect(src.default).toMatch(/timeout\s*:\s*[1-9][0-9]+/)
+    // Must not be 0 (default is 0 = no bound)
+    expect(src.default).not.toMatch(/timeout\s*:\s*0[,\s}]/)
+  })
+
+  it('CWR1-STRUCT: paused fetchStatus included in hashPending guard', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain("receiptFetchStatus === 'paused'")
     expect(src.default).toContain('hashPending')
-    expect(src.default).toMatch(/hashPending\s*&&/)
   })
 
-  it('CW1-STRUCT: recovery banner is outside the <form> element', async () => {
+  it('CWR1-STRUCT: handleSubmit has hash guard before writeContract', async () => {
     const src = await import('../../pages/Create?raw') as { default: string }
-    // The hashPending banner must appear before the <form> tag
+    const hashGuardIdx = src.default.indexOf('if (hash) return')
+    const writeIdx = src.default.indexOf('writeContract(')
+    expect(hashGuardIdx).toBeGreaterThan(-1)
+    expect(writeIdx).toBeGreaterThan(-1)
+    expect(hashGuardIdx).toBeLessThan(writeIdx)
+  })
+
+  it('CWR2-STRUCT: cancelRefetch guard on retry', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain('cancelRefetch')
+  })
+
+  it('CWR2-STRUCT: confirmed-revert branch is distinct from unmatched branch', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain("receipt.status === 'reverted'")
+    expect(src.default).toContain('Transaction reverted')
+    // Unmatched branch still present
+    expect(src.default).toContain('Transaction succeeded — no pool created')
+  })
+
+  it('CW1-STRUCT: recovery banner is outside the form element', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
     const bannerIdx = src.default.indexOf('hashPending &&')
     const formIdx   = src.default.indexOf('<form ')
     expect(bannerIdx).toBeGreaterThan(-1)
     expect(formIdx).toBeGreaterThan(-1)
     expect(bannerIdx).toBeLessThan(formIdx)
-  })
-
-  it('CW2-STRUCT: receiptError message is rendered in the banner', async () => {
-    const src = await import('../../pages/Create?raw') as { default: string }
-    // Error message from receiptError must be surfaced in the UI
-    expect(src.default).toMatch(/receiptError.*message|receiptError instanceof Error/)
-  })
-
-})
-
-// ─── CW1/CW2 — confirmation recovery (behavioral with production ABI) ─────────
-
-describe('CW1/CW2 — confirmation recovery (behavioral, production ABI)', () => {
-
-  it('CW2-BEH: isReceiptError disables the submit path (hash + errorState together)', () => {
-    // isReceiptError=true means outcome unknown; submit button must be disabled.
-    // We verify this via the source guard: disabled={... || isReceiptError}
-    // The behavioral check: the disable flag is a boolean OR including isReceiptError.
-    const disableExpr = '!DEPLOYED || isPending || isConfirming || isReceiptError'
-    // That exact expression must appear in the button
-    // (already verified in STRUCT; this confirms the guard is present and complete)
-    // We re-verify by checking the source programmatically for the combined guard.
-    const source = `disabled={${disableExpr}}`
-    expect(source).toContain('isReceiptError')
-  })
-
-  it('CW1-BEH: explorerTxUrl is called with hash (not minedHash) in pending banner', async () => {
-    const src = await import('../../pages/Create?raw') as { default: string }
-    // In the pending banner, the link uses the submitted hash (hash is all we have while
-    // waiting — receipt.transactionHash is not yet available). minedHash is for the
-    // post-receipt links in the success/unmatched screens.
-    const bannerIdx = src.default.indexOf('hashPending &&')
-    const minedIdx  = src.default.indexOf('minedHash', bannerIdx)
-    const hashIdx   = src.default.indexOf('explorerTxUrl(hash)', bannerIdx)
-    // explorerTxUrl(hash) appears in the banner section
-    expect(hashIdx).toBeGreaterThan(-1)
-    // minedHash should appear later (in success/unmatched screens), not be the only link
-    // The key: explorerTxUrl(hash) is present in the banner
-    expect(hashIdx).toBeLessThan(minedIdx === -1 ? Infinity : minedIdx + 10000)
-  })
-
-  it('CW1-BEH: PoolCreated log decode still works for positive confirmation (ABI unchanged)', () => {
-    // Verify the ABI still has the PoolCreated event so successful confirmation
-    // after a CW1/CW2 retry still runs through the full snapshot validation.
-    const event = HUIPOT_ABI.find(
-      (e): e is typeof e & { type: 'event'; name: string } =>
-        e.type === 'event' && 'name' in e && e.name === 'PoolCreated'
-    )
-    expect(event).toBeDefined()
-    const log = makePoolCreatedLog()
-    const decoded = decodeEventLog({
-      abi: HUIPOT_ABI,
-      eventName: 'PoolCreated',
-      data: log.data,
-      topics: log.topics,
-    })
-    expect((decoded.args as Record<string, unknown>).poolId).toBe(1n)
   })
 
 })
