@@ -36,8 +36,20 @@ export function Create() {
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash })
 
-  // Track the identity at the moment of submission so we can detect replacement/stale state
-  const submittedRef = useRef<{ account: string; chainId: number } | null>(null)
+  // CS2: Immutable submission snapshot — captured at the moment writeContract is called.
+  // Receipt validation checks all these fields against the PoolCreated event so that a
+  // receipt with matching creator/recipient but a different target, deadline, title or
+  // purpose is never shown as successful pool creation.
+  const submittedRef = useRef<{
+    account: string
+    chainId: number
+    contractAddress: string
+    recipient: string
+    targetNative: bigint
+    deadlineUnix: number
+    title: string
+    purpose: string
+  } | null>(null)
 
   const wrongChain = isConnected && chainId !== TARGET_CHAIN_ID
 
@@ -78,6 +90,11 @@ export function Create() {
       errs.recipient = 'Recipient address is required.'
     } else if (!/^0x[0-9a-fA-F]{40}$/.test(recipient.trim())) {
       errs.recipient = 'Enter a valid 0x Ethereum address.'
+    } else if (/^0x0{40}$/.test(recipient.trim())) {
+      // CS1: reject the all-zero address before wallet invocation.
+      // The contract would revert with InvalidRecipient, but we reject early
+      // so no wallet prompt is shown for a clearly invalid recipient.
+      errs.recipient = 'Recipient cannot be the zero address.'
     } else if (recipient.trim().toLowerCase() === HUIPOT_ADDRESS.toLowerCase()) {
       errs.recipient = 'Recipient cannot be this contract.'
     }
@@ -118,7 +135,17 @@ export function Create() {
 
     const targetNative = parseProductAmount(targetStr)
 
-    submittedRef.current = { account: address ?? '', chainId: chainId ?? TARGET_CHAIN_ID }
+    // CS2: capture full immutable submission context before wallet prompt.
+    submittedRef.current = {
+      account: address ?? '',
+      chainId: chainId ?? TARGET_CHAIN_ID,
+      contractAddress: HUIPOT_ADDRESS,
+      recipient: recipient.trim(),
+      targetNative,
+      deadlineUnix: deadlineUnix!,
+      title: title.trim(),
+      purpose: purpose.trim(),
+    }
     writeContract({
       address: HUIPOT_ADDRESS,
       abi: HUIPOT_ABI,
@@ -134,14 +161,18 @@ export function Create() {
     })
   }
 
-  // R3: Extract poolId only from a PoolCreated log emitted by the HuiPot contract itself.
-  // A successful replacement/cancel transaction that emits no matching log must NOT be shown as success.
+  // CS2 + R3: Extract poolId only from a PoolCreated log emitted by the expected contract.
+  // Validate the event against every field of the immutable submission snapshot so that a
+  // receipt with a different target, deadline, title, or purpose is not shown as success.
+  // A receipt with no matching log (replacement, cancellation, unrelated tx) is not success.
   let createdPoolId: string | undefined
   let poolCreatedEventFound = false
   if (isSuccess && receipt) {
+    const snap = submittedRef.current
     for (const log of receipt.logs) {
-      // Must be emitted by our contract — reject logs from unrelated addresses
-      if (log.address.toLowerCase() !== HUIPOT_ADDRESS.toLowerCase()) continue
+      // Must be emitted by the expected contract address — reject logs from unrelated addresses
+      const expectedContract = snap?.contractAddress ?? HUIPOT_ADDRESS
+      if (log.address.toLowerCase() !== expectedContract.toLowerCase()) continue
       try {
         const decoded = decodeEventLog({
           abi: HUIPOT_ABI,
@@ -149,16 +180,41 @@ export function Create() {
           data: log.data,
           topics: log.topics,
         })
-        const poolId = (decoded.args as { poolId?: bigint }).poolId?.toString()
-        const logRecipient = (decoded.args as { recipient?: string }).recipient ?? ''
-        const logCreator = (decoded.args as { creator?: string }).creator ?? ''
-        // Verify the creator matches the submitting account (R3: not a replacement from a different sender)
-        const submittedAccount = submittedRef.current?.account ?? ''
-        if (
-          poolId &&
-          (!submittedAccount || logCreator.toLowerCase() === submittedAccount.toLowerCase()) &&
-          logRecipient.toLowerCase() === recipient.trim().toLowerCase()
-        ) {
+        const args = decoded.args as {
+          poolId?: bigint
+          creator?: string
+          recipient?: string
+          target?: bigint
+          deadline?: bigint
+          title?: string
+          purpose?: string
+        }
+        const poolId = args.poolId?.toString()
+        const logCreator = (args.creator ?? '').toLowerCase()
+        const logRecipient = (args.recipient ?? '').toLowerCase()
+        const logTarget = args.target
+        const logDeadline = args.deadline
+        const logTitle = args.title ?? ''
+        const logPurpose = args.purpose ?? ''
+
+        // Creator must match the submitting account when known (R3: not a replacement)
+        const submittedAccount = snap?.account ?? ''
+        if (submittedAccount && logCreator !== submittedAccount.toLowerCase()) break
+
+        // Recipient must match the submitted recipient
+        const submittedRecipient = snap?.recipient ?? recipient.trim()
+        if (logRecipient !== submittedRecipient.toLowerCase()) break
+
+        // CS2: target, deadline, title and purpose must all match the submission snapshot.
+        // If snapshot is missing (defensive: should always be set), skip these checks.
+        if (snap) {
+          if (logTarget !== snap.targetNative) break
+          if (logDeadline !== BigInt(snap.deadlineUnix)) break
+          if (logTitle !== snap.title) break
+          if (logPurpose !== snap.purpose) break
+        }
+
+        if (poolId) {
           createdPoolId = poolId
           poolCreatedEventFound = true
         }

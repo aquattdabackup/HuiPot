@@ -89,6 +89,8 @@ export const wagmiConfig = createConfig(
     walletConnectProjectId: (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string) || '',
     appName: 'HuiPot Goal Pool',
     appDescription: 'Pool USDC for one shared goal',
-    appUrl: 'https://studio.arc.io',
+    // Canonical application URL — used by ConnectKit's WalletConnect metadata branch.
+    // MetaMask injected-wallet connector is independent of this field (see METAMASK_DEEP_RECHECK.md).
+    appUrl: 'https://hui-pot.vercel.app',
   }),
 )
