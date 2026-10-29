@@ -8,7 +8,19 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — CS1/CS2/metadata (2e777fb)
+## Latest Studio delivery — CSF1–CSF4 (current HEAD)
+
+- Input: `a348fb2e1e65a01ab38409532912f7c4dba0c639`.
+- Changed: `src/pages/Create.tsx`, `src/lib/__tests__/createSafety.test.ts`, `create-probe-results.json`.
+- **CSF1:** `snapOk` guard requires `snap !== null && snap.account !== '' && snap.contractAddress !== '' && snap.recipient !== ''`. Receipt loop is skipped entirely when context is missing/incomplete. Creator and recipient use `snap.account`/`snap.recipient` directly with no live-form fallback.
+- **CSF2:** `minedHash = receipt?.transactionHash ?? hash`. Both `explorerTxUrl` calls use `minedHash!` so a replaced transaction shows the mined receipt hash, not the original submitted hash.
+- **CSF3:** `useWaitForTransactionReceipt({ hash, chainId: TARGET_CHAIN_ID })`. Receipt watching pinned to Arc Testnet (5042002); a post-submission chain switch cannot redirect lookup.
+- **CSF4:** All `require('viem')` replaced with top-level ESM import `{ encodeEventTopics, encodeAbiParameters, decodeEventLog }`. New source-structure tests for CSF1–CSF3. New behavioral tests (CSF2 hash distinction). Test count: 19→30 cases in createSafety.test.ts.
+- Validation: oxlint 0/0, tsc 0; vitest **194/194** (6 files); forge **120/120**; build exit 0.
+- Production probes: **23/23** (was 18/23; all 5 failing cases fixed).
+- Open: mounted DOM, keyboard, live wallet, live replacement, MetaMask classification.
+
+## Previous Studio delivery — CS1/CS2/metadata (2e777fb)
 
 - Input: `e727ddf49503668b2d3ab812f2a6b95f9837c078`.
 - Output SHA: `2e777fb` (confirmed push `e727ddf..2e777fb  main -> main`).

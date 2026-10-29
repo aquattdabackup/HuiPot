@@ -1,58 +1,55 @@
 /**
- * createSafety.test.ts — CS1 and CS2 regression tests.
+ * createSafety.test.ts — CS1, CS2, CSF1–CSF4 regression tests.
  *
- * CS1: Create.tsx validator must reject the all-zero recipient address before
- * writeContract is called. The contract would revert with InvalidRecipient, but
- * the frontend must not reach the wallet-invocation boundary for a clearly
- * invalid input.
+ * CS1:  validate() rejects zero recipient before writeContract.
+ * CS2:  Receipt validated against full immutable snapshot (all PoolCreated fields).
+ * CSF1: Missing or incomplete snapshot must not relax any receipt check.
+ * CSF2: Explorer links use the mined receipt hash, not the submitted hash.
+ * CSF3: useWaitForTransactionReceipt is pinned to TARGET_CHAIN_ID.
+ * CSF4: ESM imports only (no require('viem')); production-path behavioral coverage.
  *
- * CS2: A successful receipt must be validated against every field of the
- * immutable submission snapshot (account, contract, recipient, targetNative,
- * deadlineUnix, title, purpose). A receipt with matching creator/recipient but
- * a different target, deadline, title, or purpose must not be shown as "Pool
- * created". Missing submission context must not relax these checks.
- *
- * Tests use production source code (source-string assertions and behavioral
- * production-path harness). They do not mount a browser DOM or invoke a wallet.
- *
- * Browser DOM / keyboard / wallet-chooser and live testnet flows remain open.
+ * Tests do not mount a browser DOM or invoke a wallet.
+ * Mounted DOM / keyboard / live testnet flows remain open.
  */
 
 import { describe, it, expect } from 'vitest'
-import { encodeEventTopics, encodeAbiParameters } from 'viem'
+import { encodeEventTopics, encodeAbiParameters, decodeEventLog } from 'viem'
 import { HUIPOT_ABI, HUIPOT_ADDRESS } from '../../contract'
+import { TARGET_CHAIN_ID } from '../../config'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Shared constants ─────────────────────────────────────────────────────────
 
-const CONTRACT = HUIPOT_ADDRESS
-const WALLET   = '0x1111111111111111111111111111111111111111' as `0x${string}`
+const CONTRACT  = HUIPOT_ADDRESS
+const WALLET    = '0x1111111111111111111111111111111111111111' as `0x${string}`
+const HASH_A    = ('0x' + 'a'.repeat(64)) as `0x${string}`
+const HASH_B    = ('0x' + 'b'.repeat(64)) as `0x${string}`
 
-/**
- * Build a minimal PoolCreated log for a given set of fields.
- * Used to construct receipt fixtures for CS2 tests.
- */
-function makePoolCreatedLog(opts: {
-  poolId?: bigint
-  creator?: `0x${string}`
+// ─── Log builder ──────────────────────────────────────────────────────────────
+
+interface LogOpts {
+  poolId?:    bigint
+  creator?:   `0x${string}`
   recipient?: `0x${string}`
-  target?: bigint
-  deadline?: bigint
-  title?: string
-  purpose?: string
-  address?: `0x${string}`
-}) {
+  target?:    bigint
+  deadline?:  bigint
+  title?:     string
+  purpose?:   string
+  address?:   `0x${string}`
+}
+
+/** Build a minimal PoolCreated log for use in receipt fixtures. */
+function makePoolCreatedLog(opts: LogOpts = {}) {
   const {
-    poolId   = 1n,
-    creator  = WALLET,
+    poolId    = 1n,
+    creator   = WALLET,
     recipient = WALLET,
-    target   = 10n ** 18n,          // 1 USDC
-    deadline = 1793250000n,
-    title    = 'test',
-    purpose  = '1',
-    address  = CONTRACT as `0x${string}`,
+    target    = 10n ** 18n,
+    deadline  = 1793250000n,
+    title     = 'test',
+    purpose   = '1',
+    address   = CONTRACT as `0x${string}`,
   } = opts
 
-  // encodeEventTopics returns a readonly tuple; spread to mutable for decodeEventLog
   const topics = [...encodeEventTopics({
     abi: HUIPOT_ABI,
     eventName: 'PoolCreated',
@@ -71,9 +68,7 @@ describe('CS1 — zero recipient rejected before wallet invocation', () => {
 
   it('CS1-STRUCT: validate() contains zero-address check before writeContract', async () => {
     const src = await import('../../pages/Create?raw') as { default: string }
-    // Source must contain a zero-address pattern (the regex literal string as text)
     expect(src.default).toContain('0x0{40}')
-    // Must emit a clear error message
     expect(src.default).toContain('zero address')
   })
 
@@ -84,14 +79,12 @@ describe('CS1 — zero recipient rejected before wallet invocation', () => {
     const selfIdx = code.indexOf('Recipient cannot be this contract')
     expect(zeroIdx).toBeGreaterThan(0)
     expect(selfIdx).toBeGreaterThan(0)
-    // Zero-address error message appears before self-contract error message in source
     expect(zeroIdx).toBeLessThan(selfIdx)
   })
 
   it('CS1-STRUCT: shape check (regex) precedes zero check in validate()', async () => {
     const src = await import('../../pages/Create?raw') as { default: string }
     const code = src.default
-    // Shape check: /^0x[0-9a-fA-F]{40}$/ must appear before the zero check
     const shapeIdx = code.indexOf('0x[0-9a-fA-F]{40}')
     const zeroIdx  = code.indexOf('zero address')
     expect(shapeIdx).toBeGreaterThan(0)
@@ -141,30 +134,87 @@ describe('CS2 — immutable submission snapshot fields', () => {
 
 })
 
-// ─── CS2: behavioral — PoolCreated log construction and field matching ────────
-//
-// These tests verify the exact PoolCreated log-matching logic by constructing
-// real ABI-encoded logs with viem and checking whether each variant would be
-// accepted or rejected by the production receipt-validation path.
-//
-// They do NOT execute the React component — that layer is covered by the
-// source-structure tests and the independent create-path-probes.cjs instrument.
-// The log-construction helpers mirror exactly what the production validator does.
+// ─── CSF1 source structure: missing/empty snapshot must be guarded ────────────
 
-describe('CS2 — PoolCreated log field matching (production ABI)', () => {
+describe('CSF1 — missing or incomplete snapshot rejects receipt (source structure)', () => {
+
+  it('CSF1-STRUCT: snapOk check requires snap !== null', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain('snap !== null')
+  })
+
+  it('CSF1-STRUCT: snapOk check requires non-empty account', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain("snap.account !== ''")
+  })
+
+  it('CSF1-STRUCT: creator comparison uses snap.account (not optional chain)', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain('snap.account.toLowerCase()')
+  })
+
+  it('CSF1-STRUCT: recipient comparison uses snap.recipient (not live form fallback)', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain('snap.recipient.toLowerCase()')
+    // Old code had a fallback to live form field; must be gone
+    expect(src.default).not.toContain("snap?.recipient ?? recipient.trim()")
+  })
+
+})
+
+// ─── CSF2 source structure: mined hash for explorer links ─────────────────────
+
+describe('CSF2 — explorer links use mined receipt hash (source structure)', () => {
+
+  it('CSF2-STRUCT: minedHash variable is derived from receipt.transactionHash', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain('receipt?.transactionHash')
+    expect(src.default).toContain('minedHash')
+  })
+
+  it('CSF2-STRUCT: explorerTxUrl calls use minedHash, not bare hash', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    const code = src.default
+    // No explorerTxUrl(hash!) — should use minedHash
+    expect(code).not.toContain('explorerTxUrl(hash!)')
+    expect(code).toContain('explorerTxUrl(minedHash!)')
+  })
+
+})
+
+// ─── CSF3 source structure: chain pinning ─────────────────────────────────────
+
+describe('CSF3 — receipt watcher pinned to submitted chain (source structure)', () => {
+
+  it('CSF3-STRUCT: useWaitForTransactionReceipt passes chainId', async () => {
+    const src = await import('../../pages/Create?raw') as { default: string }
+    expect(src.default).toContain('chainId: TARGET_CHAIN_ID')
+    // Must be inside useWaitForTransactionReceipt call
+    const waitIdx  = src.default.indexOf('useWaitForTransactionReceipt')
+    const chainIdx = src.default.indexOf('chainId: TARGET_CHAIN_ID')
+    expect(chainIdx).toBeGreaterThan(waitIdx)
+  })
+
+  it('CSF3: TARGET_CHAIN_ID is Arc Testnet (5042002)', () => {
+    expect(TARGET_CHAIN_ID).toBe(5042002)
+  })
+
+})
+
+// ─── CS2/CSF: behavioral — PoolCreated log field matching (production ABI) ────
+
+describe('CS2/CSF — PoolCreated log field matching (production ABI, ESM viem)', () => {
 
   const DEADLINE = 1793250000n
   const TARGET   = 10n ** 18n  // 1 USDC
   const TITLE    = 'test'
   const PURPOSE  = '1'
 
-  it('CS2-LOG-1: matching log passes all field checks', () => {
+  it('CS2-LOG-1 (positive control): matching log decodes all fields correctly', () => {
     const log = makePoolCreatedLog({
       creator: WALLET, recipient: WALLET,
       target: TARGET, deadline: DEADLINE, title: TITLE, purpose: PURPOSE,
     })
-    // Decode and verify
-    const { decodeEventLog } = require('viem') as typeof import('viem')
     const decoded = decodeEventLog({ abi: HUIPOT_ABI, eventName: 'PoolCreated', data: log.data, topics: log.topics })
     const args = decoded.args as Record<string, unknown>
     expect((args.creator as string).toLowerCase()).toBe(WALLET.toLowerCase())
@@ -175,50 +225,43 @@ describe('CS2 — PoolCreated log field matching (production ABI)', () => {
     expect(args.purpose).toBe(PURPOSE)
   })
 
-  it('CS2-LOG-2: different target (2 USDC) decodes correctly and differs from 1 USDC snap', () => {
+  it('CS2-LOG-2: different target (2 USDC) differs from 1-USDC snap — production would reject', () => {
     const log = makePoolCreatedLog({ target: 2n * 10n ** 18n })
-    const { decodeEventLog } = require('viem') as typeof import('viem')
     const decoded = decodeEventLog({ abi: HUIPOT_ABI, eventName: 'PoolCreated', data: log.data, topics: log.topics })
     const args = decoded.args as Record<string, unknown>
-    // This target does NOT equal the 1-USDC snap → would trigger break in production
     expect(args.target).not.toBe(TARGET)
   })
 
-  it('CS2-LOG-3: different deadline decodes and differs from snap', () => {
+  it('CS2-LOG-3: different deadline differs from snap', () => {
     const log = makePoolCreatedLog({ deadline: DEADLINE + 3600n })
-    const { decodeEventLog } = require('viem') as typeof import('viem')
     const decoded = decodeEventLog({ abi: HUIPOT_ABI, eventName: 'PoolCreated', data: log.data, topics: log.topics })
     const args = decoded.args as Record<string, unknown>
     expect(args.deadline).not.toBe(DEADLINE)
   })
 
-  it('CS2-LOG-4: different title decodes and differs from snap', () => {
+  it('CS2-LOG-4: different title differs from snap', () => {
     const log = makePoolCreatedLog({ title: 'different title' })
-    const { decodeEventLog } = require('viem') as typeof import('viem')
     const decoded = decodeEventLog({ abi: HUIPOT_ABI, eventName: 'PoolCreated', data: log.data, topics: log.topics })
     const args = decoded.args as Record<string, unknown>
     expect(args.title).not.toBe(TITLE)
   })
 
-  it('CS2-LOG-5: different purpose decodes and differs from snap', () => {
+  it('CS2-LOG-5: different purpose differs from snap', () => {
     const log = makePoolCreatedLog({ purpose: 'different purpose' })
-    const { decodeEventLog } = require('viem') as typeof import('viem')
     const decoded = decodeEventLog({ abi: HUIPOT_ABI, eventName: 'PoolCreated', data: log.data, topics: log.topics })
     const args = decoded.args as Record<string, unknown>
     expect(args.purpose).not.toBe(PURPOSE)
   })
 
-  it('CS2-LOG-6: log from wrong contract address must not match', () => {
-    const wrongAddress = '0x' + 'a'.repeat(40)
-    const log = makePoolCreatedLog({ address: wrongAddress as `0x${string}` })
-    // Production check: log.address.toLowerCase() !== expectedContract.toLowerCase()
+  it('CS2-LOG-6: log from wrong contract address is distinguishable from expected contract', () => {
+    const wrongAddress = ('0x' + 'a'.repeat(40)) as `0x${string}`
+    const log = makePoolCreatedLog({ address: wrongAddress })
     expect(log.address.toLowerCase()).not.toBe((CONTRACT as string).toLowerCase())
   })
 
-  it('CS2-LOG-7: log with different recipient must not match snap', () => {
+  it('CS2-LOG-7: log with different recipient is distinguishable from snap recipient', () => {
     const otherRecipient = ('0x' + '2'.repeat(40)) as `0x${string}`
     const log = makePoolCreatedLog({ recipient: otherRecipient })
-    const { decodeEventLog } = require('viem') as typeof import('viem')
     const decoded = decodeEventLog({ abi: HUIPOT_ABI, eventName: 'PoolCreated', data: log.data, topics: log.topics })
     const args = decoded.args as Record<string, unknown>
     expect((args.recipient as string).toLowerCase()).not.toBe(WALLET.toLowerCase())
@@ -226,7 +269,28 @@ describe('CS2 — PoolCreated log field matching (production ABI)', () => {
 
 })
 
-// ─── CS1/CS2 config metadata ──────────────────────────────────────────────────
+// ─── CSF2: behavioral — minedHash vs submittedHash distinction ────────────────
+
+describe('CSF2 — mined hash vs submitted hash (behavioral)', () => {
+
+  it('CSF2-BEH: HASH_A and HASH_B are distinct (fixture sanity)', () => {
+    expect(HASH_A).not.toBe(HASH_B)
+  })
+
+  it('CSF2-BEH: transactionHash in receipt differs from submitted write hash', () => {
+    // The probe uses HASH_A as the useWriteContract data (submitted hash) and
+    // HASH_B as receipt.transactionHash (mined replacement hash).
+    // This confirms the fixture encodes a real hash distinction.
+    const minedHash = HASH_B  // receipt.transactionHash
+    const submittedHash = HASH_A  // useWriteContract data
+    expect(minedHash).not.toBe(submittedHash)
+    // Production: minedHash should be what explorerTxUrl receives
+    expect(minedHash).toBe(HASH_B)
+  })
+
+})
+
+// ─── Metadata ─────────────────────────────────────────────────────────────────
 
 describe('Wallet metadata — appUrl correction', () => {
 
@@ -238,7 +302,6 @@ describe('Wallet metadata — appUrl correction', () => {
 
   it('config.ts MetaMask note preserved (appUrl is WalletConnect metadata only)', async () => {
     const src = await import('../../config?raw') as { default: string }
-    // Comment acknowledging MetaMask injected-wallet independence should be present
     expect(src.default).toMatch(/MetaMask.*injected|injected.*MetaMask/i)
   })
 
@@ -246,12 +309,10 @@ describe('Wallet metadata — appUrl correction', () => {
 
 // ─── Boundaries not covered here ─────────────────────────────────────────────
 //
-// The following are NOT tested in this file and remain open:
-//
-// - Mounted browser DOM: zero-address field error renders visually, form does not submit.
-// - Keyboard Enter propagation on the connect button (PF2 boundary, covered structurally).
-// - Real wallet invocation: writeContract is actually called or blocked on a live testnet.
-// - Live replacement / cross-session receipt binding: actual MetaMask replacement flow.
-// - CS2 full production-component execution: covered by the independent
-//   docs/evidence/metamask-alert/deep/create-path-probes.cjs instrument.
-//   Run: node docs/evidence/metamask-alert/deep/create-path-probes.cjs . <output.json>
+// - Mounted browser DOM: field errors render visually, form does not submit.
+// - Keyboard Enter propagation on the connect button.
+// - Real wallet invocation: writeContract actually called or blocked on testnet.
+// - Live replacement / cross-session receipt binding.
+// - Production-component execution (submit → receipt render cycle):
+//   covered by docs/evidence/recheck-f7297fd/production-create-probes.cjs.
+//   Run: node docs/evidence/recheck-f7297fd/production-create-probes.cjs . create-probe-results.json

@@ -34,7 +34,12 @@ export function Create() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash })
+  // CSF3: pin receipt watching to the submitted Arc Testnet chain so that a wallet
+  // or config network switch after submission does not redirect lookup to another chain.
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({
+    hash,
+    chainId: TARGET_CHAIN_ID,
+  })
 
   // CS2: Immutable submission snapshot — captured at the moment writeContract is called.
   // Receipt validation checks all these fields against the PoolCreated event so that a
@@ -161,69 +166,76 @@ export function Create() {
     })
   }
 
-  // CS2 + R3: Extract poolId only from a PoolCreated log emitted by the expected contract.
-  // Validate the event against every field of the immutable submission snapshot so that a
-  // receipt with a different target, deadline, title, or purpose is not shown as success.
+  // CSF1 + CS2 + R3: Extract poolId only from a PoolCreated log emitted by the expected contract.
+  // Require a complete submission snapshot — if missing or incomplete, no success is shown.
+  // Validate the event against every field of the immutable snapshot; a receipt with a
+  // different target, deadline, title, purpose, creator, or recipient is not success.
   // A receipt with no matching log (replacement, cancellation, unrelated tx) is not success.
   let createdPoolId: string | undefined
   let poolCreatedEventFound = false
   if (isSuccess && receipt) {
     const snap = submittedRef.current
-    for (const log of receipt.logs) {
-      // Must be emitted by the expected contract address — reject logs from unrelated addresses
-      const expectedContract = snap?.contractAddress ?? HUIPOT_ADDRESS
-      if (log.address.toLowerCase() !== expectedContract.toLowerCase()) continue
-      try {
-        const decoded = decodeEventLog({
-          abi: HUIPOT_ABI,
-          eventName: 'PoolCreated',
-          data: log.data,
-          topics: log.topics,
-        })
-        const args = decoded.args as {
-          poolId?: bigint
-          creator?: string
-          recipient?: string
-          target?: bigint
-          deadline?: bigint
-          title?: string
-          purpose?: string
-        }
-        const poolId = args.poolId?.toString()
-        const logCreator = (args.creator ?? '').toLowerCase()
-        const logRecipient = (args.recipient ?? '').toLowerCase()
-        const logTarget = args.target
-        const logDeadline = args.deadline
-        const logTitle = args.title ?? ''
-        const logPurpose = args.purpose ?? ''
+    // CSF1: require a complete, non-empty snapshot before accepting any receipt.
+    // An absent or empty submitting account must not relax the creator check.
+    const snapOk = snap !== null &&
+      snap.account !== '' &&
+      snap.contractAddress !== '' &&
+      snap.recipient !== ''
+    if (snapOk) {
+      for (const log of receipt.logs) {
+        // Must be emitted by the expected contract address — reject logs from unrelated addresses
+        if (log.address.toLowerCase() !== snap.contractAddress.toLowerCase()) continue
+        try {
+          const decoded = decodeEventLog({
+            abi: HUIPOT_ABI,
+            eventName: 'PoolCreated',
+            data: log.data,
+            topics: log.topics,
+          })
+          const args = decoded.args as {
+            poolId?: bigint
+            creator?: string
+            recipient?: string
+            target?: bigint
+            deadline?: bigint
+            title?: string
+            purpose?: string
+          }
+          const poolId = args.poolId?.toString()
+          const logCreator = (args.creator ?? '').toLowerCase()
+          const logRecipient = (args.recipient ?? '').toLowerCase()
+          const logTarget = args.target
+          const logDeadline = args.deadline
+          const logTitle = args.title ?? ''
+          const logPurpose = args.purpose ?? ''
 
-        // Creator must match the submitting account when known (R3: not a replacement)
-        const submittedAccount = snap?.account ?? ''
-        if (submittedAccount && logCreator !== submittedAccount.toLowerCase()) break
+          // CSF1: creator must equal the submitting account — empty account is rejected above.
+          if (logCreator !== snap.account.toLowerCase()) break
 
-        // Recipient must match the submitted recipient
-        const submittedRecipient = snap?.recipient ?? recipient.trim()
-        if (logRecipient !== submittedRecipient.toLowerCase()) break
+          // Recipient must match the snapshot recipient.
+          if (logRecipient !== snap.recipient.toLowerCase()) break
 
-        // CS2: target, deadline, title and purpose must all match the submission snapshot.
-        // If snapshot is missing (defensive: should always be set), skip these checks.
-        if (snap) {
+          // CS2: target, deadline, title and purpose must all match the submission snapshot.
           if (logTarget !== snap.targetNative) break
           if (logDeadline !== BigInt(snap.deadlineUnix)) break
           if (logTitle !== snap.title) break
           if (logPurpose !== snap.purpose) break
-        }
 
-        if (poolId) {
-          createdPoolId = poolId
-          poolCreatedEventFound = true
+          if (poolId) {
+            createdPoolId = poolId
+            poolCreatedEventFound = true
+          }
+          break
+        } catch {
+          // not this event
         }
-        break
-      } catch {
-        // not this event
       }
     }
   }
+
+  // CSF2: use the mined receipt hash for all explorer links so that a replaced transaction
+  // (hash A replaced by hash B) shows the correct on-chain evidence.
+  const minedHash = (isSuccess && receipt?.transactionHash) ? receipt.transactionHash : hash
 
   if (isSuccess && receipt) {
     if (!poolCreatedEventFound) {
@@ -246,7 +258,7 @@ export function Create() {
           </p>
           <div className="flex flex-col gap-3">
             <a
-              href={explorerTxUrl(hash!)}
+              href={explorerTxUrl(minedHash!)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm underline"
@@ -288,7 +300,7 @@ export function Create() {
             </Link>
           )}
           <a
-            href={explorerTxUrl(hash!)}
+            href={explorerTxUrl(minedHash!)}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm underline"
