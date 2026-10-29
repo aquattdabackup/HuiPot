@@ -1,0 +1,39 @@
+{
+  "scope": "Unchanged Create; actual wagmi query/action, QueryObserver and actual viem 30-second timer; client receipt and block watcher controlled, retry:false for one-attempt diagnostic. No network or wallet.",
+  "passed": 2,
+  "failed": 1,
+  "results": [
+    {
+      "name": "Actual wagmi reverted path reaches distinct reverted presentation",
+      "actual": false,
+      "expected": true,
+      "pass": false,
+      "queryStatus": "error",
+      "isSuccess": false,
+      "isError": true,
+      "hasData": false,
+      "message": "unknown reason",
+      "hasGenericError": true,
+      "hasRetry": true
+    },
+    {
+      "name": "Real viem 30000ms timeout shows unknown and preserves submission lock",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "elapsedMs": 30012,
+      "timeout": 30000,
+      "errorName": "WaitForTransactionReceiptTimeoutError",
+      "reads": 1,
+      "queryRetry": false
+    },
+    {
+      "name": "After actual timeout retry confirms with original snapshot and one write",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "writes": 1,
+      "reads": 2
+    }
+  ]
+}

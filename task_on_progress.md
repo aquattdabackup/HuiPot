@@ -1,6 +1,14 @@
 # Task On Progress
 
-## Current review — b2bf1ef, October 29
+## Current review — 00252d0, October 29
+- Pulled 00252d0e38e4bc9e047072246e905424c8878951 from 4d9f3c07ac74a02689be16039d949e0bc413e03a. Report: docs/STUDIO_CWR_ACCEPTANCE_RECHECK.md; evidence docs/evidence/recheck-00252d0. Source unchanged.
+- Forge 120/120; Vitest 200 pass / 10 fail due Windows URL pathname; check exit 2/build exit 1 due four missing Node type errors. Runner additionally uses expired fixed noon fixture without a controlled clock; independently reproduced before/after deadline.
+- Accept CWR1 paused/hash guard and CWR2 finite waiter timeout/read-only retry (actual viem timer 30012ms then success, one write). CWR6 remains: actual wagmi rejects reverted receipt, so new isSuccess+reverted branch is not reached.
+- Original probes 15/23 and 2/3; after hash-only fixture adaptation 23/23 and 3/3. Expanded 10/13 unchanged; settle actual query rather than await void callback gives 12/13. Remaining diagnostic is true deduplication, not microtask timing; finite-timeout strategy makes independent pending reads optional. New test block 10 behavioral + 6 structural, not 15 behavioral.
+- Next Studio task: CWR4 dependency/typecheck/build, CWR5 portable paths/controlled clock, CWR6 actual revert path; correct report/comment and commit adapted probes. No new application implementation by Codex, wallet or hosting action. Browser/live wallet/MetaMask gates remain open.
+- Repository delivery: review committed locally; push failed because GitHub authentication cannot prompt in this session. Remote main verified still 00252d0e38e4bc9e047072246e905424c8878951. User can push from the authenticated terminal; verify remote before claiming publication.
+
+## Previous review — b2bf1ef, October 29
 - Pulled/reviewed b2bf1ef705f5eac6a14d047e391b701100a0cd3b, parent 9e4ae8f5bc34a7d03432ea605acd15610adf3b6e. Report: docs/STUDIO_CREATE_CONFIRMATION_RECHECK.md; evidence: docs/evidence/recheck-b2bf1ef.
 - Independent Forge 120/120, Vitest 204/204, check/build exit 0. Historical production/recovery probes 23/23 and 3/3 unchanged. Expanded production/real-query probes 8 pass / 5 fail (13 assertions). Source untouched.
 - Partial acceptance: pending link and settled-error retry work, full snapshot/mined links/chain pin/prior guards preserved. CWR1: paused query unlocks Create and hides link; handler has no unresolved guard. CWR2: pending refetch reuses unbounded waiter. CWR3: ten new tests are source/self-string/ABI assertions, no production retry execution. Test-file count 39, not 40.

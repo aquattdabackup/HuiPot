@@ -8,7 +8,15 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — CWR1/CWR2/CWR3 (current HEAD)
+## Latest independent review — 00252d0
+
+- Actual input `4d9f3c07ac74a02689be16039d949e0bc413e03a`; reviewed output `00252d0e38e4bc9e047072246e905424c8878951`. See docs/STUDIO_CWR_ACCEPTANCE_RECHECK.md.
+- CWR1 paused/hash guard accepted in production/query probes. Finite 30-second viem timeout and post-timeout read-only recovery accepted; one write preserved. cancelRefetch does not start a new first-fetch waiter while no receipt data exists; correct the Studio explanation.
+- Independent Forge 120/120; Vitest 200 pass / 10 fail (Windows URL pathname ENOENT); check exit 2/build exit 1 (four TS2307 errors: missing declared Node types). Test runner also has an uncontrolled fixed deadline that expires October 29 noon local time.
+- CWR6: installed wagmi throws on reverted receipts; the isSuccess+reverted branch does not handle actual hook errors. Real-library probe confirms generic error banner remains. New block is 10 production cases + 6 source assertions, not 15 behavioral tests.
+- Historical probes need hash-availability instrumentation adaptation (then 23/23 and 3/3). Expanded actual-query settlement adaptation: 12/13; residual independent-pending-read diagnostic is not required for the accepted finite-timeout strategy. Actual timer/revert probes 2 pass / 1 fail (revert classification). No app-source edits, signing, hosting, deployment or MetaMask clearance.
+
+## Studio delivery — CWR1/CWR2/CWR3 (00252d0; claims reviewed above)
 
 - Input: `4d9f3c07ac74a02689be16039d949e0bc413e03a`.
 - Changed: `src/pages/Create.tsx`, `src/lib/__tests__/createSafety.test.ts`, evidence JSON files.

@@ -1,0 +1,21 @@
+{
+  "scope": "Studio runner extracted unchanged, import.meta URL supplied; fs adapter repairs /C:/ read path only. Same runner and production Create exercised before/after fixed fixture deadline.",
+  "results": [
+    {
+      "clock": "2026-10-29T08:00:00",
+      "expectedWrites": 1,
+      "actualWrites": 1,
+      "errors": {},
+      "pass": true
+    },
+    {
+      "clock": "2026-10-29T13:00:00",
+      "expectedWrites": 1,
+      "actualWrites": 0,
+      "errors": {
+        "deadline": "Deadline must be in the future."
+      },
+      "pass": false
+    }
+  ]
+}

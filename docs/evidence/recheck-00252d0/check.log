@@ -1,0 +1,9 @@
+$ bun run lint && bun run typecheck
+$ oxlint src --deny-warnings
+Finished in 21ms on 27 files with 96 rules using 8 threads.
+Found 0 warnings and 0 errors.
+$ tsc --noEmit
+src/lib/__tests__/createSafety.test.ts(320,31): error TS2307: Cannot find module 'module' or its corresponding type declarations.
+src/lib/__tests__/createSafety.test.ts(328,58): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/lib/__tests__/createSafety.test.ts(330,56): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
+src/lib/__tests__/createSafety.test.ts(396,50): error TS2307: Cannot find module 'fs' or its corresponding type declarations.
