@@ -1,16 +1,16 @@
 # Task On Progress
 
-## Latest review — CS1/CS2 at f7297fd, October 29
-- Pulled f7297fd1bc8655da80a2cc47b336b61ddb8080cd (source 2e777fb). CS1 and appUrl accepted; CS2 incomplete. See docs/STUDIO_CREATE_SAFETY_RECHECK.md.
-- Independent Forge 120/120, Vitest 184/184; check exit 2 and build exit 1 with six TS2580 require errors in new createSafety tests.
-- Historical probes 8/8, but receipt mock incomplete; valid receipt positive control fails. Expanded persistent-ref production probes 18 pass/5 fail: missing/empty context, two original-hash links, receipt chain not pinned.
-- Studio next: CSF1-CSF4 in report; tests must execute production logic. No source edits, signatures, deployment or hosting changes by Codex.
+## Latest review — a526ce6, October 29
+- Pulled/reviewed a526ce6a551651f059988539e2fe9fbe20a366bc from input a348fb2e1e65a01ab38409532912f7c4dba0c639. CSF1–CSF3 and ESM repair accepted at source/synthetic production scope.
+- Independent Forge 120/120, Vitest 194/194, check/build exit 0; production probes 23/23, identical to Studio results. No source edits.
+- Remaining regression coverage: createSafety has 29 cases (19 source + 7 ABI + 2 hash fixtures + 1 constant), not 30; it does not execute Create. Production behavior currently covered by a separate tracked probe, not bun run test. See docs/STUDIO_CREATE_SAFETY_ACCEPTANCE.md.
+- No new functional blocker found in these fixes. Public revision, DOM/wallet/replacement/mobile/cross-session and MetaMask classification remain separate gates. Prior real testnet createPool #1 is confirmed, not the rest of the golden flow.
 
 ## Active blocker — MetaMask classification, October 29
 - Main pulled at 589b8ec; app 53c8190 unchanged. User requested deep investigation, and authorized MetaMask Support contact. Concise message/follow-up sent; no human ticket/detection reason established.
 - See docs/METAMASK_DEEP_RECHECK.md. Exact user calldata is createPool, 1 USDC goal, title test/purpose 1, deadline Oct 29 noon Vietnam; canonical encoding and read-only call pass at expected target/value. Full wallet envelope unavailable. Runtime executable matches after CBOR removal, full byte hashes differ.
 - 93 public JS/CSS assets inspected: 92 match normalized local build; one vendor chunk has helper-wrapper/build differences, full provenance remains open. No confirmed cause of warning.
-- Production Create probes 6 pass/2 fail: zero recipient reaches wallet; wrong-target receipt can confirm. Studio fixes prepared in STUDIO_CREATE_SAFETY_FIX.md. Incorrect appUrl correction prepared separately; installed injected MetaMask connector does not receive that field.
+- Historical Create/metadata defects have since received Studio fixes accepted above at source/synthetic scope. Installed injected MetaMask connector does not receive appUrl; classification cause remains unknown.
 - Do not sign/bypass warning or claim false positive. No app source, contracts or hosting modified. Keep raw wallet calldata/account out of public evidence.
 
 

@@ -421,3 +421,7 @@ Pulled main 589b8ec1d7e25693bd129df174de5e5facd433f3; app source unchanged. Inve
 ## October 29, 2026 — Independent CS1/CS2 recheck
 
 Input e727ddf49503668b2d3ab812f2a6b95f9837c078; Studio source 2e777fbabfa49db41e58af8fbd4d945e11d8a9e5; reviewed main f7297fd1bc8655da80a2cc47b336b61ddb8080cd. CS1 and appUrl accepted at source/synthetic scope; CS2 incomplete (missing context, mined-hash links, chain-scoped watching). Forge 120/120 and Vitest 184/184 pass; independent check exit 2/build exit 1 due six TS2580 require errors. Historical 8/8 probes reproduced but receipt fixture is incomplete; positive control fails. Expanded production probes 18/23 pass. See STUDIO_CREATE_SAFETY_RECHECK.md and evidence/recheck-f7297fd. No app/contract/test source edits, signing, hosting or deployment. MetaMask classification remains unresolved.
+
+## October 29, 2026 — a526ce6 independent Create acceptance
+
+Input a348fb2e1e65a01ab38409532912f7c4dba0c639; output a526ce6a551651f059988539e2fe9fbe20a366bc. CSF1–CSF3 and ESM repair accepted at source/synthetic scope. Independent Forge 120/120, Vitest 194/194, check/build exit 0, unchanged production probes 23/23 matching Studio. Test-file count is 29, not 30; source/ABI/fixture-only Vitest coverage remains a maintenance gap, with actual production behavior tested separately. See STUDIO_CREATE_SAFETY_ACCEPTANCE.md and evidence/recheck-a526ce6. No app-source edits, signing, deployment or hosting changes; no MetaMask clearance claim.

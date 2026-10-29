@@ -1,0 +1,12 @@
+{
+  "createSafetyCases": 29,
+  "executableRequireCalls": 0,
+  "breakdown": {
+    "sourceAssertions": 19,
+    "abiFixtureChecks": 7,
+    "hashFixtureChecks": 2,
+    "chainConstantCheck": 1
+  },
+  "productionComponentExecutionInVitestFile": false,
+  "productionComponentProbeCases": 23
+}

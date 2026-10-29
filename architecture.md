@@ -57,4 +57,4 @@
 
 Last updated: October 28, 2026 (Asia/Ho_Chi_Minh).
 
-- Create checkpoint 2e777fb/f7297fd: full submission fields captured and compared when context exists; zero address preflight fixed; appUrl canonicalized. Missing context still relaxes checks, receipt watcher follows default chain and explorer links use original write hash. Independent report: docs/STUDIO_CREATE_SAFETY_RECHECK.md.
+- Create checkpoint a526ce6: full submission snapshot, missing/empty-context guard, all event-field comparisons, Arc-pinned receipt watcher, mined-receipt explorer links and zero-recipient preflight. Independent 23-case production probe acceptance: docs/STUDIO_CREATE_SAFETY_ACCEPTANCE.md. This separate probe is not part of bun run test; createSafety Vitest cases remain source/ABI/fixture checks.
