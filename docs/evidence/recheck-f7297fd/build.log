@@ -1,0 +1,8 @@
+$ tsc -b && vite build
+src/lib/__tests__/createSafety.test.ts(167,32): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/lib/__tests__/createSafety.test.ts(180,32): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/lib/__tests__/createSafety.test.ts(189,32): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/lib/__tests__/createSafety.test.ts(197,32): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/lib/__tests__/createSafety.test.ts(205,32): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/lib/__tests__/createSafety.test.ts(221,32): error TS2580: Cannot find name 'require'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+error: script "build" exited with code 1

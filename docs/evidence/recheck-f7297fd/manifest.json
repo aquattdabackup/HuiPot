@@ -1,0 +1,184 @@
+{
+  "head": "f7297fd1bc8655da80a2cc47b336b61ddb8080cd",
+  "count": 44,
+  "allMatch": true,
+  "files": [
+    {
+      "path": "bun.lock",
+      "matches": true
+    },
+    {
+      "path": "contracts/HuiPotGoalPool.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/contract-metadata/HuiPotGoalPool.json",
+      "matches": true
+    },
+    {
+      "path": "contracts/foundry.toml",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC01.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC02.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0304.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0506.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC07.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0809.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.Base.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol",
+      "matches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.R6.t.sol",
+      "matches": true
+    },
+    {
+      "path": "foundry.toml",
+      "matches": true
+    },
+    {
+      "path": "package.json",
+      "matches": true
+    },
+    {
+      "path": "src/App.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/components/AppHeader.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/components/CommitmentNotice.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/components/PoolCard.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/components/WrongChainBanner.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/config.ts",
+      "matches": true
+    },
+    {
+      "path": "src/contract.ts",
+      "matches": true
+    },
+    {
+      "path": "src/index.css",
+      "matches": true
+    },
+    {
+      "path": "src/lib/__tests__/createSafety.test.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/__tests__/lifecycle.test.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/__tests__/parseProductAmount.test.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/__tests__/publicFlow.test.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/__tests__/validateReceipt.test.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/__tests__/verifyTx.test.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/actionLifecycle.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/poolQueryState.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/share.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/validateReceipt.ts",
+      "matches": true
+    },
+    {
+      "path": "src/lib/verifyTxLogic.ts",
+      "matches": true
+    },
+    {
+      "path": "src/main.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/pages/Create.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/pages/Explore.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/pages/Home.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/pages/Landing.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/pages/Pool.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/pages/Proof.tsx",
+      "matches": true
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "matches": true
+    },
+    {
+      "path": "tsconfig.json",
+      "matches": true
+    }
+  ],
+  "dependencyNote": "Reused unchanged installed dependencies via junction. package.json and lockfile unchanged by Studio commits. @types/node is absent and not declared directly."
+}

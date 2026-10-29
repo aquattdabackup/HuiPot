@@ -56,3 +56,5 @@
 - Read-state caveat: getPool/getStatus reject nonexistent IDs via InvalidPoolId. Query error is not synonymous with network outage or absence; query data may survive a failed refetch, and pending/paused isLoading can be false. 53c8190 preserves loaded-pool priority, accepts count absence evidence only after an idle non-error read, and declares InvalidPoolId in the frontend ABI so viem can decode the real revert. Tests using real library/ABI paths complement cause-shape fixtures. Create's original implicit-submit ConnectKit button was replaced with Custom/type=button and a disconnected submit guard; source/synthetic handler checks pass, mounted browser acceptance remains open.
 
 Last updated: October 28, 2026 (Asia/Ho_Chi_Minh).
+
+- Create checkpoint 2e777fb/f7297fd: full submission fields captured and compared when context exists; zero address preflight fixed; appUrl canonicalized. Missing context still relaxes checks, receipt watcher follows default chain and explorer links use original write hash. Independent report: docs/STUDIO_CREATE_SAFETY_RECHECK.md.
