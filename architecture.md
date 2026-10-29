@@ -58,3 +58,4 @@
 Last updated: October 28, 2026 (Asia/Ho_Chi_Minh).
 
 - Create checkpoint a526ce6: full submission snapshot, missing/empty-context guard, all event-field comparisons, Arc-pinned receipt watcher, mined-receipt explorer links and zero-recipient preflight. Independent 23-case production probe acceptance: docs/STUDIO_CREATE_SAFETY_ACCEPTANCE.md. This separate probe is not part of bun run test; createSafety Vitest cases remain source/ABI/fixture checks.
+- Create recovery at b2bf1ef adds pending explorer and receipt-error/refetch UI. An unresolved receipt must not be inferred only from isLoading/isError: actual offline-paused queries have both false. A first-fetch refetch can reuse an unresolved waiter; installed wagmi core defaults timeout to 0. See STUDIO_CREATE_CONFIRMATION_RECHECK.md for source/query execution evidence and outstanding CWR fixes.

@@ -1,6 +1,13 @@
 # Task On Progress
 
-## Active public issue — Create stuck Confirming, October 29
+## Current review — b2bf1ef, October 29
+- Pulled/reviewed b2bf1ef705f5eac6a14d047e391b701100a0cd3b, parent 9e4ae8f5bc34a7d03432ea605acd15610adf3b6e. Report: docs/STUDIO_CREATE_CONFIRMATION_RECHECK.md; evidence: docs/evidence/recheck-b2bf1ef.
+- Independent Forge 120/120, Vitest 204/204, check/build exit 0. Historical production/recovery probes 23/23 and 3/3 unchanged. Expanded production/real-query probes 8 pass / 5 fail (13 assertions). Source untouched.
+- Partial acceptance: pending link and settled-error retry work, full snapshot/mined links/chain pin/prior guards preserved. CWR1: paused query unlocks Create and hides link; handler has no unresolved guard. CWR2: pending refetch reuses unbounded waiter. CWR3: ten new tests are source/self-string/ABI assertions, no production retry execution. Test-file count 39, not 40.
+- Next: Studio fixes CWR1–CWR3 and distinct confirmed-revert presentation using report's acceptance criteria. Prompt prepared in report, not executed. No signing/hosting/deployment or MetaMask clearance. Full public browser/wallet flow remains pending.
+- Repository delivery: review docs/evidence committed locally; push failed because this execution session cannot authenticate to GitHub without an interactive prompt. Remote main independently remains b2bf1ef705f5eac6a14d047e391b701100a0cd3b. User can run git push origin main from their authenticated terminal. Do not claim the report is published until remote verification.
+
+## Original public issue — Create stuck Confirming, October 29
 - User transaction 0xa1cfc4e3f0e3547a9a965eb9d83e785cd2a1767036b914c339ac4dd2c617c08b created pool #3 successfully, but supplied UI screenshot still shows Confirming. Exact browser trigger/hash/network logs unknown.
 - Installed wagmi core read-only waiter resolves the same receipt in 339 ms. Public bundle contains current Create repair markers.
 - Confirmed gaps: no pending transaction link/recovery, no finite app wait, receipt-query errors ignored and submit can re-enable while outcome unknown. Controlled production probes 1 pass / 2 fail.

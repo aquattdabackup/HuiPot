@@ -1,0 +1,244 @@
+{
+  "input": "9e4ae8f5bc34a7d03432ea605acd15610adf3b6e",
+  "output": "b2bf1ef705f5eac6a14d047e391b701100a0cd3b",
+  "normalization": "CRLF to LF only",
+  "versions": {
+    "wagmi": "2.19.5",
+    "@wagmi/core": "2.22.1",
+    "viem": "2.57.10",
+    "@tanstack/query-core": "5.104.5",
+    "@tanstack/react-query": "5.104.5"
+  },
+  "files": [
+    {
+      "path": "bun.lock",
+      "sha256": "15b658453e87b6de37019e4321cb144081166d4da8f5dfaabe093a0f97cc4618",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/HuiPotGoalPool.sol",
+      "sha256": "ec2a7328725b14d4bb8ba9bb3c3a8e25ebba2fc846a365af014996765f963a25",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/contract-metadata/HuiPotGoalPool.json",
+      "sha256": "35284cedaaaeda0bb3e71ff993b765cd38f3cc23ab491db87090c6ddadfde065",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/foundry.toml",
+      "sha256": "24459ce5af7bbb9d6aa7270053f8e6b17630fe0f1e42dc5b93e5bcb254d6662a",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC01.t.sol",
+      "sha256": "66b7549810c6082a9c9d1812846adc9e5111906d047ed620a0d2399010ebb945",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC02.t.sol",
+      "sha256": "18ab3f657444c3e6ff2d3e1a939decbf3caaf45721cf5149ff58e5e68fbca883",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0304.t.sol",
+      "sha256": "c99c14688ff108112febb79ebb6624b8aed4e9df17270c64df42f26d31a6a3b7",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0506.t.sol",
+      "sha256": "7b144b73cd40c68da25a6b37221ef81185233aa0461ffbc7acded9ac44e4bd46",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC07.t.sol",
+      "sha256": "0caae5e56c3653f8af0effc2d1086623e341778454b349ee33e1fe59de3d9dfd",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.AC0809.t.sol",
+      "sha256": "ea9ab647ac2f8c4e5220e0d2384ff114cafb17539e618d5e50cbefa9a1632cae",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.Base.t.sol",
+      "sha256": "e09addfabc17fca0df89035df45efb0b3015ad022835e5037af1f55af0153620",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.FuzzInvariant.t.sol",
+      "sha256": "7aed50faaee46585241c538c68ccc185d09880975757227c0416a4d498eca98b",
+      "snapshotMatches": true
+    },
+    {
+      "path": "contracts/test/HuiPotGoalPool.R6.t.sol",
+      "sha256": "f29fb205278702a944a0334363023d2cba4584abafb28e3be1e748ecc0f30747",
+      "snapshotMatches": true
+    },
+    {
+      "path": "foundry.toml",
+      "sha256": "7f4ce227290d282c094bb686e1651ccea25600a0c7805713740da34de7661d5a",
+      "snapshotMatches": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "1d3eca51e8e790d2f41ae05ff4fc4c6b45e1958a4aee2f1f713bc3b3ef007628",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "a1a353cc9ac56832533f62499854a76194d71cab0cf0465e9de291423b8177e2",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/components/AppHeader.tsx",
+      "sha256": "183570cd87bbab878395d3e8b6094f57b2ae6e42319eb2512e755fd3a3da56c9",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/components/CommitmentNotice.tsx",
+      "sha256": "504743cea8a4c41781c36e4927ce4b01ace11b7baf26611f5bb0b013b31a6208",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/components/PoolCard.tsx",
+      "sha256": "0bb7fa3e4e60b0fcb912e6e29b780ea5ca68c872a41f1527fceac12ffb1fdb4c",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/components/WrongChainBanner.tsx",
+      "sha256": "d0e15ba4dec0cbaf8673c1b7a09f08d2c784079698f7d7a5e54978f314d3a124",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/config.ts",
+      "sha256": "b5df52e9daa7fbe57079bc2a18a1165c837d1fed7b8d42912dc375f27447ff2d",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/contract.ts",
+      "sha256": "b8b0ac78ef0ef920b0ca9d1bb66ab4ef9bd9f7823197069ff1a4431f903544a3",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/index.css",
+      "sha256": "aec6e06fc3216c26c3b292b233d298a23be5cba1543895feed78b8912d04f55f",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/__tests__/createSafety.test.ts",
+      "sha256": "d061ad588b0abbf01d15fc221f989fdab5abf868a81ccea5f7044395f3866a76",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/__tests__/lifecycle.test.ts",
+      "sha256": "b24f26aae66c0f626b263a3d09cd8dc40a1a0e90318c313d2015a82187a99afe",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/__tests__/parseProductAmount.test.ts",
+      "sha256": "5d50a7aea97da3bfe15e39fbf740e7ad37eafce5ff8385e40612851687fbdc87",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/__tests__/publicFlow.test.ts",
+      "sha256": "c2d3685ea227e8b6718df539067c72014b4bf1192339c1033d2ce2515f38ea9f",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/__tests__/validateReceipt.test.ts",
+      "sha256": "6cdcd343295fd4c3f59bdde450f06acfa231cdb877affdcc050c801922fa5f66",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/__tests__/verifyTx.test.ts",
+      "sha256": "0a729150ac3b63763bb87eb4aca48d19d13e620afecfc06a53d7aebe3fbb4118",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/actionLifecycle.ts",
+      "sha256": "e6fd59e0367eedeb4e18a2a633b8fb531cbb54f509d3e2566f6e98ebcb285157",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/poolQueryState.ts",
+      "sha256": "7e821d254ebe9085960ec3ed1c225e3a0cb7326193f9306ad6c4592b898225f5",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/share.ts",
+      "sha256": "2e0133dfcbbd834a84f7f95a0af3c86ac42a40aafba2df32147e0881cb9fddee",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "sha256": "758c2e28cee66f9c17082b075b7dce0affa5f4fb8e650254ab5e758e2b73e6f2",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/validateReceipt.ts",
+      "sha256": "9d5f7d4e213166a3abfbbc266148db9ff7ba07398ae6969c1c0bacca08dc7501",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/lib/verifyTxLogic.ts",
+      "sha256": "d1f4b466a7f76002663c7e5914d4110c59612eb3314908806d4a6610eeedb90e",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/main.tsx",
+      "sha256": "3541f656d54f1de1d267f2959bc26abad17a40d18f15e759cff96ffee314a356",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/pages/Create.tsx",
+      "sha256": "a6aad75fdcd7f4818bdffe558c585015f63b0fa2ddabc51b9f5cc88801a0d5da",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/pages/Explore.tsx",
+      "sha256": "09259764a80acd896a315f688c73f8abb806c01f0d38861f738f82ed0a574647",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/pages/Home.tsx",
+      "sha256": "4482ebe78ecc21e992eac226645aceb9a3fc6c5a0af995b875db67458b252e04",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/pages/Landing.tsx",
+      "sha256": "82df0c7109f9c6a02b818ec97cdf3760c76d5d5de5cd3bdef991e4a7e0a91c0b",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/pages/Pool.tsx",
+      "sha256": "6bb6b199b0e463116a295966576697cdcc3d1fbf7ac1012d6cdf8f928a86c051",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/pages/Proof.tsx",
+      "sha256": "637e2c16bbdbc52df6bfc9c9cc1a49b9e10a98fc9c7c6183475b78163fd872a9",
+      "snapshotMatches": true
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "sha256": "f42f70b09f5616c722cfa8b6f3067a35cce4855a1c68531fa7a1679667d89e2c",
+      "snapshotMatches": true
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "655b5ce72c5e4fdeca7c29049df63935a280cd724e057f383373c4439bcf4b06",
+      "snapshotMatches": true
+    },
+    {
+      "path": "tsconfig.node.json",
+      "sha256": "01fc7b9a350d0eb7583a3ba200af0889ce9fdc63ec6f2dde5caff6c9b96e9e94",
+      "snapshotMatches": true
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "bbbea4007879e616e9ab74982541c3deec9cb70366fde37f5fe5199f7d5d9b19",
+      "snapshotMatches": true
+    }
+  ]
+}

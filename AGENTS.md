@@ -8,14 +8,21 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — CW1/CW2 (current HEAD)
+## Latest independent review — b2bf1ef CW1/CW2
 
-- Input: `9e4ae8f3ff5eea484c31d5e14f4f6a2b4e1a8c3d` (actual: verify via git log — pull showed `9e4ae8f`).
+- Input `9e4ae8f5bc34a7d03432ea605acd15610adf3b6e`; reviewed output `b2bf1ef705f5eac6a14d047e391b701100a0cd3b`.
+- Partial acceptance: pending explorer banner and retry after a settled receipt error work; prior 23 Create probes preserved. Forge 120/120, Vitest 204/204, check/build exit 0; historical recovery probes 3/3.
+- Remaining CWR1: real offline-paused query hides recovery and re-enables Create; handler permits repeat write. CWR2: pending refetch reuses unbounded waiter (timeout 0). CWR3: added tests do not execute production recovery. Expanded review probes: 8 pass / 5 fail; see docs/STUDIO_CREATE_CONFIRMATION_RECHECK.md.
+- createSafety has 39 tests, not 40. Ten added cases: 8 source assertions, 1 self-string assertion, 1 ABI check. Confirmed-revert classification and browser/wallet/public revision remain open. No MetaMask clearance.
+
+## Studio delivery — CW1/CW2 (b2bf1ef; reviewed above)
+
+- Input: `9e4ae8f5bc34a7d03432ea605acd15610adf3b6e` (independently verified parent).
 - Changed: `src/pages/Create.tsx`, `src/lib/__tests__/createSafety.test.ts`, `recovery-results-new.json`.
 - **CW1:** While a submitted hash exists and receipt is pending (`isConfirming=true`): a confirmation status banner renders outside the `<form>` with an ArcScan explorer link (`explorerTxUrl(hash)`) and a "Check transaction status" button. This banner is read-only and cannot trigger `writeContract`.
 - **CW2:** `isError`/`error`/`refetch` destructured from `useWaitForTransactionReceipt`. When `isReceiptError=true`: banner renders with error message surfaced from `receiptError.message`, "Retry confirmation check" button calls `retryReceipt()` (wagmi refetch, never `writeContract`), submit button disabled with `|| isReceiptError` guard. A receipt query failure does not silently re-enable the create form.
 - `hashPending = !!hash && (isConfirming || isReceiptError)` is the combined guard.
-- Tests: createSafety.test.ts 30→40 cases (+7 CW1/CW2 source-structure +3 behavioral). All 204/204 vitest pass.
+- Tests: createSafety.test.ts 29→39 cases (independently corrected; the three cases labelled behavioral are not production recovery execution). All 204/204 vitest pass.
 - Recovery probes: **3/3** (was 1/3; all 2 failing cases fixed). Existing probes: **23/23** preserved.
 - Validation: oxlint 0/0, tsc 0; vitest **204/204** (6 files); forge **120/120**; build exit 0.
 - Open: mounted DOM, keyboard, live wallet, live replacement, prolonged-pending RPC timeout, MetaMask classification.
