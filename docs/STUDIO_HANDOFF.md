@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Project link supplied October 30:** [HuiPot Studio project](https://studio.arc.io/app/019740f2-a909-4f38-9f87-4b5c0a448fbf). Exact thread link and access-verification limits: [STUDIO_PROJECT.md](STUDIO_PROJECT.md). Supersedes older missing-permalink notes; project content/reviewer access has not been independently inspected.
+
 **Accepted checkpoint — October 30, 2026:** b8f59c9 closes VT1; see [STUDIO_VT1_ACCEPTANCE.md](STUDIO_VT1_ACCEPTANCE.md). No further Create recovery/identity repair prompt is needed within the reviewed scope. Prior follow-ups below are historical. Proceed next to deployed-revision/submission/video evidence under the existing gates; no automatic deployment or signing.
 
 **Current checkpoint — October 30, 2026:** [STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md](STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md) accepts d6d5c8e functional FV1/FV2 (216 Vitest, 120 Forge, check/build and 69 probe assertions pass). Request only VT1 maintained-test settlement/negative control and minor report cleanup. Do not rewrite accepted application behavior or repeat wallet demos for this test-only follow-up. Codex has not executed a new Studio job.

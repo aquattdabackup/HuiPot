@@ -1,5 +1,9 @@
 # Task On Progress
 
+## Submission reference update — October 30
+- User supplied Studio project 019740f2-a909-4f38-9f87-4b5c0a448fbf and thread bdac681b-ff5b-4fcd-9bb3-2c01c946c6bb. Exact/normalized links and provenance in docs/STUDIO_PROJECT.md. Web reader cannot access content; no sharing/access verification.
+- Submission URL now supplied. Mainnet transaction evidence, video and other submission gates remain separate. No setup, generation, hosting or signing authorized/performed by recording this link.
+
 ## Current checkpoint — b8f59c9 accepted, October 30
 - Reviewed b8f59c937da64df9e1bf90e7d1333b921eea03c3 from 14645aa6191faeef30508a1c74f3f46d8578428f. VT1 closed; docs/STUDIO_VT1_ACCEPTANCE.md and evidence/recheck-b8f59c9.
 - Windows Vitest 216/216, check/build exit 0. Exact-runner eight-round negative control detects missing catch guard (2 late setters), current source 0, inline control 1. Application source unchanged; no need to rerun prior Forge 120/120 or seven probes 69/69.

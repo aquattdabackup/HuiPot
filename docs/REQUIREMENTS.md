@@ -30,6 +30,8 @@ Source actually read: the user's uploaded `Pasted text.txt`, headed "Arc Microgr
 
 ## Submission checklist
 
+October 30 update: the user supplied the HuiPot Studio project/thread URL. See [STUDIO_PROJECT.md](STUDIO_PROJECT.md). Mark the URL as supplied, not content/reviewer-access verified. The app and repository links exist; currently accepted transaction evidence remains testnet only, not the mainnet proof required by the supplied rules.
+
 - Arc Studio project URL. The supplied example is illustrative, not a real project to reuse.
 - Public URL of the working application.
 - Contract address or addresses and one example transaction hash, with explorer.arc.io evidence.

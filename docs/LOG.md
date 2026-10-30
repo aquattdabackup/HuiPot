@@ -1,5 +1,9 @@
 # Project log
 
+## October 30, 2026 — Studio project URL supplied
+
+User supplied project 019740f2-a909-4f38-9f87-4b5c0a448fbf, thread bdac681b-ff5b-4fcd-9bb3-2c01c946c6bb. Recorded exact and normalized links in STUDIO_PROJECT.md for submission/video provenance. Web reader could not access the URL; no authenticated content or reviewer-sharing claim. No setup, Studio job, mainnet or hosting action.
+
 ## October 30, 2026 — b8f59c9 VT1 accepted and repair cycle closed
 
 Pulled b8f59c937da64df9e1bf90e7d1333b921eea03c3 from 14645aa6191faeef30508a1c74f3f46d8578428f. Only maintained test/report changed. Windows Vitest 216/216, check/build exit 0; independent exact-runner negative control confirms eight microtask drains catch the virtual missing guard (2 late setters), real source 0 and inline control 1. VT1 accepted in STUDIO_VT1_ACCEPTANCE.md. Forge/probes not rerun because covered application/dependencies unchanged; prior results retained with provenance. No application edits, hosting/signing or MetaMask claim. Next project work is deployment-revision/submission/video evidence, not another VT1 repair.

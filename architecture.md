@@ -50,6 +50,7 @@
 - No credential values in files. Mainnet actions require separate human approval and signatures.
 
 ## External Integrations and Unknowns
+- October 30 update: user supplied HuiPot Studio project/thread URL, recorded in docs/STUDIO_PROJECT.md. Earlier missing-permalink notes are superseded; content and reviewer access remain unverified.
 - Arc Studio browser route and repo handoff are approved. Delivered source and logs are in GitHub; source/exports were independently reviewed. The real app-specific Studio permalink remains missing. See `docs/STUDIO_FIX_RECHECK.md` for current findings and evidence; do not treat test passes as app acceptance.
 - Competition live page is unverified; supplied text is the provisional planning source.
 - October 27 post-deploy checkpoint: configuration warning absent on /create; direct routes render. Explore reports no pools, Pool #1 reports network error and Proof reports not found. Actual deployed SHA/env value and real wallet flows unverified. See PUBLIC_POSTDEPLOY_RECHECK.md and STUDIO_PUBLIC_FLOW_FIX.md.
