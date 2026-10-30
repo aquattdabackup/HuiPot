@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain, usePublicClient } from 'wagmi'
 import { ConnectKitButton } from 'connectkit'
 import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert, RefreshCw, ExternalLink } from 'lucide-react'
 import { decodeEventLog } from 'viem'
@@ -53,12 +53,34 @@ export function Create() {
     timeout: 30_000,
   })
 
-  // CWR2: cancelRefetch:true ensures a retry starts an independent receipt read rather
-  // than deduplicating against the existing in-flight promise. This lets the probe and
-  // real browser observe waiterCalls > 1 on retry. Never calls writeContract.
+  // CWR2: cancelRefetch:true ensures a retry starts a new receipt read request.
+  // Note: TanStack Query deduplicates in-flight promises when no cached data exists,
+  // so cancelRefetch:true cancels an in-flight fetch and starts a new one when data is
+  // already present; without cached data both approaches behave the same. Never calls writeContract.
   function retryReceipt() {
     void _rawRefetch({ cancelRefetch: true })
   }
+
+  // CWR6: When the wagmi watcher reports an error, attempt to read the receipt directly
+  // to determine whether the transaction was confirmed as reverted on-chain. wagmi's
+  // waitForTransactionReceipt action throws (sets isError=true) when receipt.status==='reverted'
+  // after obtaining the revert reason; the receipt itself is not returned in data.
+  // To classify the outcome authoritatively we fetch the receipt independently via the
+  // public client on the correct chain. A network failure or absence keeps revertedOnChain=null
+  // (unknown), preserving the existing honest-unknown branch.
+  const publicClient = usePublicClient({ chainId: TARGET_CHAIN_ID })
+  const [revertedOnChain, setRevertedOnChain] = useState<boolean | null>(null)
+  useEffect(() => {
+    if (!isReceiptError || !hash || !publicClient) {
+      setRevertedOnChain(null)
+      return
+    }
+    void publicClient.getTransactionReceipt({ hash }).then(r => {
+      setRevertedOnChain(r.status === 'reverted')
+    }).catch(() => {
+      setRevertedOnChain(null)
+    })
+  }, [isReceiptError, hash, publicClient])
 
   // CS2: Immutable submission snapshot — captured at the moment writeContract is called.
   // Receipt validation checks all these fields against the PoolCreated event so that a
@@ -263,11 +285,12 @@ export function Create() {
   // (hash A replaced by hash B) shows the correct on-chain evidence.
   const minedHash = (isSuccess && receipt?.transactionHash) ? receipt.transactionHash : hash
 
-  if (isSuccess && receipt) {
-    // CWR2: distinguish a confirmed-reverted transaction from a replaced/unmatched one.
-    // wagmi v2 returns isSuccess=true with receipt.status='reverted' for on-chain reverts;
-    // this is different from a transport/RPC error (isError=true) or a matched success.
-    if (receipt.status === 'reverted') {
+  // CWR6: Confirmed on-chain revert path.
+  // wagmi's waitForTransactionReceipt action throws (isError=true) when it receives a
+  // reverted receipt; data is absent. We independently fetch the receipt via publicClient
+  // to confirm it was actually mined as reverted — not a network/RPC error.
+  // revertedOnChain=null means the check hasn't resolved yet or the read failed (unknown).
+  if (isReceiptError && revertedOnChain === true) {
       return (
         <div className="mx-auto max-w-lg px-4 py-12 text-center">
           <div
@@ -300,7 +323,9 @@ export function Create() {
           </div>
         </div>
       )
-    }
+  }
+
+  if (isSuccess && receipt) {
     if (!poolCreatedEventFound) {
       // Receipt succeeded (status=success) but no matching PoolCreated event — replaced or unrelated tx
       return (

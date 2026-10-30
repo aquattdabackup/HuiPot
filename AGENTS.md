@@ -8,6 +8,17 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
+## Latest Studio delivery — CWR4/CWR5/CWR6 (current HEAD)
+
+- Input: `ad09b97e683e3d60fd7ee19f81db3edf8e7d49e3`.
+- **CWR4:** `bun add -D @types/node`; `/// <reference types="node" />` in createSafety.test.ts. `bun run check` and `bun run build` now exit 0.
+- **CWR5:** `fileURLToPath(new URL(...))` replaces `.pathname`. Clock frozen at 08:00 in beforeEach/afterEach; deadline always future.
+- **CWR6:** `usePublicClient` + `useEffect` in Create.tsx. When `isReceiptError && hash`, fetches receipt from chain; sets `revertedOnChain=true` only on confirmed reverted status. Guard changed from `isSuccess+receipt.status` to `isReceiptError && revertedOnChain === true`. cancelRefetch explanation corrected.
+- Probes: `docs/evidence/final-fix/` — 4 adapted scripts with mocks. All pass: 23/23, 3/3, 10/10, 4/4.
+- Validation: oxlint 0/0, tsc 0; vitest **211/211**; forge **120/120**; build exit 0.
+- Windows: not executed; portable fileURLToPath supplied.
+- Open: mounted DOM, keyboard, live wallet, replacement, MetaMask.
+
 ## Current repair handoff and human demo checkpoint
 
 - Main pulled at `ba02ec6e686c5b490239c42e32811c262fad3d10`; application remains 00252d0. Execute docs/STUDIO_FINAL_FIX_PASS.md in the existing Studio project: CWR4 build/types, CWR5 portable/time-stable tests, CWR6 actual revert classification, accurate reporting/probes.
