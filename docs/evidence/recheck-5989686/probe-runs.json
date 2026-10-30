@@ -1,0 +1,18 @@
+[
+  {
+    "command": "node docs/evidence/final-fix/production-adapted.cjs SRC OUT/production-adapted-results.json",
+    "exit": 0
+  },
+  {
+    "command": "node docs/evidence/final-fix/recovery-adapted.cjs SRC OUT/recovery-adapted-results.json",
+    "exit": 0
+  },
+  {
+    "command": "node docs/evidence/final-fix/expanded-adapted.cjs SRC OUT/expanded-adapted-results.json",
+    "exit": 0
+  },
+  {
+    "command": "node docs/evidence/final-fix/runtime-probes.cjs SRC OUT/runtime-probes-results.json",
+    "exit": 0
+  }
+]

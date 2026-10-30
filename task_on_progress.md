@@ -1,5 +1,12 @@
 # Task On Progress
 
+## Current independent review — 5989686, October 30
+- Pulled 5989686343724078521ff42b5dbf7ff9acb09907; actual parent ad09b9786ae52dac42ea9484da9b148f1d43c26e, not Studio's reported full input SHA.
+- Clean locked dependency install in Windows path containing a space. Forge 120/120; Vitest 211/211; check/build exit 0. CWR4/CWR5 accepted. No source edits. Evidence: docs/evidence/recheck-5989686; report docs/STUDIO_FINAL_FIX_RECHECK.md.
+- CWR6 partial: ordinary revert and unknown controls pass; replacement identity and stale/unmount guards missing. Stateful production probe 4/7; maintained revert tests/runtime assertion are fixture-only for the new verdict. Studio expanded probe removed real-query coverage; restored independent version 13/13.
+- Next Studio work: FFR1–FFR4 in the report (replacement identity, async invalidation, actual stateful tests, coverage/report accuracy). Existing live demo evidence remains accepted for those scenarios. No deployment, signing or MetaMask claim.
+- Documentation/evidence committed locally. Push failed because this session cannot prompt for GitHub authentication; direct ls-remote confirms remote main still 5989686343724078521ff42b5dbf7ff9acb09907. User must push from an authenticated terminal before Studio can read the new report. Preserve pending Studio handoff context until independently accepted.
+
 ## Active closure handoff — after successful testnet demo
 - User asked to close remaining defects. Pulled main ba02ec6e686c5b490239c42e32811c262fad3d10; source still 00252d0. No need to rerun unchanged suites solely for documentation.
 - Human completed pool 7 0.4+0.6 contributions, 1-USDC payout to Buyer and Proof; pool 8 0.2 contribution, expiry, refund to TTuan and Proof. RPC receipts/transfers independently checked; user screenshots inspected. See docs/TESTNET_DEMO_ACCEPTANCE.md and evidence/testnet-demo-2026-10-29.

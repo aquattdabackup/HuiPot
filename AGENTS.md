@@ -8,7 +8,15 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — CWR4/CWR5/CWR6 (current HEAD)
+## Latest independent review — 5989686
+
+- Reviewed `5989686343724078521ff42b5dbf7ff9acb09907`; actual parent `ad09b9786ae52dac42ea9484da9b148f1d43c26e` differs from Studio's reported full input SHA. See docs/STUDIO_FINAL_FIX_RECHECK.md.
+- CWR4/CWR5 accepted: clean frozen-lock install on Windows in a path with spaces, Forge 120/120, Vitest 211/211 (createSafety 46), check/build exit 0. No source edits by Codex.
+- CWR6 partial: ordinary revert works, but replacement B still looks up original A; effect lacks context/unmount invalidation. Independent stateful production probes 4 pass / 3 fail. Maintained revert tests and runtime probe check injected fixtures, not their claimed rendered verdict.
+- Studio probes reproduce 23/23, 3/3, 10/10, 4/4 only with required output paths. Expanded probe removed real-query cases; independent preserved-query version passes 13/13. Next Studio task: FFR1–FFR4 in the recheck; no new demo/signing/hosting needed.
+- Previous pool 7 payout/Proof and pool 8 refund/Proof acceptance remains scoped to the human demonstrations. No MetaMask or submission clearance.
+
+## Studio delivery — CWR4/CWR5/CWR6 (5989686; independently reviewed above)
 
 - Input: `ad09b97e683e3d60fd7ee19f81db3edf8e7d49e3`.
 - **CWR4:** `bun add -D @types/node`; `/// <reference types="node" />` in createSafety.test.ts. `bun run check` and `bun run build` now exit 0.
@@ -19,7 +27,7 @@ Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62c
 - Windows: not executed; portable fileURLToPath supplied.
 - Open: mounted DOM, keyboard, live wallet, replacement, MetaMask.
 
-## Current repair handoff and human demo checkpoint
+## Historical repair handoff and human demo checkpoint (superseded by review above)
 
 - Main pulled at `ba02ec6e686c5b490239c42e32811c262fad3d10`; application remains 00252d0. Execute docs/STUDIO_FINAL_FIX_PASS.md in the existing Studio project: CWR4 build/types, CWR5 portable/time-stable tests, CWR6 actual revert classification, accurate reporting/probes.
 - User-operated pool 7 contribution/payout/Proof and pool 8 missed-goal/refund/Proof passed. Public RPC confirms 1 USDC payout and 0.2 USDC refund. See docs/TESTNET_DEMO_ACCEPTANCE.md. This supersedes older blanket statements that no live flows were exercised, without asserting a full browser suite or exact deployed SHA.

@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Latest review — October 30, 2026:** read [STUDIO_FINAL_FIX_RECHECK.md](STUDIO_FINAL_FIX_RECHECK.md) for reviewed output 5989686. CWR4/CWR5 accepted on clean Windows; implement only FFR1–FFR4 for remaining CWR6 identity/invalidation and test/report coverage. The older final-fix handoff below has now been executed and independently reviewed; do not repeat its accepted repairs. No new Studio job launched by Codex.
+
 **Current priority — October 30, 2026:** execute [STUDIO_FINAL_FIX_PASS.md](STUDIO_FINAL_FIX_PASS.md), based on [STUDIO_CWR_ACCEPTANCE_RECHECK.md](STUDIO_CWR_ACCEPTANCE_RECHECK.md). User-operated pool 7 payout/Proof and pool 8 refund/Proof are now accepted for those scenarios; see [TESTNET_DEMO_ACCEPTANCE.md](TESTNET_DEMO_ACCEPTANCE.md). Remaining confirmed repairs are CWR4–CWR6 and accurate regression reporting. Use the user's chosen manual Studio browser prompt route; no duplicate setup or token request. This latest handoff has not been executed by Codex. Earlier priorities below are historical.
 
 **Current priority — October 28, 2026:** run [STUDIO_PF1_FOLLOWUP.md](STUDIO_PF1_FOLLOWUP.md) in the existing project after reading [STUDIO_PUBLIC_FLOW_RECHECK.md](STUDIO_PUBLIC_FLOW_RECHECK.md). At a7a681f/67ac7ea, standard suites pass (120 Forge / 125 Vitest / check / build), but independent production-page probes reproduce eight PF1 failures. Preserve PF2 and accepted lifecycle fixes. The follow-up is prepared, not yet executed by Codex. Older priorities below are history.

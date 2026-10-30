@@ -1,0 +1,75 @@
+{
+  "scope": "Unchanged production Create with CWR6 mocks; persistent controlled hooks; real viem logs. Independent-pending-read diagnostic replaced with bounded-timeout assertion per accepted CWR2 design.",
+  "passed": 10,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Pending link is outside form and submit is disabled",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Receipt error shows message, keeps submit disabled, retry calls refetch only",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Retry valid receipt keeps original snapshot and one write",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Retry different target remains unmatched with mined link",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Retry unindexed pending receipt stays unknown and locked",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Retry missing snapshot does not accept matching event",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Submit handler itself blocks repeat submission during receipt error",
+      "actual": 1,
+      "expected": 1,
+      "pass": true,
+      "writes": 1
+    },
+    {
+      "name": "Production waiter has finite timeout",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "actualTimeout": 30000
+    },
+    {
+      "name": "Real offline-paused receipt retains link and submit lock",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "fetchStatus": "paused",
+      "isLoading": false,
+      "isError": false,
+      "disabled": true,
+      "hasExplorer": true
+    },
+    {
+      "name": "Real offline-paused user submit cannot create second write",
+      "actual": 1,
+      "expected": 1,
+      "pass": true,
+      "writes": 1
+    }
+  ]
+}
