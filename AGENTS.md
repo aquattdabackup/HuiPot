@@ -8,7 +8,14 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest independent review — d6d5c8e
+## Latest independent acceptance — b8f59c9 (VT1 closed)
+
+- Reviewed `b8f59c937da64df9e1bf90e7d1333b921eea03c3`, parent `14645aa6191faeef30508a1c74f3f46d8578428f`. See docs/STUDIO_VT1_ACCEPTANCE.md.
+- Only maintained test/report changed. Windows Vitest 216/216, check/build exit 0. Eight microtask drains now detect the virtual missing catch guard (lateSets=2); real source yields 0, inline control yields 1. VT1 accepted; no further repair prompt needed for this issue.
+- Application/contract/dependencies/probes unchanged: prior d6d5c8e independent Forge 120/120 and 69/69 probes remain scoped prior evidence, not rerun results. Create recovery/identity repair cycle closed within tested scope.
+- Next: deployed-revision confirmation and submission/video materials. Browser/wallet/mobile/cross-session, MetaMask classification and mainnet/submission gates remain separate; no clearance or audit claim.
+
+## Independent review — d6d5c8e
 
 - Reviewed `d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd`, parent `c7c74c9023ca63d9c3a571f03b964f93e3fb7143`. See docs/STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md.
 - FV1/FV2 functional fixes accepted: reactive replacement and verified-hash render guard pass all seven acceptance probe sets (69/69). Windows Forge 120/120, Vitest 216/216 (createSafety 51), check/build exit 0. CWR4/CWR5 preserved.

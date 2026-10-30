@@ -1,5 +1,10 @@
 # Task On Progress
 
+## Current checkpoint — b8f59c9 accepted, October 30
+- Reviewed b8f59c937da64df9e1bf90e7d1333b921eea03c3 from 14645aa6191faeef30508a1c74f3f46d8578428f. VT1 closed; docs/STUDIO_VT1_ACCEPTANCE.md and evidence/recheck-b8f59c9.
+- Windows Vitest 216/216, check/build exit 0. Exact-runner eight-round negative control detects missing catch guard (2 late setters), current source 0, inline control 1. Application source unchanged; no need to rerun prior Forge 120/120 or seven probes 69/69.
+- No further Arc repair request for this issue. Next project work: deployed revision and submission/video evidence with existing gates. No hosting/signing/MetaMask clearance. Review documentation committed locally; push failed because GitHub authentication cannot prompt. Remote main verified b8f59c937da64df9e1bf90e7d1333b921eea03c3. User can push from an authenticated terminal.
+
 ## Current review — d6d5c8e, October 30
 - Input c7c74c9023ca63d9c3a571f03b964f93e3fb7143; pulled/reviewed d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd. Report docs/STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md; evidence/recheck-d6d5c8e.
 - Windows exact snapshot, unchanged locked dependencies: Forge 120/120, Vitest 216/216, check/build exit 0; seven acceptance probe sets 69/69. FV1/FV2 functional acceptance; CWR4/CWR5 preserved.

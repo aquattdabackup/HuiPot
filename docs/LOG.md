@@ -1,5 +1,9 @@
 # Project log
 
+## October 30, 2026 — b8f59c9 VT1 accepted and repair cycle closed
+
+Pulled b8f59c937da64df9e1bf90e7d1333b921eea03c3 from 14645aa6191faeef30508a1c74f3f46d8578428f. Only maintained test/report changed. Windows Vitest 216/216, check/build exit 0; independent exact-runner negative control confirms eight microtask drains catch the virtual missing guard (2 late setters), real source 0 and inline control 1. VT1 accepted in STUDIO_VT1_ACCEPTANCE.md. Forge/probes not rerun because covered application/dependencies unchanged; prior results retained with provenance. No application edits, hosting/signing or MetaMask claim. Next project work is deployment-revision/submission/video evidence, not another VT1 repair.
+
 ## October 30, 2026 — d6d5c8e verdict identity functional acceptance
 
 Pulled d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd from c7c74c9023ca63d9c3a571f03b964f93e3fb7143. Windows snapshot with unchanged locked dependencies: Forge 120/120, Vitest 216/216, check/build exit 0; seven acceptance probe sets 69/69. FV1/FV2 functional fixes accepted. VT1 remains in maintained test timing only: virtual missing catch guard passes the early assertion, whereas independent settled cleanup probes confirm real source works. Report STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md narrows Studio follow-up to test settlement/control and report accuracy. No source edit, deployment, signature, hosting or MetaMask claim.

@@ -1,0 +1,21 @@
+{
+  "scope": "Current maintained runner and eight-round unmount settlement; virtual source mutation removes only catch cancellation guard. No file/source edits.",
+  "rows": [
+    {
+      "mutant": false,
+      "atMaintainedAssertion": 0,
+      "afterCatchSettles": 0,
+      "afterInlineControl": 1,
+      "maintainedAssertionPasses": true,
+      "inlineControlPasses": true
+    },
+    {
+      "mutant": true,
+      "atMaintainedAssertion": 2,
+      "afterCatchSettles": 2,
+      "afterInlineControl": 3,
+      "maintainedAssertionPasses": false,
+      "inlineControlPasses": false
+    }
+  ]
+}

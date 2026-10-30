@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Accepted checkpoint — October 30, 2026:** b8f59c9 closes VT1; see [STUDIO_VT1_ACCEPTANCE.md](STUDIO_VT1_ACCEPTANCE.md). No further Create recovery/identity repair prompt is needed within the reviewed scope. Prior follow-ups below are historical. Proceed next to deployed-revision/submission/video evidence under the existing gates; no automatic deployment or signing.
+
 **Current checkpoint — October 30, 2026:** [STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md](STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md) accepts d6d5c8e functional FV1/FV2 (216 Vitest, 120 Forge, check/build and 69 probe assertions pass). Request only VT1 maintained-test settlement/negative control and minor report cleanup. Do not rewrite accepted application behavior or repeat wallet demos for this test-only follow-up. Codex has not executed a new Studio job.
 
 **Current follow-up — October 30, 2026:** reviewed fc83aa6 in [STUDIO_FFR_ACCEPTANCE_RECHECK.md](STUDIO_FFR_ACCEPTANCE_RECHECK.md). All reported checks pass; address FV1–FV4 only (settled verdict identity, reactive replacement lookup, deferred/callback test coverage and report accuracy). The user requires a copyable prompt with each proposed Studio repair. This latest follow-up has not been executed by Codex.
