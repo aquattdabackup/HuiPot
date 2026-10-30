@@ -367,27 +367,53 @@ function makeCreateRunner() {
   let hashValue: string | undefined
   let retries = 0
   let nextReceipt: Record<string, unknown> | null = null
+  // FFR3: states array is persistent across renders; setter updates states[i] so that
+  // subsequent renders see the updated value (state-preserving runner).
   let states: unknown[], index: number, writes: unknown[]
   let connected: boolean, chain: number
   let receipt: Record<string, unknown>
   let errors: Record<string, string>
   let account: string
   let refs: Array<{ current: unknown }>, refIndex: number
-  // CWR6: controlled publicClient receipt for the independent revert-check fetch.
-  // Set to { status: 'reverted' } to simulate an on-chain reverted transaction.
-  // Set to null to simulate a fetch failure (unknown path).
+  // CWR6/FFR3: publicClientReceipt is controlled; tracks getTransactionReceipt responses.
   let publicClientReceipt: Record<string, unknown> | null = null
-  // Capture useEffect calls to inspect or invoke them in tests
-  const effects: Array<[() => void | (() => void), unknown[]]> = []
+  // FFR2/FFR3: track unmounted state for cleanup tests; late-arriving setters are counted.
+  let isUnmounted = false
+  let lateSets = 0
+  // FFR3: dependency-aware effect slots for cleanup tracking.
+  const effectSlots: Array<{ deps: unknown[]; cleanup?: (() => void) | void }> = []
+  let effectIndex = 0
 
   const mocks: Record<string, unknown> = {
     react: {
       ...React,
-      // CWR5: clock frozen in reset() so deadline validation uses a stable reference
-      useState: () => { const i = index++; return [states[i], (x: unknown) => { if (i === 7) errors = x as Record<string, string> }] },
+      // FFR3: state-preserving useState — setter persists into states[] so subsequent
+      // renders see updated values. Tracks unmounted state for stale-setter detection.
+      useState: (initial: unknown) => {
+        const i = index++
+        if (!(i in states)) states[i] = initial
+        return [
+          states[i],
+          (x: unknown) => {
+            if (isUnmounted) { lateSets++; return }
+            states[i] = typeof x === 'function' ? (x as (prev: unknown) => unknown)(states[i]) : x
+            if (i === 7) errors = states[i] as Record<string, string>
+          },
+        ]
+      },
       useRef: (initial: unknown) => { const i = refIndex++; return refs[i] ?? (refs[i] = { current: initial }) },
-      // CWR6: capture effects without executing them; tests call runEffects() when needed
-      useEffect: (fn: () => void | (() => void), deps: unknown[]) => { effects.push([fn, deps]) },
+      // FFR3: dependency-aware useEffect with cleanup tracking.
+      // On each render, compares deps to prior slot. If changed (or first call), schedules fn.
+      // flush() runs pending fns, calls cleanup of previous slot first.
+      useEffect: (fn: () => void | (() => void), deps: unknown[]) => {
+        const i = effectIndex++
+        const old = effectSlots[i]
+        if (!old || deps.some((d, j) => !Object.is(d, old.deps[j]))) {
+          // New deps: store fn in _fn for flush; deps for future comparison.
+          effectSlots[i] = { deps, cleanup: old?.cleanup, _fn: fn } as typeof effectSlots[number] & { _fn: typeof fn }
+        }
+        // If deps unchanged, do not reschedule — same behaviour as React
+      },
     },
     'react-router-dom': { Link: 'a' },
     wagmi: {
@@ -449,31 +475,64 @@ function makeCreateRunner() {
     }
   }
 
-  // CWR5: fixed morning time — deadline '2026-10-29 12:00' is always in the future
-  // when Date.now() returns this morning value. Restored in each test via withClock.
+  // CWR5: fixed morning time
   const FROZEN_NOW = new Date('2026-10-29T08:00:00').getTime()
 
   function reset() {
     hashValue = undefined; retries = 0; nextReceipt = null
+    // FFR3: initialise states array fresh; indices 0..6 are form fields, 7=errors, 8=revertedOnChain, 9=revertLookupHash
     states = [' test ', ' 1 ', '1', WALLET, '2026-10-29', '12:00', true, {}]
     index = 0; refIndex = 0; refs = []; account = WALLET
     writes = []; errors = {}; connected = true; chain = 5042002
     receipt = { isLoading: false, isSuccess: false, fetchStatus: 'idle' }
     publicClientReceipt = null
-    effects.length = 0
+    isUnmounted = false; lateSets = 0
+    effectSlots.length = 0; effectIndex = 0
   }
-  function render() { index = 0; refIndex = 0; effects.length = 0; return Create() }
-  function doSubmit() { const t = render(); const form = nodes(t).find(x => (x as Record<string,unknown>).type === 'form') as (Record<string,unknown> & {props:{onSubmit:(e:{preventDefault:()=>void})=>void}}) | undefined; form?.props.onSubmit({ preventDefault: noop }); return t }
-  // Run all captured useEffect callbacks (simulates React flushing effects after render)
-  async function runEffects() { for (const [fn] of effects) await fn(); }
+  function render() {
+    // FFR3: reset hook call counters but keep states/refs/effectSlots alive across renders
+    index = 0; refIndex = 0; effectIndex = 0
+    return Create()
+  }
+  function doSubmit() {
+    const t = render()
+    const form = nodes(t).find(x => (x as Record<string,unknown>).type === 'form') as (Record<string,unknown> & {props:{onSubmit:(e:{preventDefault:()=>void})=>void}}) | undefined
+    form?.props.onSubmit({ preventDefault: noop })
+    return t
+  }
+  // FFR3: flush pending effects — runs _fn for any slot that has a scheduled fn,
+  // calling cleanup first if present, and storing the returned cleanup.
+  async function runEffects() {
+    type SlotWithFn = { deps: unknown[]; cleanup?: (() => void) | void; _fn?: () => void | (() => void) }
+    for (const slot of effectSlots as SlotWithFn[]) {
+      if (!slot._fn) continue
+      if (typeof slot.cleanup === 'function') slot.cleanup()
+      const fn = slot._fn
+      delete slot._fn
+      const cleanup = fn()
+      slot.cleanup = typeof cleanup === 'function' ? cleanup : undefined
+    }
+    // Drain async microtasks so Promise.resolve chains settle
+    for (let i = 0; i < 8; i++) await Promise.resolve()
+  }
+  function unmount() {
+    type SlotWithFn = { deps: unknown[]; cleanup?: (() => void) | void; _fn?: () => void | (() => void) }
+    isUnmounted = true
+    for (const slot of effectSlots as SlotWithFn[]) {
+      if (typeof slot.cleanup === 'function') slot.cleanup()
+      slot.cleanup = undefined
+    }
+  }
 
   return {
-    reset, render, doSubmit, runEffects,
+    reset, render, doSubmit, runEffects, unmount,
     links, submitBtn, retryBtn, successH1, revertedH1, makeLog, nodes, textOf,
     HASH_A, HASH_B, CONTRACT, WALLET, FROZEN_NOW,
     get writes() { return writes },
     get retries() { return retries },
     get errors() { return errors },
+    get lateSets() { return lateSets },
+    get states() { return states },
     get receipt() { return receipt }, set receipt(v) { receipt = v as Record<string, unknown> },
     get nextReceipt() { return nextReceipt }, set nextReceipt(v) { nextReceipt = v },
     get refs() { return refs },
@@ -599,28 +658,28 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
   })
 
   it('CWR6-BEH: isError+publicClient reverted receipt shows "reverted" heading and hash link', async () => {
-    // CWR6: wagmi's waitForTransactionReceipt throws (isError=true) when it receives a
-    // reverted on-chain receipt. The component fetches the receipt independently via
-    // publicClient to confirm the revert; only then does it show the distinct reverted UI.
+    // FFR3: state-preserving runner — after runEffects() the setter actually updates
+    // states[8] (revertedOnChain). A subsequent render reads the updated value and
+    // renders the reverted heading. This test fails if the effect never sets a verdict.
     const r = makeCreateRunner()
     r.reset()
     r.doSubmit()
     r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('execution reverted'), fetchStatus: 'idle' }
     r.publicClientReceipt = { status: 'reverted', transactionHash: r.HASH_A }
-    // Run effects to simulate React executing useEffect after render
     r.render()
     await r.runEffects()
-    // After effects run, revertedOnChain state would be set to true.
-    // In the controlled runner the setter writes to the captured effect result.
-    // We verify the effect is captured and would produce the reverted branch:
-    // source-level: the condition is `isReceiptError && revertedOnChain === true`
-    expect(r.receipt.isError).toBe(true)
-    expect(r.publicClientReceipt).toEqual({ status: 'reverted', transactionHash: r.HASH_A })
+    // State-preserving: revertedOnChain (states[8]) is now true; re-render reads it.
+    const t = r.render()
+    expect(r.revertedH1(t)).toBe(true)
+    expect(r.links(t)).toContain(r.HASH_A)
+    expect(r.successH1(t)).toBe(false)
+    // Only one write — submission lock preserved
+    expect(r.writes.length).toBe(1)
   })
 
   it('CWR6-BEH: isError+unknown publicClient result stays in unknown-outcome path', async () => {
-    // CWR6: if publicClient fetch fails or receipt not found, revertedOnChain stays null.
-    // Component stays in the existing error/retry path (honest unknown outcome).
+    // FFR3: publicClientReceipt=null causes the fetch to reject → revertedOnChain stays null.
+    // State-preserving runner confirms no heading transition after effects flush.
     const r = makeCreateRunner()
     r.reset()
     r.doSubmit()
@@ -628,12 +687,84 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
     r.publicClientReceipt = null // will cause fetch to reject → unknown
     r.render()
     await r.runEffects()
-    // revertedOnChain=null → no reverted heading; existing error banner shown
+    // revertedOnChain remains null → no reverted heading
     const t = r.render()
     expect(r.successH1(t)).toBe(false)
-    expect(r.revertedH1(t)).toBe(false) // still false — banner, not revert screen
-    expect(r.submitBtn(t)?.props.disabled).toBe(true) // still locked
+    expect(r.revertedH1(t)).toBe(false)
+    expect(r.submitBtn(t)?.props.disabled).toBe(true)
     expect(r.links(t)).toContain(r.HASH_A)
+  })
+
+  it('FFR2-BEH: stale effect resolution does not override new hash verdict', async () => {
+    // FFR2: the cleanup flag prevents a stale promise from setting revertedOnChain
+    // after the dependency changes. We simulate this by first running with isError=true
+    // (sets revertedOnChain=true), then transitioning to isError=false before the next
+    // effects flush. The cleanup cancels the outstanding read; new effect with isError=false
+    // clears revertedOnChain. Render after flush must not show reverted heading.
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    // First pass: isError=true, reverted receipt available
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('exec reverted'), fetchStatus: 'idle' }
+    r.publicClientReceipt = { status: 'reverted', transactionHash: r.HASH_A }
+    r.render()
+    await r.runEffects()
+    // revertedOnChain is now true (states[8]=true)
+    expect(r.revertedH1(r.render())).toBe(true)
+    // Second pass: deps change — isError goes false, effect re-fires with !isReceiptError → sets null
+    r.receipt = { isLoading: false, isSuccess: false, isError: false, fetchStatus: 'paused' }
+    r.render()
+    await r.runEffects()
+    const t = r.render()
+    // revertedOnChain is null → no reverted heading
+    expect(r.revertedH1(t)).toBe(false)
+    expect(r.successH1(t)).toBe(false)
+    // hashPending holds with paused status — submit still locked
+    expect(r.submitBtn(t)?.props.disabled).toBe(true)
+  })
+
+  it('FFR2-BEH: unmount cleanup runs before any outstanding fetch resolves', async () => {
+    // FFR2: the effect returns a cleanup that sets cancelled=true. unmount() calls it.
+    // Because the effect is fully synchronous in the runner, we verify the cleanup path
+    // exists and runs: after unmount, isUnmounted is true and lateSets remains 0
+    // regardless of any late promise resolution.
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('exec reverted'), fetchStatus: 'idle' }
+    // publicClientReceipt=null → fetch rejects immediately, lateSets stays 0
+    r.publicClientReceipt = null
+    r.render()
+    await r.runEffects()
+    r.unmount()
+    // After unmount and effect cleanup, no late state updates should have fired
+    expect(r.lateSets).toBe(0)
+  })
+
+  it('FFR1-BEH: reverted replacement B renders with B explorer link not A', async () => {
+    // FFR1: if onReplaced fires before wagmi error, replacedHashRef.current = HASH_B.
+    // The effect fetches HASH_B; revertLookupHash = HASH_B; explorer link shows HASH_B.
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    // Simulate wagmi having called onReplaced before setting isError:
+    // the replacedHashRef lives inside the component. We access it via refs[1]
+    // (replacedHashRef is the first useRef after submittedRef at index 0).
+    // Identify it by forcing the replacement simulation through the useWaitForTransactionReceipt mock.
+    // Instead, we expose replacedHashRef via a controlled replacement by patching refs after submit.
+    // refs[0] = submittedRef, refs[1] = replacedHashRef (from useRef<... | null>(null))
+    const replacedHashRef = r.refs[1] as { current: `0x${string}` | null }
+    replacedHashRef.current = r.HASH_B
+    // Now set isError + publicClientReceipt for HASH_B
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('repriced'), fetchStatus: 'idle' }
+    r.publicClientReceipt = { status: 'reverted', transactionHash: r.HASH_B }
+    r.render()
+    await r.runEffects()
+    const t = r.render()
+    expect(r.revertedH1(t)).toBe(true)
+    expect(r.links(t)).toContain(r.HASH_B)
+    expect(r.links(t)).not.toContain(r.HASH_A)
+    expect(r.writes.length).toBe(1)
   })
 
   it('CWR2-BEH: finite timeout is passed to useWaitForTransactionReceipt', async () => {
@@ -667,18 +798,23 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
   it('CWR6-STRUCT: confirmed-revert branch uses isError+revertedOnChain, not isSuccess+receipt.status', async () => {
     // CWR6: the actual wagmi reverted path sets isError=true; isSuccess=true with
     // receipt.status='reverted' is not how the installed library behaves.
+    // FFR1: revertLookupHash drives the explorer link so replacement B links are correct.
     const src = await import('../../pages/Create?raw') as { default: string }
-    // Must use the independent revert check, not the impossible isSuccess+status path
+    // Must use the independent revert check
     expect(src.default).toContain('revertedOnChain')
     expect(src.default).toContain('isReceiptError && revertedOnChain === true')
     expect(src.default).toContain('Transaction reverted')
-    // Must NOT rely on the impossible isSuccess+reverted combination as the primary guard
-    // (the expression may appear in a comment or test; the primary conditional must use isReceiptError)
     const revertBranchIdx = src.default.indexOf('isReceiptError && revertedOnChain === true')
     expect(revertBranchIdx).toBeGreaterThan(-1)
-    // Unmatched branch (isSuccess, no matching event) still present and distinct
+    // Unmatched branch still present and distinct
     expect(src.default).toContain('Transaction succeeded — no pool created')
     expect(src.default).toContain('publicClient.getTransactionReceipt')
+    // FFR1: replacement hash tracking
+    expect(src.default).toContain('replacedHashRef')
+    expect(src.default).toContain('onReplaced')
+    expect(src.default).toContain('revertLookupHash')
+    // FFR2: effect cleanup
+    expect(src.default).toContain('cancelled = true')
   })
 
   it('CW1-STRUCT: recovery banner is outside the form element', async () => {

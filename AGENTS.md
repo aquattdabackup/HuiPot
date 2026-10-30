@@ -8,7 +8,17 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest independent review — 5989686
+## Latest Studio delivery — FFR1/FFR2/FFR3/FFR4 (current HEAD)
+
+- Input: `c21016ead0f3d6765af709b28a81e11d2b517287`.
+- **FFR1:** `onReplaced` callback in `useWaitForTransactionReceipt` captures replacement hash into `replacedHashRef`. Effect uses `replacedHashRef.current ?? hash` for independent lookup. `revertLookupHash` state drives explorer link — always shows the mined transaction (replacement B or original A).
+- **FFR2:** Effect returns `() => { cancelled = true }` cleanup. Stale promise cannot override new hash verdict; post-unmount setter calls suppressed.
+- **FFR3:** `makeCreateRunner` state-preserving: all state setters update `states[i]`. Dependency-aware `useEffect` with `_fn`/cleanup slots. New tests: `FFR1-BEH`, `FFR2-BEH x2`, updated `CWR6-BEH` asserts actual heading/link.
+- **FFR4:** `expanded-adapted.cjs` restored to 13 cases with real query completion, errored-query retry, actual offline QueryObserver. cancelRefetch wording corrected.
+- Validation: oxlint 0/0, tsc 0; vitest **214/214** (+3); forge **120/120**; build exit 0.
+- Probes: effect-review **7/7**, preserved-query **13/13**, production **23/23**, recovery **3/3**, expanded **13/13**, runtime **4/4**.
+
+## Independent review — 5989686
 
 - Reviewed `5989686343724078521ff42b5dbf7ff9acb09907`; actual parent `ad09b9786ae52dac42ea9484da9b148f1d43c26e` differs from Studio's reported full input SHA. See docs/STUDIO_FINAL_FIX_RECHECK.md.
 - CWR4/CWR5 accepted: clean frozen-lock install on Windows in a path with spaces, Forge 120/120, Vitest 211/211 (createSafety 46), check/build exit 0. No source edits by Codex.

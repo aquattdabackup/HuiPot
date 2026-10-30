@@ -39,6 +39,7 @@ export function Create() {
   // CW2: destructure isError/error/refetch/fetchStatus so receipt-query failures are
   // surfaced and a read-only retry is available without calling writeContract.
   // CWR2: timeout=30_000ms gives a finite recovery boundary; wagmi default is 0 (no bound).
+  //
   const {
     isLoading: isConfirming,
     isSuccess,
@@ -51,35 +52,54 @@ export function Create() {
     hash,
     chainId: TARGET_CHAIN_ID,
     timeout: 30_000,
+    onReplaced: ({ transactionReceipt }) => {
+      // FFR1: capture the mined replacement hash for use in the independent revert check.
+      replacedHashRef.current = transactionReceipt.transactionHash
+    },
   })
 
   // CWR2: cancelRefetch:true ensures a retry starts a new receipt read request.
-  // Note: TanStack Query deduplicates in-flight promises when no cached data exists,
-  // so cancelRefetch:true cancels an in-flight fetch and starts a new one when data is
-  // already present; without cached data both approaches behave the same. Never calls writeContract.
+  // Note: TanStack Query deduplicates in-flight promises when no cached data exists
+  // so the effect is equivalent to a default refetch when no cached receipt exists;
+  // it cancels an in-flight fetch and starts fresh when cached data is present.
+  // This is per attempt; query retries may postpone the final timeout banner.
+  // Never calls writeContract.
   function retryReceipt() {
     void _rawRefetch({ cancelRefetch: true })
   }
 
-  // CWR6: When the wagmi watcher reports an error, attempt to read the receipt directly
-  // to determine whether the transaction was confirmed as reverted on-chain. wagmi's
-  // waitForTransactionReceipt action throws (sets isError=true) when receipt.status==='reverted'
-  // after obtaining the revert reason; the receipt itself is not returned in data.
-  // To classify the outcome authoritatively we fetch the receipt independently via the
-  // public client on the correct chain. A network failure or absence keeps revertedOnChain=null
-  // (unknown), preserving the existing honest-unknown branch.
+  // CWR6/FFR1/FFR2: When the wagmi watcher reports an error, fetch the receipt
+  // independently to classify whether the active submission was confirmed as reverted.
+  // FFR1: prefer the replacement hash (replacedHashRef.current) over the original hash
+  // so that a replacement B reverted case looks up B, not A. Explorer link follows the
+  // same hash so it shows the correct mined transaction.
+  // FFR2: bind verification to the current (hash, replacedHashRef.current) pair.
+  // Return a cleanup function so that a stale resolution/rejection after the hash or
+  // isReceiptError changes cannot overwrite a newer verdict.
   const publicClient = usePublicClient({ chainId: TARGET_CHAIN_ID })
   const [revertedOnChain, setRevertedOnChain] = useState<boolean | null>(null)
+  // FFR1: expose the hash used for the independent revert lookup so the explorer link
+  // matches the looked-up transaction.
+  const [revertLookupHash, setRevertLookupHash] = useState<`0x${string}` | null>(null)
   useEffect(() => {
     if (!isReceiptError || !hash || !publicClient) {
       setRevertedOnChain(null)
+      setRevertLookupHash(null)
       return
     }
-    void publicClient.getTransactionReceipt({ hash }).then(r => {
+    // FFR2: cancelled flag so stale resolution does not clobber a newer verdict.
+    let cancelled = false
+    // FFR1: use replacement hash if available, otherwise the original submitted hash.
+    const lookupHash = replacedHashRef.current ?? hash
+    setRevertLookupHash(lookupHash)
+    void publicClient.getTransactionReceipt({ hash: lookupHash }).then(r => {
+      if (cancelled) return
       setRevertedOnChain(r.status === 'reverted')
     }).catch(() => {
+      if (cancelled) return
       setRevertedOnChain(null)
     })
+    return () => { cancelled = true }
   }, [isReceiptError, hash, publicClient])
 
   // CS2: Immutable submission snapshot — captured at the moment writeContract is called.
@@ -96,6 +116,10 @@ export function Create() {
     title: string
     purpose: string
   } | null>(null)
+
+  // FFR1: capture the mined replacement hash when wagmi fires onReplaced.
+  // Declared here (after submittedRef) so ref indices are: refs[0]=submittedRef, refs[1]=replacedHashRef.
+  const replacedHashRef = useRef<`0x${string}` | null>(null)
 
   const wrongChain = isConnected && chainId !== TARGET_CHAIN_ID
 
@@ -285,44 +309,48 @@ export function Create() {
   // (hash A replaced by hash B) shows the correct on-chain evidence.
   const minedHash = (isSuccess && receipt?.transactionHash) ? receipt.transactionHash : hash
 
-  // CWR6: Confirmed on-chain revert path.
+  // CWR6/FFR1: Confirmed on-chain revert path.
   // wagmi's waitForTransactionReceipt action throws (isError=true) when it receives a
   // reverted receipt; data is absent. We independently fetch the receipt via publicClient
   // to confirm it was actually mined as reverted — not a network/RPC error.
   // revertedOnChain=null means the check hasn't resolved yet or the read failed (unknown).
+  // FFR1: revertLookupHash is the hash that was actually looked up (replacement B if present,
+  // original A otherwise), so the explorer link shows the correct mined transaction.
   if (isReceiptError && revertedOnChain === true) {
-      return (
-        <div className="mx-auto max-w-lg px-4 py-12 text-center">
-          <div
-            className="mb-4 flex h-16 w-16 items-center justify-center rounded-full mx-auto"
-            style={{ background: 'var(--error-bg)' }}
-          >
-            <AlertCircle className="h-8 w-8" style={{ color: 'var(--error-text)' }} />
-          </div>
-          <h1 className="display text-xl font-bold mb-2" style={{ color: 'var(--ink)' }}>
-            Transaction reverted — no pool created
-          </h1>
-          <p className="mb-6 text-sm" style={{ color: 'var(--muted)' }}>
-            The transaction was confirmed on-chain but reverted. No pool was created. This may be
-            caused by a validation error in the contract (e.g. invalid recipient or expired deadline).
-            Check the transaction for details, then try again with corrected terms.
-          </p>
-          <div className="flex flex-col gap-3">
-            <a
-              href={explorerTxUrl(minedHash!)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm underline"
-              style={{ color: 'var(--muted)' }}
-            >
-              View reverted transaction on ArcScan
-            </a>
-            <Link to="/create" className="text-sm" style={{ color: 'var(--muted)' }} onClick={() => window.location.reload()}>
-              Try again
-            </Link>
-          </div>
+    // FFR1: use the hash that was confirmed reverted (replacement or original)
+    const revertExplorerHash = revertLookupHash ?? hash
+    return (
+      <div className="mx-auto max-w-lg px-4 py-12 text-center">
+        <div
+          className="mb-4 flex h-16 w-16 items-center justify-center rounded-full mx-auto"
+          style={{ background: 'var(--error-bg)' }}
+        >
+          <AlertCircle className="h-8 w-8" style={{ color: 'var(--error-text)' }} />
         </div>
-      )
+        <h1 className="display text-xl font-bold mb-2" style={{ color: 'var(--ink)' }}>
+          Transaction reverted — no pool created
+        </h1>
+        <p className="mb-6 text-sm" style={{ color: 'var(--muted)' }}>
+          The transaction was confirmed on-chain but reverted. No pool was created. This may be
+          caused by a validation error in the contract (e.g. invalid recipient or expired deadline).
+          Check the transaction for details, then try again with corrected terms.
+        </p>
+        <div className="flex flex-col gap-3">
+          <a
+            href={explorerTxUrl(revertExplorerHash!)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm underline"
+            style={{ color: 'var(--muted)' }}
+          >
+            View reverted transaction on ArcScan
+          </a>
+          <Link to="/create" className="text-sm" style={{ color: 'var(--muted)' }} onClick={() => window.location.reload()}>
+            Try again
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   if (isSuccess && receipt) {
