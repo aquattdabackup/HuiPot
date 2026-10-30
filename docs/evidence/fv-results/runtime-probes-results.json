@@ -1,0 +1,44 @@
+{
+  "scope": "Unchanged Create; actual wagmi/viem action for reverted path (isError=true) and bounded 30s timeout/retry. publicClient receipt confirms revert authoritatively. No DOM, RPC, wallet or transaction.",
+  "passed": 4,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Actual wagmi reverted path: isError=true not isSuccess=true",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "status": "error",
+      "isSuccess": false,
+      "isError": true,
+      "errorMessage": "unknown reason"
+    },
+    {
+      "name": "CWR6: publicClient confirms revert; component renders Transaction reverted heading",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "isError": true,
+      "pcStatus": "reverted",
+      "reverted": true
+    },
+    {
+      "name": "Real viem 30000ms timeout shows unknown and preserves submission lock",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "elapsedMs": 30011,
+      "timeout": 30000,
+      "errorName": "WaitForTransactionReceiptTimeoutError",
+      "reads": 1
+    },
+    {
+      "name": "After actual timeout retry confirms with original snapshot and one write",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "writes": 1,
+      "reads": 2
+    }
+  ]
+}

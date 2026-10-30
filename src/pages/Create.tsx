@@ -53,54 +53,61 @@ export function Create() {
     chainId: TARGET_CHAIN_ID,
     timeout: 30_000,
     onReplaced: ({ transactionReceipt }) => {
-      // FFR1: capture the mined replacement hash for use in the independent revert check.
-      replacedHashRef.current = transactionReceipt.transactionHash
+      // FV2: update replacedHash state (not a ref) so the change is a reactive effect dep.
+      setReplacedHash(transactionReceipt.transactionHash)
     },
   })
 
-  // CWR2: cancelRefetch:true ensures a retry starts a new receipt read request.
-  // Note: TanStack Query deduplicates in-flight promises when no cached data exists
-  // so the effect is equivalent to a default refetch when no cached receipt exists;
-  // it cancels an in-flight fetch and starts fresh when cached data is present.
-  // This is per attempt; query retries may postpone the final timeout banner.
-  // Never calls writeContract.
+  // CWR2: cancelRefetch:true — when cached data exists it cancels the in-flight fetch
+  // and starts a fresh one; when no cached data exists TanStack deduplicates the
+  // in-flight promise so both values behave the same. Timeout is per attempt; query
+  // retries may postpone the final banner. Never calls writeContract.
   function retryReceipt() {
     void _rawRefetch({ cancelRefetch: true })
   }
 
-  // CWR6/FFR1/FFR2: When the wagmi watcher reports an error, fetch the receipt
+  // CWR6/FFR1/FFR2/FV1/FV2: When the wagmi watcher reports an error, fetch the receipt
   // independently to classify whether the active submission was confirmed as reverted.
-  // FFR1: prefer the replacement hash (replacedHashRef.current) over the original hash
-  // so that a replacement B reverted case looks up B, not A. Explorer link follows the
-  // same hash so it shows the correct mined transaction.
-  // FFR2: bind verification to the current (hash, replacedHashRef.current) pair.
-  // Return a cleanup function so that a stale resolution/rejection after the hash or
-  // isReceiptError changes cannot overwrite a newer verdict.
+  // FV2: replacedHash is state (not a ref) so onReplaced triggers re-render and makes the
+  // replacement identity a reactive effect dependency. Effect runs when replacedHash changes.
+  // FV1: verifiedForHash records which hash the settled verdict belongs to; render shows
+  // the reverted UI only when the current lookupHash matches the verified identity, so a
+  // previously settled verdict cannot appear during or after an identity transition.
   const publicClient = usePublicClient({ chainId: TARGET_CHAIN_ID })
+  const [replacedHash, setReplacedHash] = useState<`0x${string}` | null>(null)
   const [revertedOnChain, setRevertedOnChain] = useState<boolean | null>(null)
-  // FFR1: expose the hash used for the independent revert lookup so the explorer link
-  // matches the looked-up transaction.
   const [revertLookupHash, setRevertLookupHash] = useState<`0x${string}` | null>(null)
+  // FV1: the hash for which revertedOnChain was last confirmed; render guard checks identity.
+  const [verifiedForHash, setVerifiedForHash] = useState<`0x${string}` | null>(null)
   useEffect(() => {
     if (!isReceiptError || !hash || !publicClient) {
+      // FV1: clear all verdict state synchronously so the first render after deps change
+      // shows the unknown/pending path instead of carrying a stale settled verdict.
       setRevertedOnChain(null)
       setRevertLookupHash(null)
+      setVerifiedForHash(null)
       return
     }
-    // FFR2: cancelled flag so stale resolution does not clobber a newer verdict.
+    // FFR2: cancelled flag so stale resolution/rejection cannot overwrite a newer verdict.
     let cancelled = false
-    // FFR1: use replacement hash if available, otherwise the original submitted hash.
-    const lookupHash = replacedHashRef.current ?? hash
+    // FV2/FFR1: use replacement hash (reactive state) if available, else original hash.
+    const lookupHash = replacedHash ?? hash
+    // FV1: clear previous verdict before async fetch so an intermediate render is unknown.
+    setRevertedOnChain(null)
+    setVerifiedForHash(null)
     setRevertLookupHash(lookupHash)
     void publicClient.getTransactionReceipt({ hash: lookupHash }).then(r => {
       if (cancelled) return
       setRevertedOnChain(r.status === 'reverted')
+      // FV1: record which hash this verdict was verified for.
+      setVerifiedForHash(lookupHash)
     }).catch(() => {
       if (cancelled) return
       setRevertedOnChain(null)
+      setVerifiedForHash(null)
     })
     return () => { cancelled = true }
-  }, [isReceiptError, hash, publicClient])
+  }, [isReceiptError, hash, replacedHash, publicClient])
 
   // CS2: Immutable submission snapshot — captured at the moment writeContract is called.
   // Receipt validation checks all these fields against the PoolCreated event so that a
@@ -117,9 +124,8 @@ export function Create() {
     purpose: string
   } | null>(null)
 
-  // FFR1: capture the mined replacement hash when wagmi fires onReplaced.
-  // Declared here (after submittedRef) so ref indices are: refs[0]=submittedRef, refs[1]=replacedHashRef.
-  const replacedHashRef = useRef<`0x${string}` | null>(null)
+  // FV2: replacedHash is tracked as state above. No separate ref needed.
+  // ref indices: refs[0]=submittedRef only.
 
   const wrongChain = isConnected && chainId !== TARGET_CHAIN_ID
 
@@ -309,15 +315,22 @@ export function Create() {
   // (hash A replaced by hash B) shows the correct on-chain evidence.
   const minedHash = (isSuccess && receipt?.transactionHash) ? receipt.transactionHash : hash
 
-  // CWR6/FFR1: Confirmed on-chain revert path.
-  // wagmi's waitForTransactionReceipt action throws (isError=true) when it receives a
-  // reverted receipt; data is absent. We independently fetch the receipt via publicClient
-  // to confirm it was actually mined as reverted — not a network/RPC error.
-  // revertedOnChain=null means the check hasn't resolved yet or the read failed (unknown).
-  // FFR1: revertLookupHash is the hash that was actually looked up (replacement B if present,
-  // original A otherwise), so the explorer link shows the correct mined transaction.
-  if (isReceiptError && revertedOnChain === true) {
-    // FFR1: use the hash that was confirmed reverted (replacement or original)
+  // CWR6/FFR1/FV1/FV2: Confirmed on-chain revert path.
+  // wagmi throws (isError=true) when receipt.status==='reverted'. We independently fetch
+  // the receipt via publicClient. revertedOnChain=null means unresolved or unknown.
+  // FV1: require verifiedForHash===revertLookupHash so a verdict settled for hash A is
+  // never displayed in a context where the active lookup identity is now hash B or nil.
+  // This guards both the first render after a hash change (before effects run) and any
+  // render where the async fetch has not yet completed under the new identity.
+  // FV1: verifiedForHash must equal the CURRENT active lookup identity (hash or replacedHash).
+  // This guards the first render after a hash/replacement change (before effects run for the
+  // new identity) — a verdict settled under a prior identity cannot match the current one.
+  const activeLookup = replacedHash ?? hash
+  const revertIdentityMatch = verifiedForHash !== null &&
+    verifiedForHash === revertLookupHash &&
+    verifiedForHash === activeLookup
+  if (isReceiptError && revertedOnChain === true && revertIdentityMatch) {
+    // Use the hash that was confirmed reverted (replacement or original)
     const revertExplorerHash = revertLookupHash ?? hash
     return (
       <div className="mx-auto max-w-lg px-4 py-12 text-center">

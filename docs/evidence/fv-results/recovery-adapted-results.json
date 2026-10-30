@@ -1,0 +1,25 @@
+{
+  "scope": "Unchanged production Create with CWR6 mocks; persistent controlled hooks; real viem logs. No DOM, RPC, wallet or transaction.",
+  "passed": 3,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Pending link is outside form and submit is disabled",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Receipt error shows message, keeps submit disabled, retry calls refetch only",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Retry valid receipt keeps original snapshot and one write",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    }
+  ]
+}

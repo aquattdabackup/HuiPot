@@ -14,18 +14,21 @@ const abi=new Function(js(a.slice(a.indexOf('export const HUIPOT_ABI')).replace(
 const contract='0x81a139599d252eb2dc2bbb6c267e911a21264288',wallet='0x1111111111111111111111111111111111111111';
 let hashValue,retries,nextReceipt;
 let states,index,writes,connected,chain,receipt,errors,account,refs,refIndex,waitArgs;
-// CWR6: capture effects for manual invocation
-const effects=[];
+// FV3: state-preserving effect slots and stable publicClient for runtime probe.
+const effectSlots=[];let effectIndex=0;
 // CWR6: controlled public client receipt
 let publicClientReceipt=null;
 const HASH_A='0x'+'a'.repeat(64),HASH_B='0x'+'b'.repeat(64);
 const noop=()=>{};
-const mocks={react:{...React,useState:()=>{const i=index++;return [states[i],x=>{if(i===7)errors=x}]},useRef:initial=>{const i=refIndex++;return refs[i]??(refs[i]={current:initial})},useEffect:(fn,deps)=>effects.push([fn,deps])},'react-router-dom':{Link:'a'},wagmi:{useAccount:()=>({address:account,chainId:chain,isConnected:connected}),useSwitchChain:()=>({switchChain:()=>{}}),useWriteContract:()=>({writeContract:x=>{writes.push(x);hashValue=HASH_A},data:hashValue,isPending:false,isError:false}),useWaitForTransactionReceipt:args=>{waitArgs=args;return {...receipt,refetch:receipt.refetch??(()=>{retries++;if(nextReceipt)receipt=nextReceipt;return Promise.resolve({data:receipt.data})})}},usePublicClient:()=>({getTransactionReceipt:()=>publicClientReceipt?Promise.resolve(publicClientReceipt):Promise.reject(new Error('not found'))})},connectkit:{ConnectKitButton:{Custom:()=>null}},'lucide-react':new Proxy({},{get:()=>()=>null}),'../contract':{HUIPOT_ADDRESS:contract,HUIPOT_ABI:abi,DEPLOYMENT_CONFIGURED:true},'../config':{...money,TARGET_CHAIN_ID:5042002,explorerTxUrl:x=>x},'../lib/utils':{formatDeadline:()=>'',parseOnchainError:()=>''},'../components/CommitmentNotice':{CommitmentNotice:()=>null}};
+const stableRtClient={getTransactionReceipt:args=>publicClientReceipt?Promise.resolve(publicClientReceipt):Promise.reject(new Error('not found'))};
+function effectHookRt(fn,deps){const i=effectIndex++;const old=effectSlots[i];if(!old||deps.some((x,j)=>!Object.is(x,old.deps[j]))){effectSlots[i]={deps,cleanup:old?.cleanup,_fn:fn}}}
+async function flushEffects(){for(const slot of effectSlots){if(!slot._fn)continue;if(typeof slot.cleanup==='function')slot.cleanup();const fn=slot._fn;delete slot._fn;const c=fn();slot.cleanup=typeof c==='function'?c:undefined}for(let i=0;i<8;i++)await Promise.resolve()}
+const mocks={react:{...React,useState:initial=>{const i=index++;if(!(i in states))states[i]=initial;return [states[i],x=>{states[i]=typeof x==='function'?x(states[i]):x;if(i===7)errors=states[i]}]},useRef:initial=>{const i=refIndex++;return refs[i]??(refs[i]={current:initial})},useEffect:effectHookRt},'react-router-dom':{Link:'a'},wagmi:{useAccount:()=>({address:account,chainId:chain,isConnected:connected}),useSwitchChain:()=>({switchChain:()=>{}}),useWriteContract:()=>({writeContract:x=>{writes.push(x);hashValue=HASH_A},data:hashValue,isPending:false,isError:false}),useWaitForTransactionReceipt:args=>{waitArgs=args;return {...receipt,refetch:receipt.refetch??(()=>{retries++;if(nextReceipt)receipt=nextReceipt;return Promise.resolve({data:receipt.data})})}},usePublicClient:()=>stableRtClient},connectkit:{ConnectKitButton:{Custom:()=>null}},'lucide-react':new Proxy({},{get:()=>()=>null}),'../contract':{HUIPOT_ADDRESS:contract,HUIPOT_ABI:abi,DEPLOYMENT_CONFIGURED:true},'../config':{...money,TARGET_CHAIN_ID:5042002,explorerTxUrl:x=>x},'../lib/utils':{formatDeadline:()=>'',parseOnchainError:()=>''},'../components/CommitmentNotice':{CommitmentNotice:()=>null}};
 const mod={exports:{}};new Function('require','module','exports',js(read('src/pages/Create.tsx')))(n=>mocks[n]??load(n),mod,mod.exports);
 function nodes(t){if(!t||typeof t!=='object')return [];if(Array.isArray(t))return t.flatMap(nodes);return [t,...nodes(t.props?.children)]}
-function reset(){hashValue=undefined;retries=0;nextReceipt=null;states=[' test ',' 1 ','1',wallet,'2026-10-29','12:00',true,{}];index=0;refIndex=0;refs=[];account=wallet;waitArgs=null;writes=[];errors={};connected=true;chain=5042002;receipt={isLoading:false,isSuccess:false};publicClientReceipt=null;effects.length=0}
+function reset(){hashValue=undefined;retries=0;nextReceipt=null;states=[' test ',' 1 ','1',wallet,'2026-10-29','12:00',true,{}];index=0;refIndex=0;refs=[];account=wallet;waitArgs=null;writes=[];errors={};connected=true;chain=5042002;receipt={isLoading:false,isSuccess:false};publicClientReceipt=null;effectSlots.length=0;effectIndex=0}
 const results=[];
-function render(){index=0;refIndex=0;effects.length=0;return mod.exports.Create()}
+function render(){index=0;refIndex=0;effectIndex=0;return mod.exports.Create()}
 function submit(){const t=render();nodes(t).find(x=>x.type==='form').props.onSubmit({preventDefault:noop});return t}
 function log(opts={}){const values={poolId:1n,creator:wallet,recipient:wallet,target:10n**18n,deadline:BigInt(new Date('2026-10-29T12:00:00').getTime()/1000),title:'test',purpose:'1',address:contract,...opts};return {address:values.address,topics:v.encodeEventTopics({abi,eventName:'PoolCreated',args:values}),data:v.encodeAbiParameters([{type:'uint256'},{type:'uint256'},{type:'string'},{type:'string'}],[values.target,values.deadline,values.title,values.purpose])}}
 function success(tree){return nodes(tree).some(x=>x.type==='h1'&&x.props.children==='Pool created')}
@@ -48,13 +51,11 @@ async function main(){
  const unsub=ro.subscribe(()=>{});await ro.refetch();receipt=ro.getCurrentResult();
  // After actual wagmi reverted path: isError=true, data absent
  record('Actual wagmi reverted path: isError=true not isSuccess=true',receipt.isError===true&&receipt.isSuccess!==true,true,{status:receipt.status,isSuccess:receipt.isSuccess,isError:receipt.isError,errorMessage:receipt.error?.message});
- // With publicClient confirming revert, component shows distinct reverted UI
- publicClientReceipt={status:'reverted',transactionHash:HASH_B};
- // Simulate effects running after render (React would call useEffect after commit)
- render();await Promise.all(effects.map(([fn])=>fn()));
- // Now revertedOnChain state is set to true via the async setState
- // Re-render to pick up state change (simplified: re-render and check for non-error-banner heading)
- record('CWR6: publicClient confirms revert; component has reverted receipt and correct hash',receipt.isError===true&&receipt.error?.message!==undefined&&publicClientReceipt.status==='reverted',true,{isError:receipt.isError,errMsg:receipt.error?.message,pcStatus:publicClientReceipt.status});
+ // With publicClient confirming revert, component renders the reverted heading.
+ // FV3: state-preserving effect runner — flush effects, drain microtasks, re-render.
+ publicClientReceipt={status:'reverted',transactionHash:HASH_A};
+ render();await flushEffects();const revertedTree=render();
+ record('CWR6: publicClient confirms revert; component renders Transaction reverted heading',revertedH1(revertedTree)&&receipt.isError===true,true,{isError:receipt.isError,pcStatus:publicClientReceipt.status,reverted:revertedH1(revertedTree)});
  unsub();qc.clear();
  // Bounded timeout test
  reset();submit();render();let reads=0,ready=false;

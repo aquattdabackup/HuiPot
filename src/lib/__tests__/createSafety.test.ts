@@ -376,7 +376,18 @@ function makeCreateRunner() {
   let account: string
   let refs: Array<{ current: unknown }>, refIndex: number
   // CWR6/FFR3: publicClientReceipt is controlled; tracks getTransactionReceipt responses.
+  // Kept for backward compat in existing tests; new tests use publicClientGetReceipt directly.
   let publicClientReceipt: Record<string, unknown> | null = null
+  // FV3: per-test getTransactionReceipt function; defaults to using publicClientReceipt.
+  // Replace with a custom function (e.g. deferred) in tests that need async control.
+  let publicClientGetReceipt: (args: { hash: `0x${string}` }) => Promise<Record<string, unknown>>
+  // FV3: stable publicClient object — not recreated on each render so unchanged-dep effect
+  // slots are not spuriously re-scheduled. Delegates to publicClientGetReceipt.
+  const stablePublicClient = {
+    getTransactionReceipt: (args: { hash: `0x${string}` }) => publicClientGetReceipt(args),
+  }
+  // FV2/FV3: registered onReplaced callback captured from useWaitForTransactionReceipt args.
+  let registeredOnReplaced: ((e: { transactionReceipt: { transactionHash: `0x${string}` }; transaction: { hash: `0x${string}` }; replacedTransaction: { hash: `0x${string}` }; reason: string }) => void) | null = null
   // FFR2/FFR3: track unmounted state for cleanup tests; late-arriving setters are counted.
   let isUnmounted = false
   let lateSets = 0
@@ -424,7 +435,11 @@ function makeCreateRunner() {
         data: hashValue,
         isPending: false, isError: false,
       }),
-      useWaitForTransactionReceipt: (_args: unknown) => {
+      useWaitForTransactionReceipt: (args: Record<string, unknown>) => {
+        // FV3: capture onReplaced callback so tests can invoke it directly.
+        if (args.onReplaced && typeof args.onReplaced === 'function') {
+          registeredOnReplaced = args.onReplaced as (e: { transactionReceipt: { transactionHash: `0x${string}` }; transaction: { hash: `0x${string}` }; replacedTransaction: { hash: `0x${string}` }; reason: string }) => void
+        }
         const r = receipt
         return {
           ...r,
@@ -432,10 +447,10 @@ function makeCreateRunner() {
             ?? ((_opts?: unknown) => { retries++; if (nextReceipt) receipt = nextReceipt as Record<string, unknown>; return Promise.resolve({ data: receipt }) }),
         }
       },
-      // CWR6: mock usePublicClient returning a controlled client
-      usePublicClient: (_opts?: unknown) => publicClientReceipt !== null
-        ? { getTransactionReceipt: () => Promise.resolve(publicClientReceipt) }
-        : { getTransactionReceipt: () => Promise.reject(new Error('fetch failed')) },
+      // FV3: stable publicClient — same object across renders so unchanged-dependency tests
+      // do not spuriously re-trigger the effect. getTransactionReceipt delegates to
+      // publicClientGetReceipt which can be controlled per test.
+      usePublicClient: (_opts?: unknown) => stablePublicClient,
     },
     connectkit: { ConnectKitButton: { Custom: () => null } },
     'lucide-react': new Proxy({}, { get: () => () => null }),
@@ -480,12 +495,18 @@ function makeCreateRunner() {
 
   function reset() {
     hashValue = undefined; retries = 0; nextReceipt = null
-    // FFR3: initialise states array fresh; indices 0..6 are form fields, 7=errors, 8=revertedOnChain, 9=revertLookupHash
+    // FV1/FV2: state indices — 0..6 form fields, 7=errors, 8=replacedHash, 9=revertedOnChain,
+    // 10=revertLookupHash, 11=verifiedForHash. Indices 8..11 left absent; useState fills in null.
     states = [' test ', ' 1 ', '1', WALLET, '2026-10-29', '12:00', true, {}]
     index = 0; refIndex = 0; refs = []; account = WALLET
     writes = []; errors = {}; connected = true; chain = 5042002
     receipt = { isLoading: false, isSuccess: false, fetchStatus: 'idle' }
     publicClientReceipt = null
+    // FV3: default publicClientGetReceipt uses publicClientReceipt sentinel for back-compat.
+    publicClientGetReceipt = (_args) => publicClientReceipt !== null
+      ? Promise.resolve(publicClientReceipt)
+      : Promise.reject(new Error('fetch failed'))
+    registeredOnReplaced = null
     isUnmounted = false; lateSets = 0
     effectSlots.length = 0; effectIndex = 0
   }
@@ -538,6 +559,15 @@ function makeCreateRunner() {
     get refs() { return refs },
     get publicClientReceipt() { return publicClientReceipt },
     set publicClientReceipt(v) { publicClientReceipt = v as Record<string, unknown> | null },
+    // FV3: override getTransactionReceipt with a custom function (e.g. deferred promise).
+    set publicClientGetReceipt(fn: (args: { hash: `0x${string}` }) => Promise<Record<string, unknown>>) {
+      publicClientGetReceipt = fn
+    },
+    // FV2/FV3: invoke the registered onReplaced callback (captured from useWaitForTransactionReceipt).
+    get registeredOnReplaced() { return registeredOnReplaced },
+    // FV1/FV3: expose hashValue for identity-transition tests.
+    get hashValue() { return hashValue },
+    set hashValue(v: string | undefined) { hashValue = v },
   }
 }
 
@@ -723,39 +753,64 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
     expect(r.submitBtn(t)?.props.disabled).toBe(true)
   })
 
-  it('FFR2-BEH: unmount cleanup runs before any outstanding fetch resolves', async () => {
-    // FFR2: the effect returns a cleanup that sets cancelled=true. unmount() calls it.
-    // Because the effect is fully synchronous in the runner, we verify the cleanup path
-    // exists and runs: after unmount, isUnmounted is true and lateSets remains 0
-    // regardless of any late promise resolution.
+  it('FFR2/FV3-BEH: unmount discards deferred rejection (outstanding fetch resolves after unmount)', async () => {
+    // FV3: genuine deferred promise — unmount before reject; lateSets must be 0.
     const r = makeCreateRunner()
     r.reset()
     r.doSubmit()
     r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('exec reverted'), fetchStatus: 'idle' }
-    // publicClientReceipt=null → fetch rejects immediately, lateSets stays 0
-    r.publicClientReceipt = null
+    let rejectFn!: (e: Error) => void
+    r.publicClientGetReceipt = () => new Promise<Record<string, unknown>>((_res, rej) => { rejectFn = rej })
     r.render()
-    await r.runEffects()
-    r.unmount()
-    // After unmount and effect cleanup, no late state updates should have fired
+    await r.runEffects()   // effect scheduled, fetch promise outstanding
+    r.unmount()            // cleanup sets cancelled=true
+    rejectFn(new Error('late rejection'))
+    await Promise.resolve()
+    // cleanup ran before rejection resolved; lateSets=0 and isUnmounted via unmount()
     expect(r.lateSets).toBe(0)
   })
 
-  it('FFR1-BEH: reverted replacement B renders with B explorer link not A', async () => {
-    // FFR1: if onReplaced fires before wagmi error, replacedHashRef.current = HASH_B.
-    // The effect fetches HASH_B; revertLookupHash = HASH_B; explorer link shows HASH_B.
+  it('FFR2/FV3-BEH: stale deferred resolution after dep change does not show stale verdict', async () => {
+    // FV3: genuine deferred resolution. A promise created before hash change. After cleanup,
+    // A's resolution must not write to state (cancelled=true). B uses its own never-resolving promise.
     const r = makeCreateRunner()
     r.reset()
     r.doSubmit()
-    // Simulate wagmi having called onReplaced before setting isError:
-    // the replacedHashRef lives inside the component. We access it via refs[1]
-    // (replacedHashRef is the first useRef after submittedRef at index 0).
-    // Identify it by forcing the replacement simulation through the useWaitForTransactionReceipt mock.
-    // Instead, we expose replacedHashRef via a controlled replacement by patching refs after submit.
-    // refs[0] = submittedRef, refs[1] = replacedHashRef (from useRef<... | null>(null))
-    const replacedHashRef = r.refs[1] as { current: `0x${string}` | null }
-    replacedHashRef.current = r.HASH_B
-    // Now set isError + publicClientReceipt for HASH_B
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('exec reverted'), fetchStatus: 'idle' }
+    // A deferred: created before hash change; resolveA fires after cleanup
+    let resolveA!: (v: Record<string, unknown>) => void
+    let aPromise: Promise<Record<string, unknown>>
+    aPromise = new Promise<Record<string, unknown>>(res => { resolveA = res })
+    r.publicClientGetReceipt = () => aPromise
+    r.render()
+    await r.runEffects()   // A effect runs; fetch = aPromise (outstanding)
+    // Change identity — install a new never-resolving promise for B BEFORE render
+    r.publicClientGetReceipt = () => new Promise<Record<string, unknown>>(() => {})
+    r.hashValue = r.HASH_B
+    r.render()
+    await r.runEffects()   // deps changed → cleanup(A) = cancelled=true; B effect starts with new promise
+    resolveA({ status: 'reverted', transactionHash: r.HASH_A })  // stale A resolution
+    for (let i = 0; i < 8; i++) await Promise.resolve()          // drain microtasks
+    const t = r.render()
+    // A's cancelled=true → setRevertedOnChain not called; B pending → no verdict
+    expect(r.revertedH1(t)).toBe(false)
+  })
+
+  it('FV1/FV2/FFR1-BEH: reverted replacement B uses callback and renders B link not A', async () => {
+    // FV2: onReplaced callback updates replacedHash state (not a ref). FV1: verdict identity guard.
+    // FV3: use registeredOnReplaced callback, not direct ref assignment.
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.render()   // capture onReplaced from useWaitForTransactionReceipt args
+    // Invoke the registered callback as wagmi would when B replaces A
+    r.registeredOnReplaced?.({
+      transactionReceipt: { transactionHash: r.HASH_B },
+      transaction: { hash: r.HASH_B },
+      replacedTransaction: { hash: r.HASH_A },
+      reason: 'repriced',
+    })
+    // After callback: replacedHash state (index 8) = HASH_B. Effect re-runs with new dep.
     r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('repriced'), fetchStatus: 'idle' }
     r.publicClientReceipt = { status: 'reverted', transactionHash: r.HASH_B }
     r.render()
@@ -765,6 +820,30 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
     expect(r.links(t)).toContain(r.HASH_B)
     expect(r.links(t)).not.toContain(r.HASH_A)
     expect(r.writes.length).toBe(1)
+  })
+
+  it('FV1-BEH: settled A verdict hidden on first B render before effects run', async () => {
+    // FV1: verifiedForHash guard — a settled verdict for A must not appear on first render
+    // after hash transitions to B (before the new effect flushes with B's result).
+    const r = makeCreateRunner()
+    r.reset()
+    r.doSubmit()
+    r.receipt = { isLoading: false, isSuccess: false, isError: true, error: new Error('exec reverted'), fetchStatus: 'idle' }
+    r.publicClientReceipt = { status: 'reverted', transactionHash: r.HASH_A }
+    r.render()
+    await r.runEffects()
+    // A verdict is now settled (revertedOnChain=true, verifiedForHash=HASH_A)
+    expect(r.revertedH1(r.render())).toBe(true)
+    // Transition to B: clear settled verdict and change hash
+    // Effect's synchronous reset (setRevertedOnChain(null), setVerifiedForHash(null)) fires on next flush
+    r.hashValue = r.HASH_B
+    r.publicClientGetReceipt = () => new Promise<Record<string, unknown>>(() => {}) // never resolves
+    const tFirst = r.render()
+    await r.runEffects()  // effect runs: clears verdict synchronously → revertedOnChain=null, verifiedForHash=null
+    const tAfter = r.render()
+    // Neither first render (before flush) nor after flush (before B resolves) should show A verdict
+    expect(r.revertedH1(tFirst)).toBe(false)
+    expect(r.revertedH1(tAfter)).toBe(false)
   })
 
   it('CWR2-BEH: finite timeout is passed to useWaitForTransactionReceipt', async () => {
@@ -809,10 +888,14 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
     // Unmatched branch still present and distinct
     expect(src.default).toContain('Transaction succeeded — no pool created')
     expect(src.default).toContain('publicClient.getTransactionReceipt')
-    // FFR1: replacement hash tracking
-    expect(src.default).toContain('replacedHashRef')
+    // FV2: replacedHash as state (reactive dep), not a ref
+    expect(src.default).toContain('replacedHash')
+    expect(src.default).toContain('setReplacedHash')
     expect(src.default).toContain('onReplaced')
     expect(src.default).toContain('revertLookupHash')
+    // FV1: verifiedForHash identity guard
+    expect(src.default).toContain('verifiedForHash')
+    expect(src.default).toContain('revertIdentityMatch')
     // FFR2: effect cleanup
     expect(src.default).toContain('cancelled = true')
   })
