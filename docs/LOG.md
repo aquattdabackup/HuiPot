@@ -1,5 +1,9 @@
 # Project log
 
+## October 30, 2026 — d6d5c8e verdict identity functional acceptance
+
+Pulled d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd from c7c74c9023ca63d9c3a571f03b964f93e3fb7143. Windows snapshot with unchanged locked dependencies: Forge 120/120, Vitest 216/216, check/build exit 0; seven acceptance probe sets 69/69. FV1/FV2 functional fixes accepted. VT1 remains in maintained test timing only: virtual missing catch guard passes the early assertion, whereas independent settled cleanup probes confirm real source works. Report STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md narrows Studio follow-up to test settlement/control and report accuracy. No source edit, deployment, signature, hosting or MetaMask claim.
+
 ## October 30, 2026 — Independent fc83aa6 FFR recheck
 
 Input c21016ead0f3d6765af709b28a81e11d2b517287; pulled output fc83aa60750c92a41acee00931b2d6baa7ca4ff4. Exact Windows snapshot, unchanged locked dependencies: Forge 120/120, Vitest 214/214, check/build exit 0. Six probe counts 7/13/23/3/13/4 reproduced. Ordinary replacement and pending cleanup accepted; additional identity-transition instrument 3 pass/3 fail exposes settled-verdict carryover and nonreactive replacement ref. Maintained deferred-race tests/reporting still incomplete. Report STUDIO_FFR_ACCEPTANCE_RECHECK.md contains FV1–FV4. Docs/review evidence only; no source fix, Studio job, signing, hosting or MetaMask claim.

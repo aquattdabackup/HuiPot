@@ -1,0 +1,17 @@
+{
+  "scope": "Exact maintained runner/unmount sequence; virtual source mutation removes only catch cancellation guard. No file/source edits.",
+  "rows": [
+    {
+      "mutant": false,
+      "atMaintainedAssertion": 0,
+      "afterCatchSettles": 0,
+      "maintainedAssertionPasses": true
+    },
+    {
+      "mutant": true,
+      "atMaintainedAssertion": 0,
+      "afterCatchSettles": 2,
+      "maintainedAssertionPasses": true
+    }
+  ]
+}

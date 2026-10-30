@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Current checkpoint — October 30, 2026:** [STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md](STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md) accepts d6d5c8e functional FV1/FV2 (216 Vitest, 120 Forge, check/build and 69 probe assertions pass). Request only VT1 maintained-test settlement/negative control and minor report cleanup. Do not rewrite accepted application behavior or repeat wallet demos for this test-only follow-up. Codex has not executed a new Studio job.
+
 **Current follow-up — October 30, 2026:** reviewed fc83aa6 in [STUDIO_FFR_ACCEPTANCE_RECHECK.md](STUDIO_FFR_ACCEPTANCE_RECHECK.md). All reported checks pass; address FV1–FV4 only (settled verdict identity, reactive replacement lookup, deferred/callback test coverage and report accuracy). The user requires a copyable prompt with each proposed Studio repair. This latest follow-up has not been executed by Codex.
 
 **Latest review — October 30, 2026:** read [STUDIO_FINAL_FIX_RECHECK.md](STUDIO_FINAL_FIX_RECHECK.md) for reviewed output 5989686. CWR4/CWR5 accepted on clean Windows; implement only FFR1–FFR4 for remaining CWR6 identity/invalidation and test/report coverage. The older final-fix handoff below has now been executed and independently reviewed; do not repeat its accepted repairs. No new Studio job launched by Codex.

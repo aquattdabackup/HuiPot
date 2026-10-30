@@ -8,7 +8,14 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest independent review — fc83aa6
+## Latest independent review — d6d5c8e
+
+- Reviewed `d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd`, parent `c7c74c9023ca63d9c3a571f03b964f93e3fb7143`. See docs/STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md.
+- FV1/FV2 functional fixes accepted: reactive replacement and verified-hash render guard pass all seven acceptance probe sets (69/69). Windows Forge 120/120, Vitest 216/216 (createSafety 51), check/build exit 0. CWR4/CWR5 preserved.
+- Remaining VT1 is test coverage only: maintained unmount-rejection test asserts after one microtask, before catch settles. Virtual missing-guard control still passes that assertion; after settlement lateSets=2. Real production guard yields 0 and independent cleanup tests pass. No new functional blocker reproduced.
+- Studio follow-up should change only the test settlement/control and minor report wording/metadata. User requires a copyable prompt. No app rewrite, wallet transaction or hosting action needed; prior demo scope and MetaMask/submission limitations remain.
+
+## Independent review — fc83aa6
 
 - Reviewed `fc83aa60750c92a41acee00931b2d6baa7ca4ff4`, actual parent `c21016ead0f3d6765af709b28a81e11d2b517287`. See docs/STUDIO_FFR_ACCEPTANCE_RECHECK.md.
 - Windows: Forge 120/120, Vitest 214/214 (createSafety 49), check/build exit 0. All six reported probe counts reproduce: 7/13/23/3/13/4 passes. Dependencies/config unchanged; CWR4/CWR5 preserved.

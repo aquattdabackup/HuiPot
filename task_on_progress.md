@@ -1,5 +1,11 @@
 # Task On Progress
 
+## Current review — d6d5c8e, October 30
+- Input c7c74c9023ca63d9c3a571f03b964f93e3fb7143; pulled/reviewed d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd. Report docs/STUDIO_VERDICT_IDENTITY_ACCEPTANCE.md; evidence/recheck-d6d5c8e.
+- Windows exact snapshot, unchanged locked dependencies: Forge 120/120, Vitest 216/216, check/build exit 0; seven acceptance probe sets 69/69. FV1/FV2 functional acceptance; CWR4/CWR5 preserved.
+- VT1 test-only remaining gap: one await before lateSets assertion misses catch settlement. Exact-runner virtual missing-catch-guard still passes assertion (0) but later has 2 setters; real guard remains 0. Independent actual cleanup behavior passes. No application source edits or new runtime blocker.
+- Next: manual Studio prompt for only test settlement/negative control and report cleanup, then move toward deployed revision/video/submission evidence. Always include a copyable Arc prompt when requesting fixes. No signing/hosting/MetaMask clearance. Review committed locally; push failed because GitHub authentication cannot prompt. Remote main verified d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd. User must push from an authenticated terminal before Studio reads the report.
+
 ## Current independent review — fc83aa6, October 30
 - Pulled fc83aa60750c92a41acee00931b2d6baa7ca4ff4, parent c21016ead0f3d6765af709b28a81e11d2b517287. Report docs/STUDIO_FFR_ACCEPTANCE_RECHECK.md; evidence/recheck-fc83aa6.
 - Windows exact archive, 45 source/config matches; unchanged dependencies reused from prior clean locked install. Forge 120/120, Vitest 214/214, check/build exit 0. Six supplied probes all pass (7/13/23/3/13/4).
