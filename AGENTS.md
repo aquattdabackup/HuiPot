@@ -8,7 +8,15 @@
 
 Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
 
-## Latest Studio delivery — FFR1/FFR2/FFR3/FFR4 (current HEAD)
+## Latest independent review — fc83aa6
+
+- Reviewed `fc83aa60750c92a41acee00931b2d6baa7ca4ff4`, actual parent `c21016ead0f3d6765af709b28a81e11d2b517287`. See docs/STUDIO_FFR_ACCEPTANCE_RECHECK.md.
+- Windows: Forge 120/120, Vitest 214/214 (createSafety 49), check/build exit 0. All six reported probe counts reproduce: 7/13/23/3/13/4 passes. Dependencies/config unchanged; CWR4/CWR5 preserved.
+- FFR1 ordinary replacement and FFR2 pending-read cleanup accepted. Residual FV1: already-settled true verdict can be relabelled to an unresolved new hash. FV2: replacement ref update is not reactive when error/original hash/client dependencies stay unchanged. Controlled transition review 3 pass/3 fail; no live-wallet reproduction claim.
+- FV3: maintained stale/unmount tests settle reads before their claimed race; add deferred reads and stable-client callback coverage. FV4: reporting/exit-code gaps remain; actual-query expanded coverage restored and accepted.
+- Application source untouched by Codex. Next manual Studio prompt: fix FV1–FV4 only. No deployment/signing/MetaMask clearance.
+
+## Studio delivery — FFR1/FFR2/FFR3/FFR4 (fc83aa6, reviewed above)
 
 - Input: `c21016ead0f3d6765af709b28a81e11d2b517287`.
 - **FFR1:** `onReplaced` callback in `useWaitForTransactionReceipt` captures replacement hash into `replacedHashRef`. Effect uses `replacedHashRef.current ?? hash` for independent lookup. `revertLookupHash` state drives explorer link — always shows the mined transaction (replacement B or original A).

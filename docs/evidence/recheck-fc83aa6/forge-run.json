@@ -1,0 +1,4 @@
+{
+  "exit": 0,
+  "command": "forge test --summary --fuzz-seed 1"
+}

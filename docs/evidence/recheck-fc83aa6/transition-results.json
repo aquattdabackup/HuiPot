@@ -1,0 +1,63 @@
+{
+  "scope": "Unchanged Create with state-preserving effect harness; synthetic settled-verdict identity transition and callback update while error flag stays true; delayed rejection controls. No browser or wallet.",
+  "passed": 3,
+  "failed": 3,
+  "results": [
+    {
+      "name": "Ordinary A confirmed revert control",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Settled A verdict not visible during first B render",
+      "actual": false,
+      "expected": true,
+      "pass": false,
+      "links": [
+        "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "reverted": true
+    },
+    {
+      "name": "Settled A verdict not relabelled as pending B after effect",
+      "actual": false,
+      "expected": true,
+      "pass": false,
+      "links": [
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "reverted": true,
+      "requests": [
+        "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "Replacement update invalidates unchanged error-state lookup",
+      "actual": false,
+      "expected": true,
+      "pass": false,
+      "requests": [
+        "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "links": [
+        "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "reverted": false
+    },
+    {
+      "name": "Late A rejection cannot erase confirmed B verdict",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Unmount discards delayed rejection setter",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "lateSets": 0
+    }
+  ]
+}

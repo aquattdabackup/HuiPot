@@ -1,5 +1,9 @@
 # Project log
 
+## October 30, 2026 — Independent fc83aa6 FFR recheck
+
+Input c21016ead0f3d6765af709b28a81e11d2b517287; pulled output fc83aa60750c92a41acee00931b2d6baa7ca4ff4. Exact Windows snapshot, unchanged locked dependencies: Forge 120/120, Vitest 214/214, check/build exit 0. Six probe counts 7/13/23/3/13/4 reproduced. Ordinary replacement and pending cleanup accepted; additional identity-transition instrument 3 pass/3 fail exposes settled-verdict carryover and nonreactive replacement ref. Maintained deferred-race tests/reporting still incomplete. Report STUDIO_FFR_ACCEPTANCE_RECHECK.md contains FV1–FV4. Docs/review evidence only; no source fix, Studio job, signing, hosting or MetaMask claim.
+
 ## October 30, 2026 — Independent 5989686 final-fix recheck
 
 Pulled 5989686343724078521ff42b5dbf7ff9acb09907 from actual parent ad09b9786ae52dac42ea9484da9b148f1d43c26e. Clean Windows frozen-lock install, 45 source/config matches; Forge 120/120, Vitest 211/211, check/build exit 0. CWR4/CWR5 accepted. CWR6 normal revert works but replacement identity/context invalidation remain; new maintained revert assertions do not observe the stateful UI. Studio probes reproduce 23/3/10/4 passes with output paths; independent stateful execution 4 pass/3 fail and preserved actual-query checks 13/13. Report: STUDIO_FINAL_FIX_RECHECK.md. Docs/evidence only; no source fix, Studio job, hosting, deployment, signing or MetaMask clearance.

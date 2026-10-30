@@ -1,5 +1,7 @@
 # Arc Studio browser workflow
 
+**Current follow-up — October 30, 2026:** reviewed fc83aa6 in [STUDIO_FFR_ACCEPTANCE_RECHECK.md](STUDIO_FFR_ACCEPTANCE_RECHECK.md). All reported checks pass; address FV1–FV4 only (settled verdict identity, reactive replacement lookup, deferred/callback test coverage and report accuracy). The user requires a copyable prompt with each proposed Studio repair. This latest follow-up has not been executed by Codex.
+
 **Latest review — October 30, 2026:** read [STUDIO_FINAL_FIX_RECHECK.md](STUDIO_FINAL_FIX_RECHECK.md) for reviewed output 5989686. CWR4/CWR5 accepted on clean Windows; implement only FFR1–FFR4 for remaining CWR6 identity/invalidation and test/report coverage. The older final-fix handoff below has now been executed and independently reviewed; do not repeat its accepted repairs. No new Studio job launched by Codex.
 
 **Current priority — October 30, 2026:** execute [STUDIO_FINAL_FIX_PASS.md](STUDIO_FINAL_FIX_PASS.md), based on [STUDIO_CWR_ACCEPTANCE_RECHECK.md](STUDIO_CWR_ACCEPTANCE_RECHECK.md). User-operated pool 7 payout/Proof and pool 8 refund/Proof are now accepted for those scenarios; see [TESTNET_DEMO_ACCEPTANCE.md](TESTNET_DEMO_ACCEPTANCE.md). Remaining confirmed repairs are CWR4–CWR6 and accurate regression reporting. Use the user's chosen manual Studio browser prompt route; no duplicate setup or token request. This latest handoff has not been executed by Codex. Earlier priorities below are historical.

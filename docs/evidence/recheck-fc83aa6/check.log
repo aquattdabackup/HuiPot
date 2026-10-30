@@ -1,0 +1,5 @@
+$ bun run lint && bun run typecheck
+$ oxlint src --deny-warnings
+Finished in 80ms on 27 files with 96 rules using 8 threads.
+Found 0 warnings and 0 errors.
+$ tsc --noEmit

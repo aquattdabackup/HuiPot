@@ -1,0 +1,67 @@
+{
+  "scope": "Production Create executed with state-preserving hooks and dependency/cleanup effects, controlled deferred receipt reads; actual wagmi QueryObserver for replacement rejection. No DOM or wallet.",
+  "passed": 7,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Current reverted receipt actually renders reverted heading and A link",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Both receipt APIs pinned to Arc",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Failed independent read remains unknown and locked",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Successful independent receipt does not falsely mark reverted or bypass matching",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Old A read cannot mark new B context reverted",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "reverted": false,
+      "links": [
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "requests": [
+        "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "Unmount invalidates outstanding state update",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "lateSets": 0
+    },
+    {
+      "name": "Reverted replacement B renders confirmed revert with B link",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "isError": true,
+      "trackedReplacement": true,
+      "requests": [
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "links": [
+        "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "reverted": true
+    }
+  ]
+}

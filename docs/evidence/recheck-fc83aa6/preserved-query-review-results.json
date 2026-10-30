@@ -1,0 +1,99 @@
+{
+  "scope": "Unchanged production Create with persistent controlled hooks; actual TanStack QueryObserver and wagmi query/action for pending/refetch/paused cases. Final waiter controlled; no DOM, RPC, wallet or transaction.",
+  "passed": 13,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Pending link is outside form and submit is disabled",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Receipt error shows message, keeps submit disabled, retry calls refetch only",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Retry valid receipt keeps original snapshot and one write",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Retry different target remains unmatched with mined link",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Retry unindexed pending receipt stays unknown and locked",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Retry missing snapshot does not accept matching event",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "Submit handler itself blocks repeat submission during receipt error",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "name": "Pending retry keeps a single write and finite waiter",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "waiterCalls": 1,
+      "actualTimeout": 30000,
+      "status": "pending",
+      "fetchStatus": "fetching"
+    },
+    {
+      "name": "Production waiter has finite timeout",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "actualTimeout": 30000
+    },
+    {
+      "name": "Real query completion validates original receipt",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "name": "Real errored query retries a read and validates success without another write",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "waiterCalls": 2,
+      "writes": 1
+    },
+    {
+      "name": "Real offline-paused receipt retains link and submit lock",
+      "actual": true,
+      "expected": true,
+      "pass": true,
+      "status": "pending",
+      "fetchStatus": "paused",
+      "isLoading": false,
+      "isError": false,
+      "disabled": true,
+      "hasExplorer": true
+    },
+    {
+      "name": "Real offline-paused user submit cannot create second write",
+      "actual": 1,
+      "expected": 1,
+      "pass": true,
+      "writes": 1
+    }
+  ]
+}

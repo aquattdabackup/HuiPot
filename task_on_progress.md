@@ -1,5 +1,11 @@
 # Task On Progress
 
+## Current independent review — fc83aa6, October 30
+- Pulled fc83aa60750c92a41acee00931b2d6baa7ca4ff4, parent c21016ead0f3d6765af709b28a81e11d2b517287. Report docs/STUDIO_FFR_ACCEPTANCE_RECHECK.md; evidence/recheck-fc83aa6.
+- Windows exact archive, 45 source/config matches; unchanged dependencies reused from prior clean locked install. Forge 120/120, Vitest 214/214, check/build exit 0. Six supplied probes all pass (7/13/23/3/13/4).
+- Ordinary replacement and pending-read cleanup repaired. Additional settled-verdict/new-identity and unchanged-error replacement callback checks expose FV1/FV2 (3 pass/3 fail). Deferred rejection and unmount rejection controls pass. Maintained lifecycle tests/reporting still need FV3/FV4 corrections.
+- No application source changes, Studio job, hosting or signing. User requires an explicit copyable Arc prompt with every repair handoff. Next: deliver review and FV1–FV4 prompt; then review Studio output. Review committed locally; push failed because GitHub authentication cannot prompt. Remote main verified fc83aa60750c92a41acee00931b2d6baa7ca4ff4. User must push from an authenticated terminal before Studio reads the new report.
+
 ## Current independent review — 5989686, October 30
 - Pulled 5989686343724078521ff42b5dbf7ff9acb09907; actual parent ad09b9786ae52dac42ea9484da9b148f1d43c26e, not Studio's reported full input SHA.
 - Clean locked dependency install in Windows path containing a space. Forge 120/120; Vitest 211/211; check/build exit 0. CWR4/CWR5 accepted. No source edits. Evidence: docs/evidence/recheck-5989686; report docs/STUDIO_FINAL_FIX_RECHECK.md.
