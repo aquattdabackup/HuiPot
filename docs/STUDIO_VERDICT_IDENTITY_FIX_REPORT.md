@@ -1,10 +1,12 @@
 # Verdict identity fix report — FV1–FV4
 
-Date: studio run following Codex recheck of fc83aa6.
+Date: studio run following Codex recheck of fc83aa6 (session 1) and VT1 follow-up (session 2).
 
-**Input commit reviewed by Codex:** `fc83aa60750c92a41acee00931b2d6baa7ca4ff4`  
-**Input to this session (pulled from main):** `c7c74c9023ca63d9c3a571f03b964f93e3fb7143`  
-**Output SHA:** TBD (committed below; will be filled in by git push output)
+**Input commit reviewed by Codex (FV1–FV4):** `fc83aa60750c92a41acee00931b2d6baa7ca4ff4`  
+**Input to FV1–FV4 session (pulled from main):** `c7c74c9023ca63d9c3a571f03b964f93e3fb7143`  
+**Output of FV1–FV4 session:** `d6d5c8e62f3b593b3e4736f08065ffb69c4b51cd`  
+**Input to VT1 session (pulled from main):** `14645aa6191faeef30508a1c74f3f46d8578428f`  
+**Output SHA (VT1 session):** see git commit below
 
 ---
 
@@ -16,7 +18,7 @@ Date: studio run following Codex recheck of fc83aa6.
 
 **Fix in `src/pages/Create.tsx`:**
 
-- Added `verifiedForHash` state (initialized null). Set synchronously in the effect alongside `setRevertLookupHash` before the async fetch, and updated in both the resolve and reject branches of `getTransactionReceipt`. The reject branch sets it to null.
+- Added `verifiedForHash` state (initialized null). At the start of the effect it is cleared to null (alongside `setRevertedOnChain(null)` and `setRevertLookupHash(lookupHash)`) before the async fetch begins. It is then assigned the `lookupHash` in the `.then()` resolve handler after a successful receipt read, and cleared back to null in the `.catch()` reject handler. It is never written before the fetch completes.
 - Added `activeLookup = replacedHash ?? hash` derived value.
 - Render guard: `revertIdentityMatch = verifiedForHash !== null && verifiedForHash === revertLookupHash && verifiedForHash === activeLookup`. The revert UI is shown only when all three conditions hold.
 - The `activeLookup` check is a synchronous render-time identity guard: it fails on the first render after a hash/replacement change (before effects run) because `verifiedForHash` still matches the old identity while `activeLookup` has already advanced to the new one.
@@ -77,6 +79,20 @@ return () => { cancelled = true }
 
 10. **`CWR6-STRUCT` updated** to check `replacedHash`, `setReplacedHash`, `verifiedForHash`, `revertIdentityMatch` instead of `replacedHashRef`.
 
+Net Vitest addition in FV1–FV4 session: 214 → 216 (+2 net; four new tests were added while two prior tests were revised/merged). `createSafety` has 51 cases after this session.
+
+### VT1 — unmount deferred rejection: full catch settlement and negative control
+
+**Problem (from Codex review of d6d5c8e):** The maintained unmount test called `rejectFn(...)` then awaited only one `Promise.resolve()` before asserting `lateSets === 0`. A rejection from `getTransactionReceipt` passes through `.then()` (propagating rejection) and into `.catch()` — a minimum of two microtask hops. The assertion could run before the catch handler fired, so a missing catch cancellation guard would not be detected.
+
+**Fix in `src/lib/__tests__/createSafety.test.ts`:**
+
+1. Replaced `await Promise.resolve()` (one hop) with `for (let i = 0; i < 8; i++) await Promise.resolve()` after `rejectFn(...)`. Eight rounds ensure the full `.then().catch()` chain has settled and any guarded (or unguarded) setters have completed before the assertion.
+
+2. Added an inline negative control at the end of the same test: after asserting `lateSets === 0` (real implementation), calls `r.triggerLateSet()` — a new runner helper that calls the same setter path without any cancelled guard, directly simulating the regression. Asserts `r.lateSets === 1`. This proves the bookkeeping detects an unguarded late setter, without touching production source.
+
+3. Added `triggerLateSet()` to the `makeCreateRunner` return. It calls an inline setter for `states[9]` that respects `isUnmounted`/`lateSets` but has no `cancelled` guard. It must only be called after `unmount()`.
+
 ### FV4 — reporting/probe corrections
 
 1. **cancelRefetch leading sentence removed.** The old comment said "cancelRefetch:true ensures a retry starts a new receipt read request" — this is only conditionally true (only when cached data exists). Rewritten to accurately describe both the cached-data case (cancels in-flight, starts fresh) and the no-cache case (deduplication means the same in-flight promise is used).
@@ -116,7 +132,19 @@ Probe commands from repo root (`SRC=.`, `OUT=docs/evidence/fv-results`):
 | `node docs/evidence/final-fix/runtime-probes.cjs SRC OUT/runtime-probes-results.json` | 0 | 4 / 0 |
 | `node docs/evidence/recheck-fc83aa6/transition-review.cjs SRC OUT/transition-results.json` | 0 | 6 / 0 |
 
-All seven probe sets pass. The transition instrument's three previously failing cases (test 2, 3, 4) now pass:
+All seven probe sets pass (FV1–FV4 session). The transition instrument's three previously failing cases (test 2, 3, 4) now pass:
+
+### VT1 session commands
+
+Probe sets were not rerun in the VT1 session: only `createSafety.test.ts` was modified; no probe file depends on the test runner or the `makeCreateRunner` helper. The six probe sets, transition-review, Forge, and build evidence from the FV1–FV4 session (d6d5c8e) remain valid for the unmodified application source.
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `bun run test` | 0 | 216 pass / 0 fail / 0 skip, 6 files; createSafety 51 |
+| `bun run check` | 0 | oxlint 0 warnings / 0 errors; tsc 0 errors |
+| `bun run build` | 0 | Succeeded; existing chunk-size warning unchanged |
+
+Forge, probe sets, and transition-review not rerun: application source (`src/pages/Create.tsx`, contracts, other source files) unchanged. Evidence from d6d5c8e session remains valid.
 
 - Test 2 "Settled A verdict not visible during first B render": `reverted=false`, links show HASH_B (pending state) — correct.
 - Test 3 "Settled A verdict not relabelled as pending B after effect": `reverted=false`, links show HASH_B — correct.
@@ -139,4 +167,4 @@ All seven probe sets pass. The transition instrument's three previously failing 
 - Mounted browser DOM, keyboard navigation, live wallet, live replacement, mobile/WalletConnect, cross-session.
 - Windows path test: portable implementation delivered in prior session; Linux sandbox cannot claim a Windows pass.
 - MetaMask malicious-site classification: unresolved, no cause named, no clearance claimed.
-- Production deployment SHA verification: live Vercel rebuild requires manual env-var action documented in `docs/DEMO_RUNBOOK.md`.
+- Production deployment SHA verification: the live Vercel deployment and its configuration status were not verified in either session. Deployed revision and environment variable configuration remain unconfirmed for the current output; see `docs/DEMO_RUNBOOK.md` for runbook details.

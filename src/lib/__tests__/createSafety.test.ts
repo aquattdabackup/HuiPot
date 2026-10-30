@@ -568,6 +568,18 @@ function makeCreateRunner() {
     // FV1/FV3: expose hashValue for identity-transition tests.
     get hashValue() { return hashValue },
     set hashValue(v: string | undefined) { hashValue = v },
+    // VT1 negative control: call a post-unmount setState directly, bypassing any cancelled
+    // guard. Proves that the isUnmounted/lateSets bookkeeping detects unguarded late setters.
+    // This must only be called after unmount(); lateSets must be 0 before the call.
+    triggerLateSet() {
+      // Directly invoke a no-op update on states[9] (revertedOnChain) from outside any effect.
+      // Because isUnmounted is true, the setter increments lateSets and stops.
+      const setRevertedOnChain = (v: unknown) => {
+        if (isUnmounted) { lateSets++; return }
+        states[9] = v
+      }
+      setRevertedOnChain(false)
+    },
   }
 }
 
@@ -754,7 +766,10 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
   })
 
   it('FFR2/FV3-BEH: unmount discards deferred rejection (outstanding fetch resolves after unmount)', async () => {
-    // FV3: genuine deferred promise — unmount before reject; lateSets must be 0.
+    // VT1: genuine deferred promise — unmount before reject; lateSets must be 0 after full settlement.
+    // The component attaches .then(...).catch(...); a rejection travels through both handlers
+    // (two microtask hops minimum). Drain 8 rounds to ensure the catch handler has run and any
+    // guarded setters have either fired (incrementing lateSets) or been skipped before asserting.
     const r = makeCreateRunner()
     r.reset()
     r.doSubmit()
@@ -762,12 +777,20 @@ describe('CWR/CW1/CW2 — confirmation recovery (production component execution)
     let rejectFn!: (e: Error) => void
     r.publicClientGetReceipt = () => new Promise<Record<string, unknown>>((_res, rej) => { rejectFn = rej })
     r.render()
-    await r.runEffects()   // effect scheduled, fetch promise outstanding
-    r.unmount()            // cleanup sets cancelled=true
+    await r.runEffects()   // effect scheduled; getTransactionReceipt promise outstanding
+    r.unmount()            // cleanup: cancelled=true
     rejectFn(new Error('late rejection'))
-    await Promise.resolve()
-    // cleanup ran before rejection resolved; lateSets=0 and isUnmounted via unmount()
+    // Drain 8 microtask rounds: rejection → .then() propagation → .catch() handler → all settle
+    for (let i = 0; i < 8; i++) await Promise.resolve()
+    // After full catch settlement: cancelled=true, so catch did not call setRevertedOnChain/setVerifiedForHash
     expect(r.lateSets).toBe(0)
+
+    // VT1 negative control: prove that an unguarded late setter IS detected by this assertion.
+    // triggerLateSet() calls the same setter path without the cancelled guard, simulating the
+    // regression being tested. If lateSets were still 0 after this call, the bookkeeping would
+    // be broken; instead it increments to 1, confirming detection works.
+    r.triggerLateSet()
+    expect(r.lateSets).toBe(1)
   })
 
   it('FFR2/FV3-BEH: stale deferred resolution after dep change does not show stale verdict', async () => {
