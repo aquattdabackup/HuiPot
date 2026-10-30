@@ -1,5 +1,10 @@
 # Task On Progress
 
+## Video script — October 30
+- Prepared docs/VIDEO_WALKTHROUGH_SCRIPT.md: one edited walkthrough, eight scenes, English narration, recording actions and a read-only Studio evidence-locator prompt.
+- Landing/Studio footage can be recorded now. Final transaction scene requires separately verified and approved mainnet activity; pool 8 refund footage is explicitly testnet.
+- No application change, generation, recording/upload, deployment, hosting change or signing performed. Suggested 3–4 minutes is editorial, not an official duration rule.
+
 ## Submission reference update — October 30
 - User supplied Studio project 019740f2-a909-4f38-9f87-4b5c0a448fbf and thread bdac681b-ff5b-4fcd-9bb3-2c01c946c6bb. Exact/normalized links and provenance in docs/STUDIO_PROJECT.md. Web reader cannot access content; no sharing/access verification.
 - Submission URL now supplied. Mainnet transaction evidence, video and other submission gates remain separate. No setup, generation, hosting or signing authorized/performed by recording this link.

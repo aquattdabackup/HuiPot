@@ -1,5 +1,9 @@
 # Project log
 
+## October 30, 2026 — Video recording script
+
+Prepared VIDEO_WALKTHROUGH_SCRIPT.md at the user's request: eight scenes combining actual Studio build evidence and app use into one final video, English voiceover and recording instructions. Read-only Studio evidence-locator prompt included, not executed. Recommended duration is not a competition rule. Existing live evidence remains testnet; final mainnet segment is conditional on operational verification and separately approved human transactions. No code changes, signing, deployment, hosting changes, recording or publication. Docs-only work; application tests not rerun.
+
 ## October 30, 2026 — Studio project URL supplied
 
 User supplied project 019740f2-a909-4f38-9f87-4b5c0a448fbf, thread bdac681b-ff5b-4fcd-9bb3-2c01c946c6bb. Recorded exact and normalized links in STUDIO_PROJECT.md for submission/video provenance. Web reader could not access the URL; no authenticated content or reviewer-sharing claim. No setup, Studio job, mainnet or hosting action.
