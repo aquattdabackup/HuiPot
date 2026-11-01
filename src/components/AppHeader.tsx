@@ -3,14 +3,14 @@ import { ConnectKitButton } from 'connectkit'
 import { Link, useLocation } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 import { Menu, X } from 'lucide-react'
-import { arcTestnet } from '../config'
+import { TARGET_CHAIN, IS_MAINNET } from '../config'
 import { RingMark } from '../pages/Landing'
 
 export function AppHeader() {
   const { chainId } = useAccount()
   const location = useLocation()
   const isLanding = location.pathname === '/'
-  const wrongChain = chainId !== undefined && chainId !== arcTestnet.id
+  const wrongChain = chainId !== undefined && chainId !== TARGET_CHAIN.id
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Close menu on route change
@@ -30,6 +30,13 @@ export function AppHeader() {
       style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}
     >
       Wrong network
+    </span>
+  ) : IS_MAINNET ? (
+    <span
+      className="rounded-full px-2.5 py-1 text-xs font-semibold"
+      style={{ background: 'rgba(255,180,0,0.15)', color: '#e6a800', border: '1px solid rgba(255,180,0,0.3)' }}
+    >
+      Arc — real funds
     </span>
   ) : (
     <span

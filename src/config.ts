@@ -2,7 +2,9 @@ import { createConfig, http } from 'wagmi'
 import { getDefaultConfig } from 'connectkit'
 import { defineChain } from 'viem'
 
-// Arc Testnet — chain ID 5042002, USDC is the native gas token (18 decimals native, 6 decimals ERC-20)
+// ─── Arc Testnet ────────────────────────────────────────────────────────────────
+// Chain ID 5042002. Kept for historical reference and testnet builds.
+// Source: https://docs.arc.io/arc/references/connect-to-arc.md
 export const arcTestnet = defineChain({
   id: 5042002,
   name: 'Arc Testnet',
@@ -23,10 +25,44 @@ export const arcTestnet = defineChain({
   testnet: true,
 })
 
-export const TARGET_CHAIN_ID = arcTestnet.id
+// ─── Arc Mainnet ────────────────────────────────────────────────────────────────
+// Chain ID 5042, RPC https://rpc.mainnet.arc.io, explorer https://explorer.arc.io.
+// USDC is the native gas token (18 decimals natively, 6 decimals ERC-20 interface).
+// Source: https://docs.arc.io/arc/references/connect-to-arc.md (verified November 2026).
+export const arcMainnet = defineChain({
+  id: 5042,
+  name: 'Arc',
+  nativeCurrency: {
+    name: 'USDC',
+    symbol: 'USDC',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc.mainnet.arc.io'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'ArcScan',
+      url: 'https://explorer.arc.io',
+    },
+  },
+  testnet: false,
+})
 
-// 1 USDC = 10^18 native base units
-// Product quantum: 10^12 native base units = 0.000001 USDC (6 product decimal places)
+// ─── Active network selection ────────────────────────────────────────────────────
+// Set VITE_TARGET_NETWORK="mainnet" in the build environment to target Arc mainnet.
+// Any other value (including absence) keeps testnet as the default.
+// The application reads TARGET_CHAIN, TARGET_CHAIN_ID, and IS_MAINNET from this module.
+// No other file may hardcode a chain choice independently.
+const _targetNetwork = (import.meta.env.VITE_TARGET_NETWORK as string | undefined) ?? 'testnet'
+export const IS_MAINNET: boolean = _targetNetwork === 'mainnet'
+export const TARGET_CHAIN = IS_MAINNET ? arcMainnet : arcTestnet
+export const TARGET_CHAIN_ID: number = TARGET_CHAIN.id
+
+// ─── USDC denomination ────────────────────────────────────────────────────────────
+// 1 USDC = 10^18 native base units on both Arc mainnet and testnet.
+// Product quantum: 10^12 native base units = 0.000001 USDC (6 product decimal places).
+// This is identical across both networks; no per-network branching needed here.
 export const NATIVE_DECIMALS = 18
 export const PRODUCT_DECIMALS = 6
 export const QUANTUM = 10n ** 12n
@@ -70,19 +106,21 @@ export function formatNativeAmount(native: bigint): string {
   return fracStr ? `${intPart}.${fracStr}` : intPart.toString()
 }
 
+// Explorer URL helpers — always use the active TARGET_CHAIN explorer.
+// These must NOT be called with a hardcoded base URL; use these helpers everywhere.
 export function explorerTxUrl(hash: string): string {
-  return `${arcTestnet.blockExplorers.default.url}/tx/${hash}`
+  return `${TARGET_CHAIN.blockExplorers.default.url}/tx/${hash}`
 }
 
 export function explorerAddressUrl(address: string): string {
-  return `${arcTestnet.blockExplorers.default.url}/address/${address}`
+  return `${TARGET_CHAIN.blockExplorers.default.url}/address/${address}`
 }
 
 export const wagmiConfig = createConfig(
   getDefaultConfig({
-    chains: [arcTestnet],
+    chains: [TARGET_CHAIN],
     transports: {
-      [arcTestnet.id]: http('https://rpc.testnet.arc.io'),
+      [TARGET_CHAIN.id]: http(TARGET_CHAIN.rpcUrls.default.http[0]),
     },
     // WalletConnect mobile support requires a real project ID from https://cloud.walletconnect.com
     // Without one, WalletConnect is intentionally disabled; injected wallets (MetaMask extension) still work.
@@ -90,7 +128,7 @@ export const wagmiConfig = createConfig(
     appName: 'HuiPot Goal Pool',
     appDescription: 'Pool USDC for one shared goal',
     // Canonical application URL — used by ConnectKit's WalletConnect metadata branch.
-    // MetaMask injected-wallet connector is independent of this field (see METAMASK_DEEP_RECHECK.md).
+    // MetaMask injected-wallet connector is independent of this field.
     appUrl: 'https://hui-pot.vercel.app',
   }),
 )

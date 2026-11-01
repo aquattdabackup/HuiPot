@@ -22,7 +22,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { encodeEventTopics, encodeAbiParameters, decodeEventLog } from 'viem'
 import { HUIPOT_ABI, HUIPOT_ADDRESS } from '../../contract'
-import { TARGET_CHAIN_ID } from '../../config'
+import { TARGET_CHAIN_ID, IS_MAINNET, arcTestnet, arcMainnet, TARGET_CHAIN } from '../../config'
 
 // ─── Shared constants ─────────────────────────────────────────────────────────
 
@@ -202,8 +202,16 @@ describe('CSF3 — receipt watcher pinned to submitted chain (source structure)'
     expect(chainIdx).toBeGreaterThan(waitIdx)
   })
 
-  it('CSF3: TARGET_CHAIN_ID is Arc Testnet (5042002)', () => {
-    expect(TARGET_CHAIN_ID).toBe(5042002)
+  it('CSF3: TARGET_CHAIN_ID matches active TARGET_CHAIN (testnet=5042002 by default)', () => {
+    // In the sandbox, VITE_TARGET_NETWORK is unset so the active chain is Arc Testnet.
+    // On a mainnet build (VITE_TARGET_NETWORK=mainnet) this would be 5042.
+    // The assertion verifies config consistency rather than a fixed value.
+    expect(TARGET_CHAIN_ID).toBe(TARGET_CHAIN.id)
+    if (!IS_MAINNET) {
+      expect(TARGET_CHAIN_ID).toBe(5042002)
+    } else {
+      expect(TARGET_CHAIN_ID).toBe(5042)
+    }
   })
 
 })
@@ -310,6 +318,130 @@ describe('Wallet metadata — appUrl correction', () => {
   it('config.ts MetaMask note preserved (appUrl is WalletConnect metadata only)', async () => {
     const src = await import('../../config?raw') as { default: string }
     expect(src.default).toMatch(/MetaMask.*injected|injected.*MetaMask/i)
+  })
+
+})
+
+// ─── NW1–NW5: network selection and mainnet migration regression ──────────────
+//
+// These tests verify that the multi-network configuration is internally consistent
+// and that no hardcoded testnet assumption can silently slip into a mainnet build.
+// They run against the real production config module with controlled env vars.
+//
+// Tests are separated into two groups:
+//   NW-CHAIN: static chain object correctness (no build env assumed)
+//   NW-CONFIG: active-network selection behavior (VITE_TARGET_NETWORK)
+//
+// "Mainnet build" evidence: these tests assert mainnet chain constant values
+// using the exported arcMainnet object. They do NOT constitute a live mainnet
+// transaction, deployed address verification, or wallet interaction.
+
+describe('NW — network selection and mainnet config regression', () => {
+
+  // NW-CHAIN-1: arcTestnet chain object is correct
+  it('NW-CHAIN-1: arcTestnet chain has correct ID, RPC, explorer', () => {
+    expect(arcTestnet.id).toBe(5042002)
+    expect(arcTestnet.testnet).toBe(true)
+    expect(arcTestnet.rpcUrls.default.http[0]).toBe('https://rpc.testnet.arc.io')
+    expect(arcTestnet.blockExplorers.default.url).toBe('https://explorer.testnet.arc.io')
+    expect(arcTestnet.nativeCurrency.decimals).toBe(18)
+    expect(arcTestnet.nativeCurrency.symbol).toBe('USDC')
+  })
+
+  // NW-CHAIN-2: arcMainnet chain object is correct
+  // Source: https://docs.arc.io/arc/references/connect-to-arc.md (verified November 2026)
+  it('NW-CHAIN-2: arcMainnet chain has correct ID, RPC, explorer', () => {
+    expect(arcMainnet.id).toBe(5042)
+    expect(arcMainnet.testnet).toBeFalsy()
+    expect(arcMainnet.rpcUrls.default.http[0]).toBe('https://rpc.mainnet.arc.io')
+    expect(arcMainnet.blockExplorers.default.url).toBe('https://explorer.arc.io')
+    expect(arcMainnet.nativeCurrency.decimals).toBe(18)
+    expect(arcMainnet.nativeCurrency.symbol).toBe('USDC')
+  })
+
+  // NW-CHAIN-3: mainnet and testnet IDs are distinct — no collision
+  it('NW-CHAIN-3: arcMainnet.id !== arcTestnet.id', () => {
+    expect(arcMainnet.id).not.toBe(arcTestnet.id)
+  })
+
+  // NW-CONFIG-1: TARGET_CHAIN is always one of the two known chains
+  it('NW-CONFIG-1: TARGET_CHAIN is arcMainnet or arcTestnet, never a third value', () => {
+    const knownIds = new Set([arcTestnet.id, arcMainnet.id])
+    expect(knownIds.has(TARGET_CHAIN.id)).toBe(true)
+  })
+
+  // NW-CONFIG-2: TARGET_CHAIN_ID === TARGET_CHAIN.id (consistency)
+  it('NW-CONFIG-2: TARGET_CHAIN_ID equals TARGET_CHAIN.id', () => {
+    expect(TARGET_CHAIN_ID).toBe(TARGET_CHAIN.id)
+  })
+
+  // NW-CONFIG-3: default (no VITE_TARGET_NETWORK) is testnet, not mainnet
+  // In the sandbox VITE_TARGET_NETWORK is unset, so IS_MAINNET must be false.
+  it('NW-CONFIG-3: IS_MAINNET is false when VITE_TARGET_NETWORK is absent (testnet default)', () => {
+    // This test passes in any sandbox/CI environment where VITE_TARGET_NETWORK is not
+    // explicitly set to "mainnet". It confirms there is no accidental mainnet default.
+    if (typeof import.meta.env.VITE_TARGET_NETWORK === 'undefined' ||
+        import.meta.env.VITE_TARGET_NETWORK !== 'mainnet') {
+      expect(IS_MAINNET).toBe(false)
+      expect(TARGET_CHAIN.id).toBe(5042002)
+    }
+  })
+
+  // NW-CONFIG-4: explorer URLs use the active chain — no testnet URL leaks into mainnet
+  it('NW-CONFIG-4: arcTestnet explorer URL does not appear in arcMainnet definition', () => {
+    const mainnetExplorer = arcMainnet.blockExplorers.default.url
+    const testnetExplorer = arcTestnet.blockExplorers.default.url
+    expect(mainnetExplorer).not.toContain('testnet')
+    expect(testnetExplorer).toContain('testnet')
+    // The two explorers are distinct
+    expect(mainnetExplorer).not.toBe(testnetExplorer)
+  })
+
+  // NW-CONFIG-5: RPC URLs are network-specific — no testnet RPC in mainnet chain and vice versa
+  it('NW-CONFIG-5: mainnet and testnet RPC URLs are distinct and network-labelled correctly', () => {
+    const mainnetRpc = arcMainnet.rpcUrls.default.http[0]
+    const testnetRpc = arcTestnet.rpcUrls.default.http[0]
+    expect(mainnetRpc).toContain('mainnet')
+    expect(testnetRpc).toContain('testnet')
+    expect(mainnetRpc).not.toBe(testnetRpc)
+  })
+
+  // NW-STRUCT-1: config source exports IS_MAINNET and TARGET_CHAIN (not hardcoded arcTestnet)
+  it('NW-STRUCT-1: config.ts exports IS_MAINNET, TARGET_CHAIN, arcMainnet', async () => {
+    const src = await import('../../config?raw') as { default: string }
+    expect(src.default).toContain('export const IS_MAINNET')
+    expect(src.default).toContain('export const TARGET_CHAIN')
+    expect(src.default).toContain('export const arcMainnet')
+    expect(src.default).toContain("VITE_TARGET_NETWORK")
+  })
+
+  // NW-STRUCT-2: VITE_TARGET_NETWORK drives the switch (not hardcoded "mainnet" or "testnet")
+  it('NW-STRUCT-2: config.ts uses VITE_TARGET_NETWORK env var to select network', async () => {
+    const src = await import('../../config?raw') as { default: string }
+    // IS_MAINNET must be derived from VITE_TARGET_NETWORK (both present in source).
+    // The multiline source is checked with two separate contains rather than
+    // a single-line regex so column order does not matter.
+    expect(src.default).toContain('IS_MAINNET')
+    expect(src.default).toContain('VITE_TARGET_NETWORK')
+    // The string 'mainnet' must appear as the discriminant value
+    expect(src.default).toContain("=== 'mainnet'")
+    // explorerTxUrl and explorerAddressUrl must NOT hardcode a URL
+    expect(src.default).not.toMatch(/explorerTxUrl.*https:\/\/explorer/)
+    expect(src.default).not.toMatch(/explorerAddressUrl.*https:\/\/explorer/)
+    // Both functions use TARGET_CHAIN
+    expect(src.default).toContain('TARGET_CHAIN.blockExplorers')
+  })
+
+  // NW-STRUCT-3: no hardcoded arcTestnet references remain in pages or components
+  // (config.ts definition and selection line are exempt)
+  it('NW-STRUCT-3: Pool.tsx and Proof.tsx do not import arcTestnet directly', async () => {
+    const pool = await import('../../pages/Pool?raw') as { default: string }
+    const proof = await import('../../pages/Proof?raw') as { default: string }
+    const banner = await import('../../components/WrongChainBanner?raw') as { default: string }
+    // These files must use TARGET_CHAIN / TARGET_CHAIN_ID from config, not arcTestnet directly
+    expect(pool.default).not.toContain('arcTestnet')
+    expect(proof.default).not.toContain('arcTestnet')
+    expect(banner.default).not.toContain('arcTestnet')
   })
 
 })

@@ -3,7 +3,7 @@ import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useReadContract } from 'wagmi'
 import { ArrowLeft, ShieldCheck, ShieldAlert, ExternalLink, Search, AlertCircle, Loader2 } from 'lucide-react'
 import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
-import { TARGET_CHAIN_ID, arcTestnet, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
+import { TARGET_CHAIN_ID, TARGET_CHAIN, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
 import { formatAddress, formatDeadline, statusLabel, STATUS } from '../lib/utils'
 import { type VerifyResult, computeOverallValid } from '../lib/verifyTxLogic'
 import { classifyPoolQuery } from '../lib/poolQueryState'
@@ -67,7 +67,8 @@ function EvidenceRow({
 }
 
 async function verifyTx(txHash: string, expectedPoolId: string, expectedRecipient: string, expectedTarget: bigint): Promise<VerifyResult> {
-  const rpc = arcTestnet.rpcUrls.default.http[0]
+  // RPC is taken from the active TARGET_CHAIN so mainnet and testnet use the correct endpoint.
+  const rpc = TARGET_CHAIN.rpcUrls.default.http[0]
   const notes: string[] = []
 
   // Fetch receipt via eth_getTransactionReceipt
@@ -465,8 +466,8 @@ export function Proof() {
       <div className="rounded-2xl p-5 mb-4" style={{ background: 'var(--surface-strong)', border: '1px solid var(--border)' }}>
         <h2 className="mb-3 text-sm font-semibold" style={{ color: 'var(--ink-2)' }}>Chain &amp; deployment</h2>
         <dl>
-          <EvidenceRow label="Chain" value={arcTestnet.name} verified />
-          <EvidenceRow label="Chain ID" value={arcTestnet.id.toString()} verified />
+          <EvidenceRow label="Chain" value={TARGET_CHAIN.name} verified />
+          <EvidenceRow label="Chain ID" value={TARGET_CHAIN.id.toString()} verified />
           <EvidenceRow
             label="Contract"
             value={HUIPOT_ADDRESS}
@@ -678,8 +679,8 @@ export function Proof() {
       <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: 'var(--surface-muted)', color: 'var(--subtle)' }}>
         <p className="mb-2 font-semibold" style={{ color: 'var(--muted)' }}>Evidence limitations</p>
         <ul className="list-disc pl-4 space-y-1">
-          <li>Pool terms are read live from the contract on Arc Testnet (chain ID {arcTestnet.id}). Data reflects state at query time.</li>
-          <li>Receipt verification calls the Arc Testnet RPC directly from your browser. RPC availability and rate limits apply.</li>
+          <li>Pool terms are read live from the contract on {TARGET_CHAIN.name} (chain ID {TARGET_CHAIN.id}). Data reflects state at query time.</li>
+          <li>Receipt verification calls the {TARGET_CHAIN.name} RPC directly from your browser. RPC availability and rate limits apply.</li>
           <li>Contract state confirms execution but not off-chain recipient receipt of value.</li>
           <li>
             Native USDC payout/refund transactions may show <strong>zero outer transaction value</strong> in some explorers.

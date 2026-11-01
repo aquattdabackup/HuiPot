@@ -4,7 +4,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { ConnectKitButton } from 'connectkit'
 import { ArrowLeft, Copy, Check, ExternalLink, Loader2, AlertCircle, ShieldCheck, Share2, AlertTriangle } from 'lucide-react'
 import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
-import { TARGET_CHAIN_ID, arcTestnet, parseProductAmount, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
+import { TARGET_CHAIN_ID, TARGET_CHAIN, parseProductAmount, formatNativeAmount, explorerTxUrl, explorerAddressUrl } from '../config'
 import { CommitmentNotice } from '../components/CommitmentNotice'
 import { formatDeadline, statusLabel, statusColor, parseOnchainError, STATUS } from '../lib/utils'
 import { buildShareLink } from '../lib/share'
@@ -17,7 +17,8 @@ import {
 } from '../lib/actionLifecycle'
 import { classifyPoolQuery } from '../lib/poolQueryState'
 
-const RPC_URL = arcTestnet.rpcUrls.default.http[0]
+// RPC_URL is derived from TARGET_CHAIN so mainnet and testnet use the correct endpoint.
+const RPC_URL = TARGET_CHAIN.rpcUrls.default.http[0]
 
 const DEPLOYED = DEPLOYMENT_CONFIGURED
 

@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { AppHeader } from './components/AppHeader'
+import { MainnetNoticeBanner } from './components/MainnetNoticeBanner'
 import { Landing } from './pages/Landing'
 import { Explore } from './pages/Explore'
 import { Create } from './pages/Create'
@@ -9,6 +10,7 @@ import { Proof } from './pages/Proof'
 export default function App() {
   return (
     <div className="min-h-dvh" style={{ background: 'var(--canvas)' }}>
+      <MainnetNoticeBanner />
       <AppHeader />
       {/* Landing provides its own <section id="main-content">; app routes get <main> */}
       <Routes>

@@ -4,9 +4,19 @@
 
 | Contract | Network | Address | Explorer |
 | --- | --- | --- | --- |
-| HuiPotGoalPool | Arc Testnet | `0x81a139599d252eb2dc2bbb6c267e911a21264288` | https://explorer.testnet.arc.io/address/0x81a139599d252eb2dc2bbb6c267e911a21264288 |
+| HuiPotGoalPool | Arc Testnet (5042002) | `0x81a139599d252eb2dc2bbb6c267e911a21264288` | https://explorer.testnet.arc.io/address/0x81a139599d252eb2dc2bbb6c267e911a21264288 |
+| HuiPotGoalPool | Arc Mainnet (5042) | **NOT DEPLOYED** — address TBD after independent audit + human-operated deployment | — |
 
-Deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
+Testnet deployed: October 24, 2026. Tx: `0x174bb2ea8914729caf1feb8147384aeef15fd0985e62cbc3f0c07303c25f4486`. Unaudited testnet deployment.
+Mainnet: no deployed contract. Writes disabled until `VITE_HUIPOT_ADDRESS` (mainnet) is configured. See docs/STUDIO_MAINNET_MIGRATION_REPORT.md.
+
+## Network configuration (mainnet migration, November 2026)
+
+- `VITE_TARGET_NETWORK=mainnet` selects Arc Mainnet (chain 5042). Absent or any other value → Arc Testnet (default, safe).
+- `VITE_TARGET_NETWORK` + `VITE_HUIPOT_ADDRESS` must both be set in the Vercel build env for a live mainnet build.
+- All `arcTestnet` direct imports replaced with `TARGET_CHAIN` in Pool.tsx, Proof.tsx, WrongChainBanner.tsx, AppHeader.tsx.
+- Mainnet: amber "Arc — real funds" badge + `MainnetNoticeBanner` on every page.
+- See docs/STUDIO_MAINNET_MIGRATION_REPORT.md for full migration record, deployment procedure, and Vercel configuration steps.
 
 ## Latest independent acceptance — b8f59c9 (VT1 closed)
 
