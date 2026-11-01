@@ -1,6 +1,6 @@
 import { createConfig, http } from 'wagmi'
 import { getDefaultConfig } from 'connectkit'
-import { defineChain } from 'viem'
+import { defineChain, fallback } from 'viem'
 
 // ─── Arc Testnet ────────────────────────────────────────────────────────────────
 // Chain ID 5042002. Kept for historical reference and testnet builds.
@@ -120,7 +120,11 @@ export const wagmiConfig = createConfig(
   getDefaultConfig({
     chains: [TARGET_CHAIN],
     transports: {
-      [TARGET_CHAIN.id]: http(TARGET_CHAIN.rpcUrls.default.http[0]),
+      // fallback: injected wallet (MetaMask) first, then public RPC.
+      // Without this, wagmi routes writes through the public RPC directly
+      // instead of the browser wallet, causing "method not available" errors
+      // on custom chains like Arc where wallet_sendTransaction is not exposed.
+      [TARGET_CHAIN.id]: fallback([http(), http(TARGET_CHAIN.rpcUrls.default.http[0])]),
     },
     // WalletConnect mobile support requires a real project ID from https://cloud.walletconnect.com
     // Without one, WalletConnect is intentionally disabled; injected wallets (MetaMask extension) still work.
