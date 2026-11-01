@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useReadContract } from 'wagmi'
 import { Plus, Search, ArrowRight } from 'lucide-react'
 import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
-import { TARGET_CHAIN_ID } from '../config'
+import { TARGET_CHAIN_ID, TARGET_CHAIN } from '../config'
 import { PoolCard } from '../components/PoolCard'
 import { WrongChainBanner } from '../components/WrongChainBanner'
 
@@ -125,7 +125,7 @@ export function Home() {
             className="mt-4 rounded-xl px-4 py-3 text-sm"
             style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}
           >
-            Contract not deployed yet. Deploy <code>HuiPotGoalPool</code> to Arc Testnet to enable
+            Contract not deployed yet. Deploy <code>HuiPotGoalPool</code> to {TARGET_CHAIN.name} to enable
             pool creation.
           </p>
         )}

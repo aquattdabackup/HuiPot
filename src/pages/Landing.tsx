@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useId } from 'react'
 import { Link } from 'react-router-dom'
+import { TARGET_CHAIN, IS_MAINNET } from '../config'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   ArrowRight, Pause, Play, ChevronDown, Copy, Check, ExternalLink,
@@ -494,7 +495,7 @@ function Walkthrough({ motionPaused }: { motionPaused: boolean }) {
             Explore testnet pools <ArrowRight className="h-4 w-4" />
           </Link>
           <p className="mt-3 text-xs" style={{ color: 'var(--subtle)' }}>
-            Real writes require a supported wallet, Arc Testnet connection, and test USDC.
+            Real writes require a supported wallet, {TARGET_CHAIN.name} connection, and {IS_MAINNET ? 'real' : 'test'} USDC.
           </p>
         </div>
       </div>
@@ -832,7 +833,7 @@ export function Landing() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-12">
             <h2 className="display text-4xl font-bold mb-3" style={{ color: 'var(--ink)' }}>Built to be inspected.</h2>
-            <p className="text-base" style={{ color: 'var(--muted)' }}>No platform fee · Unaudited · Arc Testnet only · No mainnet proof claimed.</p>
+            <p className="text-base" style={{ color: 'var(--muted)' }}>No platform fee · Unaudited · {TARGET_CHAIN.name} · {IS_MAINNET ? 'Real funds — use at your own risk.' : 'No mainnet proof claimed.'}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="rounded-2xl p-6" style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}>
@@ -861,7 +862,7 @@ export function Landing() {
               <p className="display text-lg font-semibold mb-3" style={{ color: 'var(--ink)' }}>Status</p>
               <dl className="space-y-2 text-sm">
                 {[
-                  { k: 'Network', v: 'Arc Testnet', ok: true },
+                  { k: 'Network', v: TARGET_CHAIN.name, ok: true },
                   { k: 'Audit', v: 'Unaudited', ok: false },
                   { k: 'Mainnet tx', v: 'Not recorded', ok: false },
                   { k: 'Live-app URL', v: 'Not recorded', ok: false },
@@ -903,7 +904,7 @@ export function Landing() {
             <FaqItem q="What if the goal is not reached?" a="After the deadline passes with less than the full goal contributed, each contributor may claim their deposited principal back. Gas fees are not refunded." />
             <FaqItem q="Who receives the money?" a="The fixed recipient address set at pool creation. This address is immutable and cannot be changed after the pool is created." />
             <FaqItem q="Is payout automatic?" a="No. The contract rules determine eligibility. A wallet transaction explicitly triggers payout or refund. Anyone may trigger payout once the goal is met." />
-            <FaqItem q="Is this mainnet?" a="The current deployment is on Arc Testnet. No mainnet proof is claimed. This is for testing and demonstration only." />
+            <FaqItem q="Is this mainnet?" a={IS_MAINNET ? "This build targets Arc mainnet and uses real USDC. The contract is unaudited — use at your own risk." : "The current deployment is on Arc Testnet. No mainnet proof is claimed. This is for testing and demonstration only."} />
           </div>
           <div className="mt-16 text-center">
             <p className="display text-2xl font-bold mb-6" style={{ color: 'var(--ink)' }}>Your next shared goal starts here.</p>

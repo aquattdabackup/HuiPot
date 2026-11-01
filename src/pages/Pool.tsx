@@ -327,7 +327,7 @@ function ActionPanel({
           <div className="flex items-start gap-2 rounded-xl p-3 text-xs" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>
-              {!chainValid && 'Wrong network — switch to Arc Testnet before confirming. '}
+              {!chainValid && `Wrong network — switch to ${TARGET_CHAIN.name} before confirming. `}
               {!accountValid && 'Wallet account changed since review was opened. '}
               {poolStateStale && 'Pool state changed since review was opened — this action may no longer be valid. '}
               This review will be cancelled if you confirm now.
@@ -341,7 +341,7 @@ function ActionPanel({
             ['Amount', `${formatNativeAmount(snap.amount)} USDC`],
             ['Pool', `#${snap.poolId}`],
             ['Contract', snap.contractAddress],
-            ['Chain', `Arc Testnet (ID ${TARGET_CHAIN_ID})`],
+            ['Chain', `${TARGET_CHAIN.name} (ID ${TARGET_CHAIN_ID})`],
             snap.action === 'payout'
               ? ['To (fixed recipient)', snap.recipient]
               : snap.action === 'refund'
@@ -540,7 +540,7 @@ function ActionPanel({
             )}
             {wrongChain ? (
               <button type="button" onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })} className="w-full rounded-xl py-3 text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
-                Switch to Arc Testnet
+                Switch to {TARGET_CHAIN.name}
               </button>
             ) : (
               <button type="submit" disabled={contribPending || contribConfirming || isActionBusy('contribute')} className="w-full rounded-xl py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
@@ -575,7 +575,7 @@ function ActionPanel({
             <ConnectKitButton />
           ) : wrongChain ? (
             <button onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })} className="w-full rounded-xl py-3 text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
-              Switch to Arc Testnet
+              Switch to {TARGET_CHAIN.name}
             </button>
           ) : (
             <button
@@ -634,7 +634,7 @@ function ActionPanel({
               )}
               {wrongChain ? (
                 <button onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })} className="w-full rounded-xl py-3 text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--accent-ink)' }}>
-                  Switch to Arc Testnet
+                  Switch to {TARGET_CHAIN.name}
                 </button>
               ) : (
                 <button

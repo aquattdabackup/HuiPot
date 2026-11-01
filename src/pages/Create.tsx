@@ -5,7 +5,7 @@ import { ConnectKitButton } from 'connectkit'
 import { ArrowLeft, Check, Loader2, AlertCircle, ShieldAlert, RefreshCw, ExternalLink } from 'lucide-react'
 import { decodeEventLog } from 'viem'
 import { HUIPOT_ADDRESS, HUIPOT_ABI, DEPLOYMENT_CONFIGURED } from '../contract'
-import { TARGET_CHAIN_ID, parseProductAmount, formatNativeAmount, explorerTxUrl } from '../config'
+import { TARGET_CHAIN_ID, TARGET_CHAIN, parseProductAmount, formatNativeAmount, explorerTxUrl } from '../config'
 import { CommitmentNotice } from '../components/CommitmentNotice'
 import { formatDeadline, parseOnchainError } from '../lib/utils'
 
@@ -415,7 +415,7 @@ export function Create() {
         </h1>
         {createdPoolId && (
           <p className="mb-6 text-sm" style={{ color: 'var(--muted)' }}>
-            Pool #{createdPoolId} is now live on Arc Testnet.
+            Pool #{createdPoolId} is now live on {TARGET_CHAIN.name}.
           </p>
         )}
         <div className="flex flex-col gap-3">
@@ -567,7 +567,7 @@ export function Create() {
           className="mb-6 rounded-xl p-4 text-sm"
           style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}
         >
-          Contract not deployed. Deploy HuiPotGoalPool to Arc Testnet first.
+          Contract not deployed. Deploy HuiPotGoalPool to {TARGET_CHAIN.name} first.
         </div>
       )}
 
@@ -822,7 +822,7 @@ export function Create() {
             className="w-full rounded-xl py-3.5 text-sm font-semibold text-white"
             style={{ background: 'var(--accent)' }}
           >
-            Switch to Arc Testnet
+            Switch to {TARGET_CHAIN.name}
           </button>
         ) : (
           <button
